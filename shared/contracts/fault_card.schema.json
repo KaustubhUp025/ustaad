@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ustaad.dev/contracts/fault_card.schema.json",
+  "title": "FaultCard",
+  "type": "object",
+  "required": [
+    "id",
+    "brand",
+    "error_code",
+    "symptom",
+    "fix_steps",
+    "hazard",
+    "source",
+    "confidence",
+    "created_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "fc_ prefixed"
+    },
+    "worker_id": {
+      "type": "string",
+      "description": "who created it (import owner or job worker)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "photo_uri": {
+      "type": "string",
+      "description": "best job photo attached at close (M9)"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "series": {
+      "type": "string"
+    },
+    "year_range": {
+      "type": "string"
+    },
+    "appliance_type": {
+      "enum": [
+        "split_ac",
+        "window_ac",
+        "fridge",
+        "washing_machine",
+        "other"
+      ]
+    },
+    "error_code": {
+      "type": "string",
+      "description": "Verbatim as shown on the unit, e.g. E6"
+    },
+    "symptom": {
+      "type": "string"
+    },
+    "root_cause": {
+      "type": "string"
+    },
+    "fix_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "parts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "part_no": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "hazard": {
+      "enum": [
+        "none",
+        "HV",
+        "capacitor",
+        "refrigerant"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "whatsapp_voice",
+            "whatsapp_text",
+            "manual",
+            "job",
+            "synthetic"
+          ]
+        },
+        "author": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "message_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "doc": {
+          "type": "string"
+        },
+        "page": {
+          "type": "integer"
+        },
+        "audio_uri": {
+          "type": "string",
+          "description": "FLAC of the original voice note (playable source chip)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "verified_count": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 1
+    },
+    "language": {
+      "type": "string",
+      "description": "BCP-47, e.g. hi-Latn for romanised Hinglish"
+    },
+    "review_status": {
+      "enum": [
+        "auto",
+        "needs_review",
+        "approved",
+        "rejected"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "description": "Public contract. The server-only `embedding` vector (768) is stored in Firestore but never returned."
+}

@@ -1,0 +1,9 @@
+rules_version = '2';
+// Only the backend (service account) touches Firestore; browsers never do. See shared/contracts/firestore.md.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

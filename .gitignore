@@ -1,0 +1,19 @@
+.env
+**/.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+node_modules/
+web/dist/
+.firebase/
+*.log
+seed/private/
+# real WhatsApp exports stay out of git (consent + phone numbers)
+seed/whatsapp_export/
+CLAUDE.local.md
+*.local
+web/.env.local
+AGENTS.override.md
+GEMINI.local.md

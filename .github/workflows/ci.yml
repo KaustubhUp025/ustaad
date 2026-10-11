@@ -1,0 +1,37 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.12
+      - run: uv sync --directory backend --locked
+      - run: make lint test
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: scaffold
+        run: if [ -f web/package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.scaffold.outputs.present == 'true'
+        uses: astral-sh/setup-uv@v5
+      - if: steps.scaffold.outputs.present == 'true'
+        run: uv python install 3.12 && uv sync --directory backend --locked
+      - if: steps.scaffold.outputs.present == 'true'
+        uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - if: steps.scaffold.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
+      - if: steps.scaffold.outputs.present == 'true'
+        run: pnpm -C web install --frozen-lockfile && make typecheck build
+      - if: steps.scaffold.outputs.present == 'true' && hashFiles('shared/contracts/openapi.json') != ''
+        name: contract types are up to date
+        run: make types && git diff --exit-code -- shared/contracts web/src/api/types.ts

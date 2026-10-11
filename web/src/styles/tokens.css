@@ -1,0 +1,78 @@
+/* Ustaad design tokens. Source of truth: docs/DESIGN.md. Do not add colours or fonts here without updating it. */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@85..100,400..700&family=Noto+Sans:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Bengali:wght@400;600&display=swap");
+
+/* DSEG7 Classic (SIL OFL 1.1): self-host the woff2 in web/public/fonts/ */
+@font-face {
+  font-family: "DSEG7";
+  src: url("/fonts/DSEG7Classic-Bold.woff2") format("woff2");
+  font-display: swap;
+}
+
+:root {
+  --housing-white: #eef1ef;
+  --graphite: #1d2327;
+  --meter-yellow: #f6be00;
+  --solder-green: #0b6b4f;
+  --copper: #a9592d;
+  --fault-red: #d1263a;
+  --led-cyan: #36d1e0;
+
+  --bg: var(--housing-white);
+  --ink: var(--graphite);
+  --ink-quiet: #4f5a60;
+  --surface: #ffffff;
+  --rule: #c9d0cc;
+  --primary: var(--meter-yellow);
+  --on-primary: var(--graphite);
+  --ok: var(--solder-green);
+  --parts: var(--copper);
+  --danger: var(--fault-red);
+
+  --font-display: "Archivo", "Noto Sans", sans-serif;
+  --font-body: "Noto Sans", "Noto Sans Devanagari", "Noto Sans Telugu", "Noto Sans Tamil", "Noto Sans Bengali", sans-serif;
+  --font-code: "DSEG7", var(--font-display);
+
+  --text-sm: 14px;
+  --text-body: 18px;
+  --text-caption: 20px;
+  --text-lg: 24px;
+  --text-xl: 32px;
+  --text-code: 48px;
+
+  --radius-tag: 4px;
+  --radius-sheet: 12px;
+  --radius-sheet-top: 20px;
+  --space: 8px;
+  --touch: 48px;
+  --mic: 88px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #182024;
+    --ink: #e8ecea;
+    --ink-quiet: #a7b1ad;
+    --surface: #212a2f;
+    --rule: #34403f;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #182024;
+  --ink: #e8ecea;
+  --ink-quiet: #a7b1ad;
+  --surface: #212a2f;
+  --rule: #34403f;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.45;
+}
+:lang(hi), :lang(te), :lang(ta), :lang(bn) { line-height: 1.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

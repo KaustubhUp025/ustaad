@@ -6,7 +6,7 @@ This repo is tool-neutral: every person may use any AI coding agent or model. Wh
 
 ## Who owns what
 
-| | A — Voice & Agent (suggested: Kaustubh) | B — Knowledge & Commerce (suggested: teammate) |
+| | A — Voice & Agent (Kaustubh, @KaustubhUp025) | B — Knowledge & Commerce (Samyak, @samyak8796) |
 | --- | --- | --- |
 | Features | M1, M2, M3, M4, M5, M9, S3 | M6, M7, M8, M10, S1, S2 |
 | Backend | `agent/`, `app/ws_live.py`, tools: identify, request_media, repair steps, safety, close_job, memory | `jobs/`, `wa/`, tools: fault-card search, manuals, inventory, vendors, quotes, clusters |

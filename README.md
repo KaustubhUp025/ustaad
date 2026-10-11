@@ -21,6 +21,8 @@ Cloud Run, Firestore, Cloud Storage, Firebase Hosting, Places API, WhatsApp Clou
 Built with AI coding agents under one shared rule set (`AGENTS.md`); each PR records the tools used (see `docs/WORKFLOW.md`).
 
 ## For the team
+Team: Kaustubh Upadhyay ([@KaustubhUp025](https://github.com/KaustubhUp025), voice and agent) and Samyak Jain
+([@samyak8796](https://github.com/samyak8796), knowledge and commerce).
 Start with `docs/SETUP.md`, then `docs/WORKFLOW.md`. Ground truth: `docs/SPEC.md`. UI: `docs/DESIGN.md`.
 Rules for any AI coding agent: `AGENTS.md`; playbooks in `docs/playbooks/`; commands via `make`.
 

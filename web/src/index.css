@@ -1,0 +1,42 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Tailwind and shadcn names map onto tokens.css; colours and fonts are defined only there. */
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-code: var(--font-code);
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--on-primary);
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--surface);
+  --color-muted-foreground: var(--ink-quiet);
+  --color-accent: var(--surface);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--danger);
+  --color-border: var(--rule);
+  --color-input: var(--rule);
+  --color-ring: var(--ink);
+  --color-ok: var(--ok);
+  --color-parts: var(--parts);
+  --color-graphite: var(--graphite);
+  --color-housing: var(--housing-white);
+  --radius-sm: var(--radius-tag);
+  --radius-md: var(--radius-tag);
+  --radius-lg: var(--radius-sheet);
+  --radius-xl: var(--radius-sheet-top);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring;
+  }
+}

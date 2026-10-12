@@ -1,0 +1,9 @@
+{
+  "app": { "tagline": "Repair help you can talk to" },
+  "health": {
+    "checking": "Checking the server…",
+    "ok": "Server connected",
+    "error": "Server not reachable. Check your network, then try again.",
+    "retry": "Check again"
+  }
+}

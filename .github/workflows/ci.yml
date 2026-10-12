@@ -9,6 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: no skip/xfail markers added to tests
+        if: github.event_name == 'pull_request'
+        run: |
+          ! git diff -U0 origin/${{ github.base_ref }}...HEAD -- backend/tests ':(glob)web/**/*.test.*' ':(glob)web/**/*.spec.*' \
+            | grep -E '^\+[^+].*(skip|xfail)'
       - uses: astral-sh/setup-uv@v5
       - run: uv python install 3.12
       - run: uv sync --directory backend --locked

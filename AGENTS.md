@@ -48,6 +48,25 @@ Cloud Run, Cloud Run Jobs, Firestore, Cloud Storage, Firebase Hosting.
 - UI work follows `docs/playbooks/ui-pass.md`.
 - Finish with: what changed, how to test it, what you were unsure about.
 
+## Simplicity (no speculative code)
+- Write the least code that meets the task's done-when. No base classes, factories, registries, plugin systems,
+  config flags or retry/caching layers unless the task asks.
+- No unused functions, params, files or TODOs. No comments that restate the code; comment only the why.
+- Prefer editing existing code over adding new modules. Don't refactor outside the task.
+- Don't add error handling for cases that can't happen; let unexpected errors raise.
+- If you think an abstraction is needed, say so in your final message instead of adding it.
+
+## Verification (evidence, not claims)
+- Red first: write the new test, run it, show it failing for the right reason, then implement.
+- Never edit, weaken, skip or xfail an existing test to make it pass. If one seems wrong, stop and say so.
+- Mock only external services (Gemini, WhatsApp, Places, GCS, Firestore); never mock the function under test.
+- Check any google-adk / google-genai / FastAPI API you're unsure of against the installed package source
+  (`uv run python -c "import inspect; ..."`) before using it. Don't trust memory.
+- Done = `make check` green AND you ran the thing (curl the endpoint, replay the fixture, or screenshot the
+  screen). Paste the summary line and the evidence in your final message.
+- Final message also lists: files changed with line counts, and anything you added that the task didn't ask for
+  (should be nothing).
+
 ## Work efficiently (keeps any tool fast and cheap)
 - Open only the files your task row lists. Don't scan the whole repo.
 - One task = one branch = one worktree = one fresh session.

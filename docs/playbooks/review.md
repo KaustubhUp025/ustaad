@@ -12,9 +12,12 @@ If your tool has a built-in GitHub PR review, you can use it instead, as long as
    - contract breaks against `shared/contracts/` or `backend/models/`
    - safety: can a hazardous step be reached without a passed gate; refrigerant handling
    - secrets, phone numbers, AI Studio keys, hard-coded model IDs
-   - missing or empty tests for new tools
+   - missing or empty tests for new tools; tests that would pass without the implementation
+   - existing tests edited, weakened, skipped or xfailed; mocks of the unit under test
+   - invented APIs: google-adk / google-genai / FastAPI calls that don't exist in the installed package
    - bugs: async misuse, unhandled errors, non-idempotent webhook handling, timezones
    - UI: tokens and i18n only, 360 px width, 48 px targets, DESIGN.md word rules
+   - speculative abstractions, unused code, a diff bigger than the task needs ("delete this" is a valid finding)
 4. Report only findings tied to a file and line in the diff, most severe first. Say "no blocking issues" if none.
 5. Post it: `gh pr review <N> --comment --body "<review>"`, starting with "Review (<tool/model>):" and ending with
    Approve / Approve with nits / Changes needed.

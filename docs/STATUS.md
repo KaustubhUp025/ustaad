@@ -6,7 +6,7 @@ know what already works; humans append one block per day.
 ## Current state
 - Live model: _pending T05_
 - Works on dev: nothing yet (starter repo)
-- Blocked: T03 budgets — billing-account permission is required to verify currency and existing budgets before creating alerts.
+- Blocked: —
 
 ## Infrastructure status (2026-10-12)
 
@@ -15,8 +15,9 @@ Firestore `(default)` and `demo` in `asia-south1`; `gs://ustaad101-media`; runti
 IAM bindings; placeholder Secret Manager versions; all four fault-card vector indexes READY; Firebase enabled
 with its default Hosting site. No application deployment has occurred.
 
-Remaining checks: create or verify the INR 500/2,000/5,000 budgets after billing-account access is granted, and
-verify both teammates' cloud access. WhatsApp and Places integrations remain unusable until their placeholder
+Budgets: `ustaad-500`, `ustaad-2000` and `ustaad-5000` (INR, this project only, alerts at 90% and 100%) were created
+on Oct 12 from the billing account owner's login (A); B has no billing-account access and does not need it. Both
+teammates are project Owners. WhatsApp and Places integrations remain unusable until their placeholder
 secret versions are replaced with working credentials. `web/package.json` is currently absent, so frontend
 typecheck and build checks remain skipped until T04 scaffolds the web app.
 

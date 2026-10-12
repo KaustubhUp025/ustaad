@@ -145,7 +145,7 @@ i18n: `web/src/i18n/{en,hi,te,ta,bn}.json`.
 ## 9. Conventions
 Branches `a/<ID>-slug`, `b/<ID>-slug`; commit prefix = feature ID; contracts PRs reviewed by the other person;
 CI must pass; golden paths before each `demo` deploy; prompts are versioned files; secrets only in Secret Manager;
-Python 3.12 + uv + ruff; Node 20 + pnpm. Envs: local, `dev` (Cloud Run `ustaad-api-dev`, min 0), `demo`
+Python 3.12 + uv + ruff; Node 22 + pnpm. Envs: local, `dev` (Cloud Run `ustaad-api-dev`, min 0), `demo`
 (`ustaad-api`, min 1 from Thu, Firestore database `demo`).
 
 ## 10. Demo data and quality bar

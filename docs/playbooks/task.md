@@ -12,15 +12,20 @@ Done when:
 - confidence < 0.6 returns follow_up with a retake reason; max 2 retakes
 - declared NON_BLOCKING with WHEN_IDLE
 Don't touch: shared/contracts/, backend/agent/instruction.md
+Out of scope: retake UI, real vision calls, anything not under "Done when"
 ```
 
 ## Steps for the agent
 1. Read `AGENTS.md`, then only the files the card lists under "Read".
 2. Write a 5-line plan: files to change, tests to add, open questions. If the card contradicts the spec, stop and ask.
-3. Write the tests, then the code. Use fixtures in `seed/fixtures/`; no network in unit tests.
-4. Run `make check` until it passes. Paste only the summary line of the output.
-5. Commit with the feature ID prefix on the card's branch.
-6. Final message: what changed, how to test it, what you were unsure about, any new dependency.
+3. Red first: write the tests, run them, and see them fail for the right reason. Use fixtures in
+   `seed/fixtures/`; no network in unit tests.
+4. Write the least code that makes them pass. Nothing listed under "Out of scope".
+5. Run `make check` until it passes, then run the thing itself (curl the endpoint, replay the fixture, or
+   screenshot the screen).
+6. Commit with the feature ID prefix on the card's branch.
+7. Final message: what changed (files with line counts), the `make check` summary line and the run evidence,
+   what you were unsure about, any new dependency, anything added that the card didn't ask for.
 
 ## Steps for the human
 - Give each task its own worktree: `git worktree add ../ustaad-T17 -b a/M4-request-media`.

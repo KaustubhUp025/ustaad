@@ -8,6 +8,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 ## Sun Oct 11 — skeleton
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T00 | P0 | A | Agent guardrails: simplicity + verification rules, playbooks, Claude Code hooks, CI skip/xfail check | AGENTS.md, docs/playbooks/ | `make check` green; both hooks shown blocking | — | done |
 | T01 | P0 | both | Confirm team registration on Hack2skill | — | confirmation screenshot | — | todo |
 | T02 | P0 | B | Public repo from this starter on branch `main`; collaborator; branch protection (checks `backend`, `web`); CODEOWNERS usernames | SETUP §3 | PR to main requires CI | — | done |
 | T03 | P0 | B | `infra/setup.sh`, `firestore.sh`, `budgets.sh` (setup.sh also fills `.firebaserc`; commit it) | SETUP §4 | both DBs, bucket, SA + IAM, secrets, budgets, Firebase exist | T02 | todo |

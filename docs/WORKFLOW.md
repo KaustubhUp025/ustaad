@@ -64,7 +64,7 @@ i18n; no secrets; golden paths still pass; reviewed by a different model; status
 
 ## Tonight (Sun Oct 11)
 - [ ] T01 confirm team registration (closes today) — both
-- [ ] T02 create the public GitHub repo from this starter, add teammate, branch protection on `main` — B
+- [x] T02 create the public GitHub repo from this starter, add teammate, branch protection on `main` — B
 - [ ] T03 `infra/setup.sh`: project, APIs, Firestore, bucket, budgets — B
 - [ ] T04 deploy `/healthz` + PWA shell — A
 - [ ] T05 Live smoke test in hi/te/ta/bn → set `LIVE_MODEL` — A

@@ -22,7 +22,7 @@
 
 ## 3. GitHub (B)
 1. Create a **public** repo `ustaad`, push this starter as the first commit, add A as a collaborator.
-2. Branch protection on `main`: require the `ci` checks; CODEOWNERS (`.github/CODEOWNERS`, replace the
+2. Branch protection on `main`: require the `backend` and `web` checks (rules: `docs/GITHUB.md`); CODEOWNERS (`.github/CODEOWNERS`, replace the
    placeholder usernames) requires both of you on `shared/contracts/`.
 3. Labels: `A`, `B`, `contracts`, `ui`, `blocked`. Optional: one issue per task card.
 

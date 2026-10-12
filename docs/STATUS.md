@@ -6,7 +6,19 @@ know what already works; humans append one block per day.
 ## Current state
 - Live model: _pending T05_
 - Works on dev: nothing yet (starter repo)
-- Blocked: —
+- Blocked: T03 budgets — billing-account permission is required to verify currency and existing budgets before creating alerts.
+
+## Infrastructure status (2026-10-12)
+
+Reported cloud results (not independently rechecked in this documentation update): required APIs enabled;
+Firestore `(default)` and `demo` in `asia-south1`; `gs://ustaad101-media`; runtime service account and required
+IAM bindings; placeholder Secret Manager versions; all four fault-card vector indexes READY; Firebase enabled
+with its default Hosting site. No application deployment has occurred.
+
+Remaining checks: create or verify the INR 500/2,000/5,000 budgets after billing-account access is granted, and
+verify both teammates' cloud access. WhatsApp and Places integrations remain unusable until their placeholder
+secret versions are replaced with working credentials. `web/package.json` is currently absent, so frontend
+typecheck and build checks remain skipped until T04 scaffolds the web app.
 
 ## Measured quality bar (fill on Thu, T29; the deck uses these numbers)
 | Measure | Target | Actual |

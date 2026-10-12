@@ -9,9 +9,9 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T00 | P0 | A | Agent guardrails: simplicity + verification rules, playbooks, Claude Code hooks, CI skip/xfail check | AGENTS.md, docs/playbooks/ | `make check` green; both hooks shown blocking | — | done |
-| T01 | P0 | both | Confirm team registration on Hack2skill | — | confirmation screenshot | — | todo |
+| T01 | P0 | both | Confirm team registration on Hack2skill | — | confirmation screenshot | — | done |
 | T02 | P0 | B | Public repo from this starter on branch `main`; collaborator; branch protection (checks `backend`, `web`); CODEOWNERS usernames | SETUP §3 | PR to main requires CI | — | done |
-| T03 | P0 | B | `infra/setup.sh`, `firestore.sh`, `budgets.sh` (setup.sh also fills `.firebaserc`; commit it) | SETUP §4 | both DBs, bucket, SA + IAM, secrets, budgets, Firebase exist | T02 | todo |
+| T03 | P0 | B | `infra/setup.sh`, `firestore.sh`, `budgets.sh` (setup.sh also fills `.firebaserc`; commit it) | SETUP §4 | both DBs, bucket, SA + IAM, secrets, budgets, Firebase exist | T02 | done |
 | T04 | P0 | A | Scaffold web (web/README); `make deploy-dev`; tag `v0-skeleton` + `make deploy-demo MIN_INSTANCES=0`; `make deploy-hosting` | web/README, SETUP §4 | live URL shows the shell; `/api/healthz` via Hosting answers | T03 | todo |
 | T05 | P0 | A | `make smoke-live` in hi/te/ta/bn (text turn + a recorded Hindi clip); choose `LIVE_MODEL` + `LIVE_LOCATION` | infra/smoke_live.py | both checks PASS; result in STATUS.md + DECISIONS.md | T03 | todo |
 | T06 | P0 | B | Meta app, test number, 5 recipients, webhook verified on dev; real secret values | SETUP §5 | Meta shows webhook verified | T04 | todo |

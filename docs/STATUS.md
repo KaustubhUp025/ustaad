@@ -8,6 +8,19 @@ know what already works; humans append one block per day.
 - Works on dev: nothing yet (starter repo)
 - Blocked: —
 
+## Infrastructure status (2026-10-12)
+
+Reported cloud results (not independently rechecked in this documentation update): required APIs enabled;
+Firestore `(default)` and `demo` in `asia-south1`; `gs://ustaad101-media`; runtime service account and required
+IAM bindings; placeholder Secret Manager versions; all four fault-card vector indexes READY; Firebase enabled
+with its default Hosting site. No application deployment has occurred.
+
+Budgets: `ustaad-500`, `ustaad-2000` and `ustaad-5000` (INR, this project only, alerts at 90% and 100%) were created
+on Oct 12 from the billing account owner's login (A); B has no billing-account access and does not need it. Both
+teammates are project Owners. WhatsApp and Places integrations remain unusable until their placeholder
+secret versions are replaced with working credentials. `web/package.json` is currently absent, so frontend
+typecheck and build checks remain skipped until T04 scaffolds the web app.
+
 ## Measured quality bar (fill on Thu, T29; the deck uses these numbers)
 | Measure | Target | Actual |
 | --- | --- | --- |

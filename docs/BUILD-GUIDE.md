@@ -1388,7 +1388,7 @@ Because you wrote the gold set before running, the number is honest.
 
 ## 9. Feature proposal: the worker shows Ustaad things it didn't ask for
 
-**Status: Proposal (not in spec).** Approved in direction by A on Oct 13; needs both people to sign off on the contract part (9.5) before code.
+**Status: Accepted as S7 (Should) on Oct 13** (SPEC §3, tasks T36 and T37). The contract part (9.5) is in PR #7 and needs both people to sign off before code.
 
 ### 9.1 What this covers, and what already exists
 

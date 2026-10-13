@@ -96,7 +96,7 @@ Tools are framework-free functions in `backend/tools/` (fallback: raw `google-ge
 | --- | --- | --- | --- |
 | save_profile_fields | partial profile | profile | NON_BLOCKING, SILENT |
 | identify_appliance | media_uri | brand, model, series, type, error_code, confidence | BLOCKING |
-| request_media | kind photo/video, target, reason, framing_tip | media_uri, findings, matches_expected, confidence, follow_up | NON_BLOCKING, WHEN_IDLE |
+| request_media | kind photo/video/document, target, reason, framing_tip | media_uri, findings, matches_expected, confidence, follow_up | NON_BLOCKING, WHEN_IDLE |
 | search_fault_cards | brand, model?, error_code?, symptom? | top 5 with citation {author, date, audio_uri} | BLOCKING |
 | search_manuals | query, brand, model? | snippets {text, doc, page} | BLOCKING |
 | start_repair | job_id, card_ids | steps {n, instruction, hazard none/HV/capacitor/refrigerant, source} | BLOCKING |

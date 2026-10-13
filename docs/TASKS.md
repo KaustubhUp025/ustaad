@@ -41,7 +41,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 ## Wed Oct 14 — finish features, integration 21:00
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T21 | P1 | A | Onboarding interview, 4 languages (M1) | SPEC §3 M1, ws-events `profile_update` | G1 passes in hi and te | T11 | todo |
+| T21 | P1 | A | Onboarding interview, 5 languages: hi, te, ta, bn, en (M1) | SPEC §3 M1, ws-events `profile_update` | G1 passes in hi and te | T11 | todo |
 | T22 | P1 | A | `close_job` → card with photo, stock decrement (M9) | SPEC §6, firestore.md | G4 passes | T15, T18 | todo |
 | T23 | P0 | B | Quotes card in job screen + approve (M8) | DESIGN.md, ws-events `quotes` | G3 passes on phone | T19 | todo |
 | T24 | P1 | B | Dashboard: knowledge base, live import progress, review queue (M6) | DESIGN.md, playbooks/ui-pass.md | G5 passes on laptop | T15 | todo |

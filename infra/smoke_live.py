@@ -21,6 +21,7 @@ PROMPTS = {
     "te-IN": ("Telugu", "AC lo E6 error vastondi. Modata emi check cheyali? Okka line lo cheppandi.", "ఀ", "౿"),
     "ta-IN": ("Tamil", "AC-la E6 error varudhu. Mudhalla enna check pannanum? Oru line-la sollunga.", "஀", "௿"),
     "bn-IN": ("Bengali", "AC-te E6 error dekhachhe. Prothome ki check korbo? Ek line-e bolo.", "ঀ", "৿"),
+    "en-IN": ("English", "My AC is showing an E6 error. In one line, what should I check first?", "a", "z"),
 }
 TIMEOUT_S = 45  # a silent session would otherwise block in receive() for ever
 

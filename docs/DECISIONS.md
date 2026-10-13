@@ -5,6 +5,7 @@ decision here; if you think one is wrong, say so in your final message.
 
 | Date | Decision | Why | Revisit if |
 | --- | --- | --- | --- |
+| 2026-10-13 | English is a fifth profile language (`en`): the worker can pick it at onboarding and Ustaad then speaks English | a Hindi-profile session answers in Hindi even to an English question, and judges will speak English; `workers.lang` already allows `en`; an `en-IN` Live turn passed the smoke test | — |
 | 2026-10-13 | `LIVE_MODEL=gemini-3.8-live`, `LIVE_LOCATION=us-central1` | T05 smoke test passed 3 runs in hi/te/ta/bn plus a tool call and a Hindi clip; the model is not found in `global` or `asia-south1` for this project | it appears in an India or global location, or latency on 4G misses the 2.5 s target |
 | 2026-10-13 | Live sessions name the reply language and script in the system instruction, not only in `speech_config.language_code` | with `language_code` alone the Tamil output transcript came back in Latin letters | — |
 | 2026-10-13 | Add S7 Show Ustaad (side issues T36, manual photo T37) as Should, lane A | real jobs surface second problems and owner manuals; reuses request_media | Musts slip past Wed integration gate |

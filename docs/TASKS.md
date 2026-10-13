@@ -24,7 +24,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | T09 | P0 | A | Pydantic models for WS frames + photo-tool I/O (other tools' I/O with their own tasks); `/ws/live` echo stub; hand-written `seed/fixtures/live_session.jsonl` (G2 script) | contracts/ws-events.md, SPEC §6, GOLDEN_PATHS G2 | `MOCK_LIVE=1` replays G2; tests pass | T04 | done |
 | T10 | P0 | B | Pydantic models for REST + Firestore entities; stub routers returning fixtures; fixtures JSON; `make types` | contracts/rest.md, firestore.md, fault_card.schema.json | `openapi.json` + `types.ts` committed; stubs serve fixtures | T04 | todo |
 | T11 | P0 | A | Live bridge (ADK `run_live`), PCM worklets, push-to-talk, captions, barge-in — Hindi end to end (M3) | SPEC §6 Live, contracts/ws-events.md | phone ↔ Ustaad in Hindi with captions on dev | T05, T09 | todo |
-| T12 | P1 | A | `identify_appliance` + 6 golden photos (M2) | SPEC §6, GOLDEN_PATHS | 6/6 golden photos correct in unit test with recorded responses | T09 | todo |
+| T12 | P1 | A | `identify_appliance` + 6 golden photos (M2); `type` normalised to the `appliance_type` values, and the one mapping constant from a `trades` value to card types (T38) | SPEC §6, GOLDEN_PATHS | 6/6 golden photos correct in unit test with recorded responses; normalisation and mapping tests | T09 | todo |
 | T13 | P0 | B | Ingest job: parse Android/iOS, ffmpeg, transcribe, threads (M6) | SPEC §4, contracts/firestore.md (imports) | small export fixture → messages + transcripts in test | T08, T10 | todo |
 | T14 | P2 | B | Agent Search store with 3 brands' manuals (S1) | SPEC §5 | query returns a page-cited snippet | T03 | todo |
 
@@ -32,7 +32,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T15 | P0 | B | Card extraction, dedupe, 768-dim embeddings, `search_fault_cards` (M6, M2) | SPEC §4, fault_card.schema.json | demo export → ≥20 cards; search returns Ramesh's E6 card | T13 | todo |
-| T16 | P0 | A | `start_repair`/`next_step`, gates + `before_tool_callback`, red screen (M5) | SAFETY.md, SPEC §6 | all SAFETY.md bypass tests fail to bypass | T11 | todo |
+| T16 | P0 | A | `start_repair`/`next_step`, gates + `before_tool_callback`, red screen (M5); hazard tagger and rules table, default gate for unsourced jobs, stop reasons, general steps through `start_repair` (T38) | SAFETY.md, SPEC §6 | all SAFETY.md bypass tests fail to bypass; SAFETY.md general-tier tests pass, except the caption backstop (T39) | T11 | todo |
 | T17 | P0 | A | `request_media`, camera sheet, retake loop (M4) | SPEC §6, contracts/ws-events.md | photo request → check → retake once → continue, on phone | T11 | todo |
 | T18 | P1 | B | Inventory tools, `/w/stock`, voice deltas (M7) | contracts/rest.md, firestore.md | "do capacitor use kiye" → qty −2 | T10 | todo |
 | T19 | P0 | B | WhatsApp webhook, quote state machine, Places search (M8) | SPEC §7 quotes, contracts/firestore.md | 3 team phones get requests; replies parsed | T06, T10 | todo |
@@ -41,7 +41,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 ## Wed Oct 14 — finish features, integration 21:00
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T21 | P1 | A | Onboarding interview, 5 languages: hi, te, ta, bn, en (M1) | SPEC §3 M1, ws-events `profile_update` | G1 passes in hi and te | T11 | todo |
+| T21 | P1 | A | Onboarding interview, 5 languages: hi, te, ta, bn, en (M1); `trades` limited to 3 listed values, validated in `save_profile_fields`, shown as chips (T38) | SPEC §3 M1, ws-events `profile_update`, firestore.md `workers` | G1 passes in hi and te; profile tests: 4 values rejected, 3 accepted, unknown value rejected, duplicates rejected; naming 4 appliances leads to a "pick your top 3" turn | T11 | todo |
 | T22 | P1 | A | `close_job` → card with photo, stock decrement (M9) | SPEC §6, firestore.md | G4 passes | T15, T18 | todo |
 | T23 | P0 | B | Quotes card in job screen + approve (M8) | DESIGN.md, ws-events `quotes` | G3 passes on phone | T19 | todo |
 | T24 | P1 | B | Dashboard: knowledge base, live import progress, review queue (M6) | DESIGN.md, playbooks/ui-pass.md | G5 passes on laptop | T15 | todo |
@@ -49,6 +49,15 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | T26 | P0 | both | **Integration gate**: G2 + G3 on a real phone, dev | GOLDEN_PATHS | both pass; logged in STATUS.md | T15, T16, T17, T18, T19, T23 | todo |
 | T36 | P2 | A | Side issues mid-repair: instruction paragraph, `park_repair` / `resume_repair`, `media[].reason`, close-job question (S7) | BUILD-GUIDE §9, SPEC §6, SAFETY.md | tests in BUILD-GUIDE §9.7 (A) pass; on phone: side photo mid-step → choose "baad mein" → same step resumes | T16, T17 | todo |
 | T37 | P2 | A | Manual / sticker photo: `kind:"document"`, ManualPage extraction, `manual_photo` source chip, "Manual photo" button (S7) | BUILD-GUIDE §9, contracts/ws-events.md | tests in BUILD-GUIDE §9.7 (B) pass; real photographed page cited on phone | T17, contracts PR merged | todo |
+
+## General-appliance tier (T38 onward; before the freeze, and only after M2–M5, M6 and M8 work for AC)
+Lane A's code is folded into T12, T16 and T21 above. These rows are the rest. First in the cut order (SPEC §3).
+| ID | P | Owner | Task | Read | Done when | Out of scope | Needs | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| T38 | P2 | A | Contracts and docs for the general-appliance tier | SPEC §6, SAFETY.md, shared/contracts/ | contracts PR #15 merged; SPEC, SAFETY, TASKS and GOLDEN_PATHS updated | any code | — | done |
+| T39 | P2 | A | Source tiers in `instruction.md` (text proposed, A approves); caption backstop; "General guidance" source chip with no audio button; stop-screen text per reason in all five i18n files | SPEC §6 (source tiers), SAFETY.md, DESIGN.md, ws-events `step_card` and `safety_stop` | a final Ustaad caption matching a stop row sends `safety_stop`; the chip renders for `source.kind: general`; G8 replays from its mock fixture; manual check written into STATUS.md: 5 out-of-card questions in Hindi (washing machine, fridge, LED TV, geyser, microwave), each answer labelled general, no invented error-code meaning, asks to see before guessing | web search; video; any extra model call; audio on stop screens | T16, T21 | todo |
+| T40 | P2 | B | Card extraction prompt sets `appliance_type`; an unclear type goes to the review queue | SPEC §4, fault_card.schema.json | extraction test: a non-AC thread gets its type; an unclear one gets `review_status: needs_review` | backfilling existing cards; manual metadata in Agent Search | T15 | todo |
+| T41 | P2 | B | `search_fault_cards`: optional `appliance_type` filter in code after the vector query (fetch the top 20, drop other types); empty list when the best match is below a named relevance-floor constant (a marked placeholder until it is set from real embeddings) | SPEC §6, contracts/rest.md | an "LG TV" query never returns AC cards; an unrelated symptom returns an empty list; the Voltas query still returns Ramesh's card | a new Firestore index; manual metadata in Agent Search | T15 | todo |
 
 ## Thu Oct 15 — harden (freeze 18:00)
 | ID | P | Owner | Task | Read | Done when | Needs | Status |

@@ -5,6 +5,7 @@ decision here; if you think one is wrong, say so in your final message.
 
 | Date | Decision | Why | Revisit if |
 | --- | --- | --- | --- |
+| 2026-10-13 | Add S7 Show Ustaad (side issues T36, manual photo T37) as Should, lane A | real jobs surface second problems and owner manuals; reuses request_media | Musts slip past Wed integration gate |
 | 2026-10-11 | Live tools declare `behavior` explicitly on every function (BLOCKING or NON_BLOCKING); scheduling (WHEN_IDLE, SILENT) is set on the function response | Default differs between Live models (3.8 Live documents async as default; older models block) | — |
 | 2026-10-11 | Embeddings: `gemini-embedding-001` with `output_dimensionality=768` | model default is 3072; Firestore index is 768 | retrieval quality is poor |
 | 2026-10-11 | Repo copies of SPEC/TASKS are authoritative for agents; the shared doc mirrors them | agents can't read external docs | — |

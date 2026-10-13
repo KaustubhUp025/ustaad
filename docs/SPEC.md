@@ -47,14 +47,15 @@ theme named. Rules don't mention AI coding assistants. Source: https://aibuilder
 
 ### Should (only after all Musts pass)
 S1 manuals via Agent Search with page citations · S2 area cluster map (seeded, badged) · S3 Memory Bank coaching
-nudges · S4 15 s video clips · S5 Tamil/Bengali polish · S6 pre-job brief
+nudges · S4 15 s video clips · S5 Tamil/Bengali polish · S6 pre-job brief · S7 Show Ustaad: worker-raised side
+issues mid-repair (T36) and photos of the worker's own manual / wiring sticker (T37)
 
 ### Won't
 Payments, native app, real auth, multi-team tenancy, other trades, continuous camera streaming, Gemma on-device,
 reading WhatsApp groups directly.
 
 ### Cut order if behind
-Live-look streaming → 15 s clips → Tamil/Bengali depth → shelf-photo counting → nudges as rules → map as table.
+S7 Show Ustaad → Live-look streaming → 15 s clips → Tamil/Bengali depth → shelf-photo counting → nudges as rules → map as table.
 Never cut: M2–M5 (spoken + captioned guidance, agent-requested photos, safety gate), M6 import, M8 quotes.
 
 ## 4. WhatsApp knowledge import

@@ -10,7 +10,7 @@ Submission: **Sat Oct 17, 2026, 21:00 IST**. Feature freeze: **Thu Oct 15, 18:00
 | --- | --- |
 | Product | Voice-first assistant for Indian AC and appliance repair technicians. Other trades: roadmap. |
 | Theme | Future of Work & Enterprise Productivity |
-| Languages | Hindi + Telugu polished (in the video); Tamil + Bengali work, labelled beta; English UI for judges |
+| Languages | Hindi + Telugu polished (in the video); Tamil + Bengali work, labelled beta; English as a fifth profile language (spoken and UI) |
 | Surfaces | One Vite + React PWA: worker app `/w`, team dashboard `/d`. No native app. |
 | Backend | One FastAPI service on Cloud Run (asia-south1): ADK agent, REST, Live WebSocket, WhatsApp webhook. Batch = Cloud Run Jobs. |
 | Models | Vertex / Agent Platform only. `FLASH_MODEL=gemini-3.8-flash`. `LIVE_MODEL=gemini-3.8-live` if the Day-1 smoke test passes on Agent Platform, else `gemini-live-2.5-flash-native-audio`. |

@@ -30,6 +30,7 @@ secret versions are replaced with working credentials. The web app was scaffolde
 | Check | `us-central1` | `global` | `asia-south1` |
 | --- | --- | --- | --- |
 | Text turn hi / te / ta / bn: audio, transcript in own script | PASS, first audio 1.0–1.4 s | model not found | model not found |
+| Text turn en (added with the English-profile decision) | PASS, first audio 1.1 s | not run | not run |
 | One BLOCKING tool call, then spoken reply | PASS | model not found | model not found |
 | Hindi clip in: input transcription and spoken reply | PASS | not run | not run |
 

@@ -11,6 +11,7 @@ tests (`make golden`) run the same script against real models. The video is thes
 | G4 Close | hi | "Ho gaya, capacitor badla" | `job_closed` with a new card id; card has `photo_uri`; stock for capacitor −1 | `close_job.json` |
 | G5 Import | — | `seed/whatsapp_export/` demo zip on `/d/import` | progress counts rise; ≥ 20 cards appear live with speaker, date, playable audio; low-confidence cards in review queue | `whatsapp_export_small/` (unit) |
 | G6 Telugu | te | same as G2's first question in Telugu | answers in Telugu speech; captions in Telugu script; same source card | `live_session_te.jsonl` |
+| G7 Side issue (optional, only if T36 done by Thu 18:00) | hi | mid-step: "yahan wire bhi jala hua lag raha hai" → photo of the wire → "baad mein" | `media_request` → photo → `media_result` → worker "baad mein" → the same `step_card` re-sent | — |
 
 Error-code meanings and fixes in every fixture must come from the real manuals or the team's recorded notes
 (seed/voice_note_script.md). Never invent them.

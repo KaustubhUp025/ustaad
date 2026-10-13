@@ -80,3 +80,5 @@ T10 progress: inventory contracts, strict models and synthetic offline fixtures/
 Inventory approval is scoped to this slice. Routes, lookup, persistence, negative-stock
 enforcement and T18 voice-boundary normalization remain pending; no update_inventory wrapper exists.
 Other T10 entities/stubs remain pending. Inventory is not exposed in OpenAPI until a route references it.
+T10 aligned with T38 docs on main (`3c163eb`): inventory rules unchanged; remaining Worker,
+Job and FaultCard models must use the general-appliance constraints noted in BUILD-GUIDE T10.

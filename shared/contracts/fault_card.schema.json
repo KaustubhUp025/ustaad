@@ -49,6 +49,10 @@
         "window_ac",
         "fridge",
         "washing_machine",
+        "led_tv",
+        "microwave",
+        "geyser",
+        "fan_cooler",
         "other"
       ]
     },

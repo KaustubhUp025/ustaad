@@ -4,12 +4,11 @@ Updated every evening at 21:00 after deploying `dev` and running the golden path
 know what already works; humans append one block per day.
 
 ## Current state
-- Live model: _pending T05_
+- Live model: `gemini-3.8-live` in `us-central1` (T05, Oct 13)
 - Works on dev: `/api/healthz` on `ustaad-api-dev` (https://ustaad-api-dev-945574998233.asia-south1.run.app)
 - Works on demo: PWA shell at https://ustaad101.web.app shows the server status; `/api/healthz` answers through
   the Hosting rewrite to `ustaad-api` (min instances 0, deployed from the local tag `v0-skeleton`)
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)
-- `LIVE_MODEL=gemini-3.8-live` on both services is a placeholder until T05 confirms it
 - Blocked: —
 
 ## Infrastructure status (2026-10-12)
@@ -23,6 +22,19 @@ Budgets: `ustaad-500`, `ustaad-2000` and `ustaad-5000` (INR, this project only, 
 on Oct 12 from the billing account owner's login (A); B has no billing-account access and does not need it. Both
 teammates are project Owners. WhatsApp and Places integrations remain unusable until their placeholder
 secret versions are replaced with working credentials. The web app was scaffolded and first deployed on Oct 13 (T04).
+
+## Live smoke test (T05, 2026-10-13)
+
+`make smoke-live` with `LIVE_MODEL=gemini-3.8-live`, run three times from a laptop in India:
+
+| Check | `us-central1` | `global` | `asia-south1` |
+| --- | --- | --- | --- |
+| Text turn hi / te / ta / bn: audio, transcript in own script | PASS, first audio 1.0–1.4 s | model not found | model not found |
+| One BLOCKING tool call, then spoken reply | PASS | model not found | model not found |
+| Hindi clip in: input transcription and spoken reply | PASS | not run | not run |
+
+The Hindi clip was synthetic (made with `TTS_MODEL`), not a person on a phone; repeat with a real recording at
+`seed/private/hindi_q.pcm`. First-audio times are for text turns over home broadband, not speech over 4G.
 
 ## Measured quality bar (fill on Thu, T29; the deck uses these numbers)
 | Measure | Target | Actual |

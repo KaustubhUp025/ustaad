@@ -1,0 +1,99 @@
+import json
+
+import pytest
+from fastapi.testclient import TestClient
+
+from app import ws_live
+from app.main import app
+from models.ws import server_frame
+
+FRAMES = [json.loads(line) for line in ws_live.FIXTURE.read_text(encoding="utf-8").splitlines()]
+URL = "/ws/live?token=t&lang=hi&job_id=j_1"
+
+
+@pytest.fixture
+def mock_live(monkeypatch):
+    slept = []
+
+    async def no_sleep(seconds):
+        slept.append(seconds)
+
+    monkeypatch.setenv("MOCK_LIVE", "1")
+    monkeypatch.setattr(ws_live, "sleep", no_sleep)
+    return slept
+
+
+def test_session_ready_is_the_first_frame(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    monkeypatch.setenv("LIVE_MODEL", "some-live-model")
+    with TestClient(app).websocket_connect(URL) as ws:
+        first = ws.receive_json()
+    assert first["type"] == "session_ready"
+    assert first["live_model"] == "some-live-model"
+
+
+def test_ping_gets_pong_and_unknown_type_gets_bad_request(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    with TestClient(app).websocket_connect(URL) as ws:
+        ws.receive_json()
+        ws.send_json({"v": 1, "type": "ping"})
+        assert ws.receive_json() == {"v": 1, "type": "pong"}
+        ws.send_json({"v": 1, "type": "nope"})
+        assert ws.receive_json()["code"] == "bad_request"
+        ws.send_bytes(b"\x00\x00")
+        ws.send_json({"v": 1, "type": "ping"})
+        assert ws.receive_json()["type"] == "pong"
+
+
+def test_missing_token_gets_auth_error(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    with TestClient(app).websocket_connect("/ws/live") as ws:
+        assert ws.receive_json()["code"] == "auth"
+
+
+def test_foreign_origin_gets_auth_error(monkeypatch):
+    monkeypatch.setenv("ALLOWED_ORIGINS", "http://localhost:5173")
+    with TestClient(app).websocket_connect(URL, headers={"origin": "https://evil.example"}) as ws:
+        assert ws.receive_json()["code"] == "auth"
+
+
+def test_mock_live_replays_the_fixture_in_order(mock_live):
+    with TestClient(app).websocket_connect(URL) as ws:
+        got = [ws.receive_json() for _ in FRAMES]
+    assert got == [entry["frame"] for entry in FRAMES]
+    assert all(s >= 0 for s in mock_live)
+    assert sum(mock_live) == pytest.approx(FRAMES[-1]["t_ms"] / 1000)
+
+
+def test_fixture_frames_follow_the_contract():
+    for entry in FRAMES:
+        assert server_frame.validate_python(entry["frame"]).model_dump() == entry["frame"]
+    assert FRAMES[0]["frame"]["type"] == "session_ready"
+
+
+def test_fixture_is_the_g2_script():
+    seen = [f["frame"]["type"] for f in FRAMES if f["frame"]["type"] not in ("caption", "turn_complete")]
+    assert seen == [
+        "session_ready",
+        "identified",
+        "step_card",
+        "media_request",
+        "media_result",
+        "media_result",
+        "safety_gate",
+        "gate_result",
+        "step_card",
+    ]
+    results = [f["frame"] for f in FRAMES if f["frame"]["type"] == "media_result"]
+    assert results[0]["retake_reason"] and not results[0]["matches_expected"]
+    assert results[1]["retake_reason"] is None and results[1]["matches_expected"]
+
+
+def test_fixture_shows_no_hazardous_step_before_its_gate_passes():
+    needs = {"none": set(), "HV": {"G_MAINS_OFF"}, "capacitor": {"G_MAINS_OFF", "G_CAP_DISCHARGE"}}
+    passed = set()
+    for frame in (entry["frame"] for entry in FRAMES):
+        if frame["type"] == "gate_result" and frame["passed"]:
+            passed.add(frame["gate_id"])
+        if frame["type"] == "step_card":
+            assert needs[frame["hazard"]] <= passed

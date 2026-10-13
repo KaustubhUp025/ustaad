@@ -8,6 +8,8 @@ know what already works; humans append one block per day.
 - Works on dev: `/api/healthz` on `ustaad-api-dev` (https://ustaad-api-dev-945574998233.asia-south1.run.app)
 - Works on demo: PWA shell at https://ustaad101.web.app shows the server status; `/api/healthz` answers through
   the Hosting rewrite to `ustaad-api` (min instances 0, deployed from the local tag `v0-skeleton`)
+- Works locally (not deployed): `/ws/live` stub answers pings; `MOCK_LIVE=1 make dev-api` replays the G2 script
+  from `seed/fixtures/live_session.jsonl` (T09, Oct 13). Its step texts are placeholders until T08's real notes.
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)
 - Blocked: —
 

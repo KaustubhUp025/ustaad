@@ -466,6 +466,8 @@ Don't touch: backend/
 
 #### T08 Fill the script and start recording (B, A helps, P0)
 Covered in depth in §8. **Done when:** at least 15 notes recorded.
+
+**From T09.** `seed/fixtures/live_session.jsonl` (the G2 mock) has two placeholder step texts and an audio link that does not exist, because this script was still blank. Once the real E6 note is recorded, replace both `step_card` instructions, the `source.label` date and `source.audio_uri` with the real ones.
 ```
 ID: T08   Owner: B (A helps)   Branch: b/T08-voice-script
 Goal: fill seed/voice_note_script.md from real manuals; record into group "AC Mistri Noida"
@@ -615,6 +617,8 @@ Don't touch: shared/contracts/, backend/agent/instruction.md, backend/agent/call
 3. Normalise: error code uppercased, whitespace stripped, as shown on the 7-segment display ("E6").
 4. Emit the `identified` frame from the wrapper (not inside the pure function).
 5. Record the 6 golden photos: real nameplates and boards (the voice-note script lists them). Save Flash's responses as fixtures so unit tests replay them.
+
+**From T09.** `IdentifyIn` / `IdentifyOut` already exist in `backend/models/tools.py`. Beyond the named fields, `observations` carries anything else legible in the photo (serial number, refrigerant, capacity, a burn mark); the model trims it to the 6 surest at confidence >= 0.6. The response schema and prompt should ask for observations that help diagnosis only. The `identified` frame stays as the contract has it; observations go to the agent, not the screen.
 
 **Design rule.** Return `confidence` honestly; below a threshold (**Suggested (not yet in spec)**: 0.6, matching the card review threshold) the agent should ask for a clearer photo rather than guess. Never map a code to a meaning here; meaning comes from search.
 
@@ -841,6 +845,8 @@ rules: confidence < 0.6 -> follow_up with retake reason, max 2 retakes; media_ca
 ```
 
 The pending-request table lives in the session (server) keyed by `request_id`; `media_ready` for an unknown or already-completed id is rejected. This also stops the model from reusing an old photo.
+
+**From T09.** `RequestMediaIn` / `RequestMediaOut` already exist in `backend/models/tools.py`; `findings` is the same trimmed observation list as in T12. Open question to settle here: the G2 mock re-uses `request_id` `r_1` for the retake; if a retake should get a new id, change `seed/fixtures/live_session.jsonl` too. The server cannot find that fixture on Cloud Run (it is outside `backend/`, REVIEW-2026-10-11 §4), so `MOCK_LIVE=1` is local-only until that is fixed.
 
 **Design rules.** The vision check is an injected `VisionClient`. Retake count is part of state. Retake reasons are in the worker's language (use the profile `lang`; the strings come from a small server-side table, not hard-coded English). Camera sheet copy from i18n.
 
@@ -1201,8 +1207,8 @@ OUTPUT: JSON matching the schema (use the SDK's response schema / structured out
 | 2 | Photo description | T13 | Flash vision | image | `PhotoDesc{summary, visible_text[], objects[]}` |
 | 3 | Thread grouping | T13 | Flash | messages in time order | `Threads{groups: list[list[msg_id]]}` |
 | 4 | Card extraction | T15 | Flash | one thread | `FaultCardDraft` (per fault_card.schema.json) or `null` |
-| 5 | identify_appliance | T12 | Flash vision | image | `IdentifyOut{brand, model, series, type, error_code, confidence}` |
-| 6 | request_media check | T17 | Flash vision | image + expected target | `MediaCheck{matches_expected, findings, confidence, follow_up}` |
+| 5 | identify_appliance | T12 | Flash vision | image | `IdentifyOut{brand, model, series, type, error_code, confidence, observations}` |
+| 6 | request_media check | T17 | Flash vision | image + expected target | `RequestMediaOut{media_uri, matches_expected, findings, confidence, follow_up}` |
 | 7 | Gate photo checks | T16 | Flash vision | image + gate | `GateCheck{passed, reason, confidence, reading_volts?}` |
 | 8 | Vendor reply parsing | T19 | Flash | reply text/transcript | `VendorReply{price_inr, available, eta, confidence}` |
 | 9 | close_job card draft | T22 | Flash | job log + two answers | `FaultCardDraft` |

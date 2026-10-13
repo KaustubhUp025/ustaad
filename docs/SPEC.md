@@ -95,7 +95,7 @@ Tools are framework-free functions in `backend/tools/` (fallback: raw `google-ge
 | Tool | Input | Output | Live `behavior` / response scheduling |
 | --- | --- | --- | --- |
 | save_profile_fields | partial profile | profile | NON_BLOCKING, SILENT |
-| identify_appliance | media_uri | brand, model, series, type, error_code, confidence | BLOCKING |
+| identify_appliance | media_uri | brand, model, series, type, error_code, confidence, observations | BLOCKING |
 | request_media | kind photo/video/document, target, reason, framing_tip | media_uri, findings, matches_expected, confidence, follow_up | NON_BLOCKING, WHEN_IDLE |
 | search_fault_cards | brand, model?, error_code?, symptom? | top 5 with citation {author, date, audio_uri} | BLOCKING |
 | search_manuals | query, brand, model? | snippets {text, doc, page} | BLOCKING |
@@ -109,6 +109,9 @@ Tools are framework-free functions in `backend/tools/` (fallback: raw `google-ge
 | close_job | job_id, outcome, parts_used, fix_summary | job log + draft card id | BLOCKING |
 | get_nudges / get_area_alerts | worker_id / pincode | nudges / clusters | BLOCKING |
 
+Photo tools (`backend/models/tools.py`): the named fields are null when not legible; anything else worth knowing
+goes in `observations` / `findings`, a list of {label, value, confidence} that code trims to the 6 surest at
+confidence ≥ 0.6, so the agent sees more than fixed categories without a flood of guesses.
 Set `behavior` explicitly on every function declaration (defaults differ between Live models). Scheduling
 (WHEN_IDLE, SILENT) is set on the function response, not the declaration. Safety gates and copy: `docs/SAFETY.md`.
 Instruction: patient senior technician; worker's language, Hinglish fine; one instruction at a time; ground fixes

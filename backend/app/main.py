@@ -6,6 +6,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.ws_live import router as ws_live_router
+
 app = FastAPI(title="ustaad-api", version="0.1.0")
 
 app.add_middleware(
@@ -14,6 +16,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(ws_live_router)
 
 
 # Firebase Hosting forwards the full path, so every route also lives under /api (rest.md).

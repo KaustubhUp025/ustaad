@@ -5,6 +5,7 @@ decision here; if you think one is wrong, say so in your final message.
 
 | Date | Decision | Why | Revisit if |
 | --- | --- | --- | --- |
+| 2026-10-13 | Other household appliances (fridge, washing machine, LED TV, microwave, geyser, fan/cooler) get a labelled general-guidance tier through the same tools and gates as AC; no web search, no extra model call; stop screens are text only, with no audio clip | the knowledge is all AC and the agent had no defined behaviour when no card or manual matched | the never-cut list is not working for AC by the Wed integration gate: cut this tier first |
 | 2026-10-13 | Agents read only their task's section of docs/BUILD-GUIDE.md; repo docs win on conflict | lets a task be started with just its ID | guide drifts from SPEC |
 | 2026-10-13 | English is a fifth profile language (`en`): the worker can pick it at onboarding and Ustaad then speaks English | a Hindi-profile session answers in Hindi even to an English question, and judges will speak English; `workers.lang` already allows `en`; an `en-IN` Live turn passed the smoke test | — |
 | 2026-10-13 | `LIVE_MODEL=gemini-3.8-live`, `LIVE_LOCATION=us-central1` | T05 smoke test passed 3 runs in hi/te/ta/bn plus a tool call and a Hindi clip; the model is not found in `global` or `asia-south1` for this project | it appears in an India or global location, or latency on 4G misses the 2.5 s target |

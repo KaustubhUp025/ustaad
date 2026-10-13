@@ -56,6 +56,13 @@ Cloud Run, Cloud Run Jobs, Firestore, Cloud Storage, Firebase Hosting.
 - Don't add error handling for cases that can't happen; let unexpected errors raise.
 - If you think an abstraction is needed, say so in your final message instead of adding it.
 
+## Modular code (lean, not capped)
+- One module, one job: you can say what a file does in one sentence without "and".
+- Reuse before writing: search `backend/models/` and the folder you are in before adding a model or helper;
+  extend what exists.
+- A shape used twice is defined once and imported (a group of fields, an enum of allowed values).
+- A threshold or limit is one named constant next to the code that enforces it, not repeated in prompts or other modules.
+
 ## Verification (evidence, not claims)
 - Red first: write the new test, run it, show it failing for the right reason, then implement.
 - Never edit, weaken, skip or xfail an existing test to make it pass. If one seems wrong, stop and say so.
@@ -71,5 +78,5 @@ Cloud Run, Cloud Run Jobs, Firestore, Cloud Storage, Firebase Hosting.
 - Open only the files your task row lists. Don't scan the whole repo.
 - One task = one branch = one worktree = one fresh session.
 - Plan briefly, write tests, then code. Verify by running `make test`, not by reasoning.
-- Keep diffs small (< ~300 lines). If a task grows, stop and propose a split.
+- No line limit on a diff, but one PR does one task. In the final message, say in a line what each new file is for.
 - Reference files by path instead of pasting large files, logs or schemas into the conversation.

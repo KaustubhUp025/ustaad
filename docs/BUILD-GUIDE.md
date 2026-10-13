@@ -304,7 +304,7 @@ ADK gets a thin wrapper in `backend/agent/` that calls this. Business logic neve
 
 ### 3.9 Small PRs
 
-**What.** One task, one branch, one worktree, one fresh agent session, diff under about 300 lines.
+**What.** One task, one branch, one worktree, one fresh agent session; no line limit, but each new file has one job (AGENTS.md, Modular code).
 
 **Why here.** Review is the bottleneck, not writing code. Small diffs get real reviews. Branch naming: `a/<ID>-slug`, `b/<ID>-slug`. If a session has no passing tests after about 45 minutes, split the card.
 

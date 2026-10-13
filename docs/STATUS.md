@@ -33,8 +33,11 @@ secret versions are replaced with working credentials. The web app was scaffolde
 | One BLOCKING tool call, then spoken reply | PASS | model not found | model not found |
 | Hindi clip in: input transcription and spoken reply | PASS | not run | not run |
 
-The Hindi clip was synthetic (made with `TTS_MODEL`), not a person on a phone; repeat with a real recording at
-`seed/private/hindi_q.pcm`. First-audio times are for text turns over home broadband, not speech over 4G.
+The Hindi clip check passed first with a synthetic clip (made with `TTS_MODEL`), then with a real 6 s recording
+from the laptop microphone ("AC chal nahi raha hai"); a phone recording in a noisy room is still untested. The real
+clip timed out until 1.5 s of silence was appended: a turn only ends when the model hears silence after the last
+word, which T11's push-to-talk release must provide. Its input transcript came back in Latin letters, not
+Devanagari. First-audio times are for text turns over home broadband, not speech over 4G.
 
 ## Measured quality bar (fill on Thu, T29; the deck uses these numbers)
 | Measure | Target | Actual |

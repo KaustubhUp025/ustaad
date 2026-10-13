@@ -1478,7 +1478,9 @@ Both are lane **A** (they run through `request_media` and the agent instruction)
 | T36 | P2 | A | Side issues mid-repair: instruction paragraph, `park_repair` / `resume_repair`, `media[].reason`, close-job question | this section, SPEC §6, SAFETY.md | tests in 9.7 (A) pass; on phone: side photo mid-step → choose "baad mein" → same step resumes | T16, T17 |
 | T37 | P2 | A | Manual / sticker photo: `kind:"document"`, ManualPage extraction, `manual_photo` source chip, "Manual photo" button | this section, contracts/ws-events.md | tests in 9.7 (B) pass; real photographed page cited on phone | T17, contracts PR merged |
 
-Task card for T36:
+#### T36 Side issues mid-repair (A, P2)
+
+Design in §9.2 and §9.4, tests in §9.7 (Case A). Task card:
 ```
 ID: T36   Owner: A   Branch: a/T36-side-issues
 Goal: worker can raise a second problem mid-repair; Ustaad asks for a photo, checks it,
@@ -1492,7 +1494,9 @@ Done when:
 Don't touch: shared/contracts/ (except via the approved contracts PR), backend/agent/callbacks.py
 ```
 
-Task card for T37:
+#### T37 Manual / wiring-sticker photo (A, P2)
+
+Design in §9.3 to §9.5, tests in §9.7 (Case B). Task card:
 ```
 ID: T37   Owner: A   Branch: a/T37-manual-photo
 Goal: request_media kind "document"; Flash extracts ManualPage from a photographed manual page

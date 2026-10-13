@@ -14,7 +14,7 @@ Errors: `{"error": {"code": "not_found", "message": "…"}}` with the matching H
 | `GET /api/jobs` | — | `{"items": [Job]}` (this worker, newest first) |
 | `POST /api/jobs` | `{"appliance"?: {...}, "symptom"?: "…"}` | `Job` |
 | `GET /api/jobs/{id}` | — | `Job` |
-| `GET /api/fault-cards?q=&brand=&code=&status=` | — | `{"items": [FaultCard], "next": cursor\|null}` |
+| `GET /api/fault-cards?q=&brand=&code=&status=&appliance_type=` | — (`appliance_type`: optional, one `appliance_type` value from `fault_card.schema.json`) | `{"items": [FaultCard], "next": cursor\|null}` |
 | `GET /api/fault-cards/{id}` | — | `FaultCard` |
 | `PATCH /api/fault-cards/{id}` | `{"review_status": "approved"\|"rejected", "edits"?: {...}}` | `FaultCard` |
 | `GET /api/inventory` | — | `{"items": [InventoryItem]}` |

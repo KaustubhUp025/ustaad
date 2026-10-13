@@ -95,7 +95,9 @@ async def spoken_hindi(client: genai.Client, model: str, pcm_path: str) -> str:
         output_audio_transcription=types.AudioTranscriptionConfig(),
         speech_config=types.SpeechConfig(language_code="hi-IN"),
     )
-    data = open(pcm_path, "rb").read()
+    # A clip that ends mid-speech never closes the turn (audio_stream_end alone is not enough):
+    # the model's voice detection needs to hear silence after the last word.
+    data = open(pcm_path, "rb").read() + b"\0" * 48000  # 1.5 s of 16 kHz PCM16 silence
     heard, said = "", ""
     async with client.aio.live.connect(model=model, config=config) as session:
         for i in range(0, len(data), 1280):  # 40 ms chunks, like the PWA

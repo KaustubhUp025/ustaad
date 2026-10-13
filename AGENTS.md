@@ -9,9 +9,13 @@ Builder Cup 2026. Submission: Sat Oct 17, 21:00 IST. Feature freeze: Thu Oct 15,
 ## Read in this order (only what your task needs)
 1. `docs/PRODUCT.md` — the aim, the user, how we're judged (once per session, for behaviour/UI/copy tasks)
 2. `docs/TASKS.md` — your task's row: priority, the files to read, done-when
-3. The `docs/SPEC.md` sections and `shared/contracts/` files that row names
-4. The folder's own `AGENTS.md` (`backend/`, `web/`)
-5. As needed: `docs/SAFETY.md` (any repair-step code), `docs/GOLDEN_PATHS.md` (demo flows), `docs/DESIGN.md`
+3. `docs/BUILD-GUIDE.md` — only the section for your task: search for the heading `#### T<NN>` (e.g. `#### T17`)
+   and read that section, including its task card. For agent, safety or prompt work also read §6 or §7 of the
+   guide. Where the guide says "Suggested" or "inferred", or disagrees with `docs/SPEC.md`, `shared/contracts/`
+   or `docs/SAFETY.md`, those files win: stop and tell a human.
+4. The `docs/SPEC.md` sections and `shared/contracts/` files that row names
+5. The folder's own `AGENTS.md` (`backend/`, `web/`)
+6. As needed: `docs/SAFETY.md` (any repair-step code), `docs/GOLDEN_PATHS.md` (demo flows), `docs/DESIGN.md`
    (UI), `docs/GLOSSARY.md` (terms and Hinglish), `docs/DECISIONS.md` (settled choices), `docs/STATUS.md` (what works)
 
 The repo is authoritative. If code, a task card and the spec disagree, stop and ask a human.

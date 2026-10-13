@@ -16,7 +16,7 @@ Out of scope: retake UI, real vision calls, anything not under "Done when"
 ```
 
 ## Steps for the agent
-1. Read `AGENTS.md`, then only the files the card lists under "Read".
+1. Read `AGENTS.md` (including its read order), then only the files the card lists under "Read".
 2. Write a 5-line plan: files to change, tests to add, open questions. If the card contradicts the spec, stop and ask.
 3. Red first: write the tests, run them, and see them fail for the right reason. Use fixtures in
    `seed/fixtures/`; no network in unit tests.

@@ -50,7 +50,8 @@ groups directly. Don't build towards them; don't add hooks "for later".
 
 ## Principles every change must respect
 - **Safety beats helpfulness.** Never show a hazardous step before its gate; never give refrigerant handling steps.
-- **Cite or say you don't know.** No ungrounded repair advice.
+- **Cite, or say it is general guidance.** Advice with no card or manual behind it is labelled general, aloud and
+  on the step card, and never includes an error-code meaning.
 - **The worker's language, his words.** Hinglish is normal; never correct him.
 - **Honest demo.** Seeded or synthetic data is always labelled. Error-code meanings come from real manuals.
 - **Prototype, not platform.** The smallest thing that makes the demo real and robust.

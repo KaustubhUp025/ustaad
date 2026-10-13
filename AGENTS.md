@@ -40,7 +40,9 @@ Cloud Run, Cloud Run Jobs, Firestore, Cloud Storage, Firebase Hosting.
 - Hard-code model IDs or embedding size; read `FLASH_MODEL`, `LIVE_MODEL`, `TTS_MODEL`, `EMBED_MODEL`, `EMBED_DIM`.
 - Call real Gemini, WhatsApp or Places APIs in unit tests; use `seed/fixtures/` and fake clients.
 - Write secrets, tokens, real phone numbers or customer data anywhere.
-- Invent error-code meanings or repair steps; they come from manuals or recorded notes only.
+- Invent error-code meanings or repair steps; they come from manuals or recorded notes only. One exception: the
+  general-guidance steps the Live model proposes at run time through `start_repair` (`docs/SPEC.md` §6, source
+  tiers). Never write such steps into code, prompts or fixtures, other than the one G8 fixture step.
 - Add a dependency without naming it in your final message.
 - Put user-facing strings outside `web/src/i18n/*.json`, or colours/fonts outside `web/src/styles/tokens.css`.
 - Emit or render a hazardous repair step before its gate passes (`docs/SAFETY.md`).

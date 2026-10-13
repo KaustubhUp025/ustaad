@@ -8,7 +8,7 @@ Submission: **Sat Oct 17, 2026, 21:00 IST**. Feature freeze: **Thu Oct 15, 18:00
 
 | Area | Decision |
 | --- | --- |
-| Product | Voice-first assistant for Indian AC and appliance repair technicians. Other trades: roadmap. |
+| Product | Voice-first assistant for Indian AC and appliance repair technicians. AC is the deep path (fault cards and manuals). Fridge, washing machine, LED TV, microwave, geyser and fan/cooler get clearly labelled general guidance through the same tools and gates (§6 source tiers). Other trades: roadmap. |
 | Theme | Future of Work & Enterprise Productivity |
 | Languages | Hindi + Telugu polished (in the video); Tamil + Bengali work, labelled beta; English as a fifth profile language (spoken and UI) |
 | Surfaces | One Vite + React PWA: worker app `/w`, team dashboard `/d`. No native app. |
@@ -34,11 +34,11 @@ theme named. Rules don't mention AI coding assistants. Source: https://aibuilder
 ### Must
 | ID | Feature | Acceptance test (real Android phone, deployed build) |
 | --- | --- | --- |
-| M1 | Voice onboarding | Language pick + 6 spoken questions; profile card fills live; saved. Hindi and Telugu. |
+| M1 | Voice onboarding | Language pick + 6 spoken questions; profile card fills live; saved. Hindi and Telugu. The worker keeps 1 to 3 appliance types (`trades`); if he names more, Ustaad asks for his top 3 and never cuts the list silently. |
 | M2 | Stuck mode: identify + guide | Golden nameplate + error photo → correct brand/model/code; spoken fix with source chip that plays the original note |
 | M3 | Talk-back with captions | Every reply heard and shown as live captions in the worker's script; his words as a bubble; step card stays |
 | M4 | Agent asks to see | Mid-repair photo request with framing tip; checked; continue or one retake with a reason |
-| M5 | Safety gates | Hazardous step hidden until a photo passes; refrigerant → "certified gas technician needed"; skip attempts fail |
+| M5 | Safety gates | Hazardous step hidden until a photo passes; refrigerant → "certified gas technician needed"; skip attempts fail. A job with no card or manual source needs the mains-off photo before its first step; microwave high-voltage, picture-tube and geyser-opening work stop with a red screen. |
 | M6 | WhatsApp import | Demo export (zip or loose files) → ≥20 fault cards with speaker, date, audio link, arriving live on the dashboard |
 | M7 | Stock | "Do capacitor use kiye" decrements; repair checks stock first; low-stock badge |
 | M8 | Parts quotes | Missing part → 3 vendor phones on WhatsApp → text/voice replies parsed and ranked → approve sends confirmations; < 2 min |
@@ -55,8 +55,9 @@ Payments, native app, real auth, multi-team tenancy, other trades, continuous ca
 reading WhatsApp groups directly.
 
 ### Cut order if behind
-S7 Show Ustaad → Live-look streaming → 15 s clips → Tamil/Bengali depth → shelf-photo counting → nudges as rules → map as table.
+General-appliance tier (T38–T41) → S7 Show Ustaad → Live-look streaming → 15 s clips → Tamil/Bengali depth → shelf-photo counting → nudges as rules → map as table.
 Never cut: M2–M5 (spoken + captioned guidance, agent-requested photos, safety gate), M6 import, M8 quotes.
+The AC path comes first: the never-cut list must work for AC before the general-appliance tier is switched on.
 
 ## 4. WhatsApp knowledge import
 No API reads groups. Use WhatsApp "Export chat → Include media".
@@ -69,7 +70,7 @@ No API reads groups. Use WhatsApp "Export chat → Include media".
   `ffmpeg -i x.opus -ac 1 -ar 16000 x.flac` → Flash transcript `{text, language, confidence}` (keep Hinglish,
   codes and part numbers verbatim) → photos described → threads (30-min gaps + Flash grouping) → one card per
   resolved thread with sources → dedupe (same brand+code and cosine > 0.9 → merge, `verified_count++`) → embed →
-  write; confidence < 0.6 → review queue. Progress in `imports/{id}`. Target: 30 notes < 2 min, 8 parallel.
+  write; confidence < 0.6 → review queue. The extraction prompt sets `appliance_type`; an unclear type → review queue. Progress in `imports/{id}`. Target: 30 notes < 2 min, 8 parallel.
 - Consent: only groups whose members agree. Strip phone numbers.
 
 ## 5. Architecture
@@ -95,11 +96,11 @@ Tools are framework-free functions in `backend/tools/` (fallback: raw `google-ge
 | Tool | Input | Output | Live `behavior` / response scheduling |
 | --- | --- | --- | --- |
 | save_profile_fields | partial profile | profile | NON_BLOCKING, SILENT |
-| identify_appliance | media_uri | brand, model, series, type, error_code, confidence, observations | BLOCKING |
+| identify_appliance | media_uri | brand, model, series, type (normalised to the `appliance_type` values), error_code, confidence, observations | BLOCKING |
 | request_media | kind photo/video/document, target, reason, framing_tip | media_uri, findings, matches_expected, confidence, follow_up | NON_BLOCKING, WHEN_IDLE |
-| search_fault_cards | brand, model?, error_code?, symptom? | top 5 with citation {author, date, audio_uri} | BLOCKING |
+| search_fault_cards | brand, model?, error_code?, symptom?, appliance_type? | top 5 with citation {author, date, audio_uri}; an empty list when the best match is below the relevance floor | BLOCKING |
 | search_manuals | query, brand, model? | snippets {text, doc, page} | BLOCKING |
-| start_repair | job_id, card_ids | steps {n, instruction, hazard none/HV/capacitor/refrigerant, source} | BLOCKING |
+| start_repair | job_id, card_ids; or, when no card or manual matched, proposed steps [{instruction, summary_en}] | steps {n, instruction, hazard none/HV/capacitor/refrigerant, source} | BLOCKING |
 | next_step | job_id, observation, media_uri? | next step or SAFETY_GATE{gate_id, required_evidence} | BLOCKING |
 | confirm_safety | job_id, gate_id, media_uri | passed, reason | BLOCKING |
 | check_inventory / update_inventory | part / [{part, delta}] | stock + low flags | BLOCKING / SILENT |
@@ -118,7 +119,22 @@ Instruction: patient senior technician; worker's language, Hinglish fine; one in
 in cards/manuals and say the source aloud; ask to see instead of guessing; never describe a hazardous step before
 its gate; never give refrigerant steps or bypass safety devices; check stock before suggesting parts; end with close_job.
 Safety in code: `next_step` returns SAFETY_GATE while a gate is open; `before_tool_callback` blocks next_step and
-close_job with open gates; refrigerant → STOP_REFER; client shows a red screen + stored warning audio.
+close_job with open gates; refrigerant and the other stop reasons → STOP_REFER; client shows a red screen with fixed
+text for the reason (no audio).
+Appliance types: one knowledge pool, tagged with `appliance_type` (`fault_card.schema.json`). One mapping constant
+takes a profile `trades` value to card types (`ac` → `split_ac`, `window_ac`; the rest map to themselves). A job's
+type comes from `identify_appliance` and is confirmed in conversation; the profile list is only a prior, and an
+appliance outside it is still allowed. `search_fault_cards` filters by type in code after the vector query (fetch
+the top 20, drop other types; no new Firestore index) and returns nothing below a named relevance-floor constant.
+Source tiers: (1) fault card and (2) manual page are cited aloud. (3) General guidance is used only when 1 and 2
+return nothing, and is said aloud as general guidance with no verified source. Tier 3 never gives an error-code
+meaning, a component value or model-specific wiring: Ustaad says the code is not in its sources and asks to see the
+manual page or wiring sticker. It prefers checks the worker can prove with a photo over assertions; photos only.
+In every tier a repair step is spoken only after `next_step` has returned it.
+General steps: with no card ids, the Live model passes its proposed steps to `start_repair`, each with `instruction`
+(the worker's language) and `summary_en` (one line of English). No extra model call. The tool tags each step from
+`summary_en` (hazard tagger, `docs/SAFETY.md`) and stores it on the job with source kind `general`; from then on
+`next_step`, the gates and the callback treat it exactly like a card step.
 Live: AUDIO modality, input + output transcription on, language from profile, session resumption, context
 compression, PCM16 16 kHz in / 24 kHz out, push-to-talk.
 Memory: Memory Bank (soft facts, end of session; PreloadMemoryTool) · Firestore (structured) · session state (job, step, gates).

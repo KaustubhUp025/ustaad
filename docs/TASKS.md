@@ -21,7 +21,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 ## Mon Oct 12 — contracts (freeze 12:00), then core
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T09 | P0 | A | Pydantic models for WS frames + agent tool I/O; `/ws/live` echo stub; hand-written `seed/fixtures/live_session.jsonl` (G2 script) | contracts/ws-events.md, SPEC §6, GOLDEN_PATHS G2 | `MOCK_LIVE=1` replays G2; tests pass | T04 | todo |
+| T09 | P0 | A | Pydantic models for WS frames + agent tool I/O; `/ws/live` echo stub; hand-written `seed/fixtures/live_session.jsonl` (G2 script) | contracts/ws-events.md, SPEC §6, GOLDEN_PATHS G2 | `MOCK_LIVE=1` replays G2; tests pass | T04 | done |
 | T10 | P0 | B | Pydantic models for REST + Firestore entities; stub routers returning fixtures; fixtures JSON; `make types` | contracts/rest.md, firestore.md, fault_card.schema.json | `openapi.json` + `types.ts` committed; stubs serve fixtures | T04 | todo |
 | T11 | P0 | A | Live bridge (ADK `run_live`), PCM worklets, push-to-talk, captions, barge-in — Hindi end to end (M3) | SPEC §6 Live, contracts/ws-events.md | phone ↔ Ustaad in Hindi with captions on dev | T05, T09 | todo |
 | T12 | P1 | A | `identify_appliance` + 6 golden photos (M2) | SPEC §6, GOLDEN_PATHS | 6/6 golden photos correct in unit test with recorded responses | T09 | todo |

@@ -4,8 +4,9 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
+from models.repair import GateId, Hazard, StepSource
+
 MediaKind = Literal["photo", "video", "document"]
-GateId = Literal["G_MAINS_OFF", "G_CAP_DISCHARGE"]
 
 
 class Frame(BaseModel):
@@ -80,22 +81,13 @@ class Identified(Frame):
     confidence: float
 
 
-class StepSource(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    kind: Literal["whatsapp_voice", "whatsapp_text", "manual", "job", "synthetic", "manual_photo"]
-    label: str
-    audio_uri: str | None
-    doc: str | None
-    page: int | None
-
-
 class StepCard(Frame):
     type: Literal["step_card"] = "step_card"
     job_id: str
     n: int
     of: int
     instruction: str
-    hazard: Literal["none", "HV", "capacitor", "refrigerant"]
+    hazard: Hazard
     source: StepSource
 
 

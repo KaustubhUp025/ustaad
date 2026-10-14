@@ -532,8 +532,8 @@ Don't touch: shared/contracts/, backend/agent/instruction.md
 - Worker `trades`: 1–3 unique values from the list in `firestore.md`; do not silently truncate.
 - FaultCard `appliance_type`: use the current `fault_card.schema.json` values, including the general appliances.
 - Job `appliance.type`: the same appliance-type values or null; step sources also allow `general`.
-  PR #19 owns `backend/models/repair.py`; after it merges, import `Hazard`, `ApplianceType`, `RepairStep`,
-  `GateId` and `GateState` rather than defining copies. `StepSource` is shared for repair steps. Gate
+  Merged PR #19 owns `backend/models/repair.py`; import `Hazard`, `ApplianceType`, `RepairStep`, `GateId`
+  and `GateState` rather than defining copies. `StepSource` is shared for repair steps. Gate
   transitions, step progression and safety enforcement remain T16 work. New-job creation starts gates open;
   validation and loading must preserve existing gate states.
 - FaultCard `source` is a separate shape and must independently match `fault_card.schema.json`; do not use

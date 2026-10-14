@@ -1,0 +1,26 @@
+{
+  "items": [
+    {
+      "id": "part_synthetic_capacitor",
+      "name": "Synthetic capacitor 2.5uF",
+      "category": "capacitor",
+      "aliases": ["synthetic capacitor"],
+      "qty": 5,
+      "min_qty": 2,
+      "unit_cost_inr": 120,
+      "source": "manual",
+      "updated_at": "2026-10-13T12:00:00Z"
+    },
+    {
+      "id": "part_synthetic_uncategorized",
+      "name": "Synthetic uncategorized part",
+      "category": null,
+      "aliases": [],
+      "qty": 0,
+      "min_qty": 0,
+      "unit_cost_inr": null,
+      "source": "photo",
+      "updated_at": "2026-10-13T12:00:00Z"
+    }
+  ]
+}

@@ -47,3 +47,19 @@ the V4 signature. Allowed content types and binary size limits are:
 | `import` | `application/zip`, `audio/ogg`, `audio/opus`, `text/plain`, `image/jpeg`, `image/png` | 104,857,600 (100 MiB) |
 
 An unsupported content type, or a listed type used with the wrong kind, returns HTTP 400.
+
+## Inventory validation (T10 approved slice)
+
+`InventoryItem` follows the inventory validation rules in `firestore.md`, including
+required nullable `category` and `unit_cost_inr`. All fields below are required without
+defaults; reject unknown fields at every inventory object level.
+The list response's `items` is an array (empty allowed). The delta request's `deltas`
+is a nonempty array. Each delta has `part` (nonblank name or alias) and `delta`
+(strict nonzero signed integer; reject booleans, strings and floats).
+
+Voice compatibility belongs at the `update_inventory` tool boundary, before strict
+Pydantic validation: normalize finite whole-valued floats (e.g. `2.0`) to integers;
+reject fractional values, booleans, strings, NaN/infinity and zero. This does not change
+REST validation or the tool's existing input shape in SPEC §6. No tool wrapper exists
+in this slice, so voice normalization integration remains pending for T18.
+Routes, part lookup, persistent stock updates and negative-stock enforcement are deferred.

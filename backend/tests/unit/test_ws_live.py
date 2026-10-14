@@ -2,6 +2,8 @@ import json
 
 import pytest
 from fastapi.testclient import TestClient
+from google.adk.events import Event
+from google.genai import types
 
 from app import ws_live
 from app.main import app
@@ -9,6 +11,30 @@ from models.ws import server_frame
 
 FRAMES = [json.loads(line) for line in ws_live.FIXTURE.read_text(encoding="utf-8").splitlines()]
 URL = "/ws/live?token=t&lang=hi&job_id=j_1"
+
+
+@pytest.fixture(autouse=True)
+def fake_live(monkeypatch):
+    """Stands in for the Live model: echoes audio, and answers the end of a spoken turn or a typed line."""
+    opened = []
+
+    async def live_events(queue, lang, resume):
+        opened.append((lang, resume))
+        if lang == "xx":
+            raise RuntimeError("model not found")
+        while True:
+            req = await queue.get()
+            if req.close:
+                return
+            if req.blob:
+                yield Event(author="ustaad", content=types.Content(parts=[types.Part(inline_data=req.blob)]))
+            if req.activity_end or req.content:
+                text = req.content.parts[0].text if req.content else "theek hai"
+                yield Event(author="ustaad", output_transcription=types.Transcription(text=text), partial=False)
+                yield Event(author="ustaad", turn_complete=True)
+
+    monkeypatch.setattr(ws_live, "live_events", live_events)
+    return opened
 
 
 @pytest.fixture
@@ -97,3 +123,39 @@ def test_fixture_shows_no_hazardous_step_before_its_gate_passes():
             passed.add(frame["gate_id"])
         if frame["type"] == "step_card":
             assert needs[frame["hazard"]] <= passed
+
+
+def test_spoken_turn_reaches_the_model_and_its_reply_reaches_the_phone(monkeypatch, fake_live):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    with TestClient(app).websocket_connect("/ws/live?token=t&lang=te&resume=h0") as ws:
+        assert ws.receive_json()["resumable"] is True
+        ws.send_bytes(b"dropped: not inside ptt")
+        ws.send_json({"v": 1, "type": "ptt", "state": "start"})
+        ws.send_bytes(b"\x01\x02")
+        ws.send_json({"v": 1, "type": "ptt", "state": "end"})
+        assert ws.receive_bytes() == b"\x01\x02"
+        assert ws.receive_json() == {"v": 1, "type": "caption", "who": "ustaad", "text": "theek hai", "final": True}
+        assert ws.receive_json() == {"v": 1, "type": "turn_complete"}
+    assert fake_live == [("te", "h0")]
+
+
+def test_typed_text_is_a_turn(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    with TestClient(app).websocket_connect(URL) as ws:
+        ws.receive_json()
+        ws.send_json({"v": 1, "type": "text", "text": "PCB nahi hai"})
+        assert ws.receive_json()["text"] == "PCB nahi hai"
+        assert ws.receive_json()["type"] == "turn_complete"
+
+
+def test_live_failure_is_reported_as_live_unavailable(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    with TestClient(app).websocket_connect("/ws/live?token=t&lang=xx") as ws:
+        assert ws.receive_json()["type"] == "session_ready"
+        assert ws.receive_json()["code"] == "live_unavailable"
+
+
+def test_mock_live_never_opens_a_model_session(mock_live, fake_live):
+    with TestClient(app).websocket_connect(URL) as ws:
+        ws.receive_json()
+    assert fake_live == []

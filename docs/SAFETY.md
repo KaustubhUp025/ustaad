@@ -17,7 +17,8 @@ not only in the prompt. Any change here needs both people's approval.
 | `G_MAINS_OFF` | the MCB / isolator in the OFF position, or the unit's plug removed | visible OFF state, confidence ≥ 0.7 | ask for a clearer photo; stay locked |
 | `G_CAP_DISCHARGE` | multimeter display across the capacitor terminals | reading ≤ 5 V DC, confidence ≥ 0.7 | tell him to discharge safely with an insulated tool and re-measure; stay locked |
 
-A gate passed in a job stays passed for that job only. A new job starts with all gates `open`.
+A gate passed in a job stays passed for that job's current repair plan only. A new job, or a new plan on the same
+job (`start_repair` again), starts with all gates `open`.
 
 Default gate for unsourced jobs: a job with no fault-card or manual source (its steps have source kind `general`)
 must pass `G_MAINS_OFF` before its first step, whatever that step's hazard. Power-on diagnosis happens in

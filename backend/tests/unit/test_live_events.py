@@ -2,7 +2,16 @@ from google.adk.events import Event
 from google.genai import types
 
 from app.live_events import to_frames
-from models.ws import Caption, Interrupted, ResumeHandle, TurnComplete
+from models.ws import (
+    Caption,
+    GateResult,
+    Interrupted,
+    ResumeHandle,
+    SafetyGate,
+    SafetyStop,
+    StepCard,
+    TurnComplete,
+)
 
 
 def ev(**fields):
@@ -48,3 +57,44 @@ def test_resume_handle_only_when_the_model_gives_one():
 def test_tool_calls_and_text_parts_send_nothing_to_the_phone():
     call = types.Part(function_call=types.FunctionCall(name="x", args={}))
     assert to_frames(ev(content=types.Content(role="model", parts=[call, types.Part(text="thinking")])), {}) == []
+
+
+def responded(name, response):
+    part = types.Part(function_response=types.FunctionResponse(name=name, response=response))
+    return ev(content=types.Content(role="user", parts=[part]))
+
+
+SOURCE = {"kind": "general", "label": "General guidance", "audio_uri": None, "doc": None, "page": None}
+
+
+def test_a_step_from_next_step_becomes_a_step_card():
+    step = {"n": 2, "instruction": "Test step", "hazard": "HV", "source": SOURCE}
+    out = {"status": "STEP", "job_id": "j_1", "of": 3, "step": step}
+    assert to_frames(responded("next_step", out), {}) == [
+        StepCard(job_id="j_1", n=2, of=3, instruction="Test step", hazard="HV", source=SOURCE)
+    ]
+
+
+def test_a_gate_from_next_step_or_the_callback_becomes_a_safety_gate():
+    out = {"status": "SAFETY_GATE", "gate_id": "G_MAINS_OFF", "required_evidence": "MCB OFF photo"}
+    for tool in ("next_step", "close_job"):
+        [frame] = to_frames(responded(tool, out), {})
+        assert isinstance(frame, SafetyGate)
+        assert frame.gate_id == "G_MAINS_OFF" and frame.required_evidence == "MCB OFF photo"
+
+
+def test_a_stop_becomes_a_safety_stop():
+    [frame] = to_frames(responded("start_repair", {"status": "STOP_REFER", "reason": "refrigerant"}), {})
+    assert isinstance(frame, SafetyStop) and frame.reason == "refrigerant"
+
+
+def test_a_gate_check_becomes_a_gate_result():
+    out = {"gate_id": "G_CAP_DISCHARGE", "passed": False, "reason": "Discharge it and measure again"}
+    assert to_frames(responded("confirm_safety", out), {}) == [
+        GateResult(gate_id="G_CAP_DISCHARGE", passed=False, reason="Discharge it and measure again")
+    ]
+
+
+def test_other_tool_results_send_no_frame():
+    assert to_frames(responded("start_repair", {"status": "STARTED", "of": 2, "steps": []}), {}) == []
+    assert to_frames(responded("next_step", {"status": "DONE"}), {}) == []

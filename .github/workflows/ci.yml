@@ -37,7 +37,7 @@ jobs:
         uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
       - if: steps.scaffold.outputs.present == 'true'
-        run: pnpm -C web install --frozen-lockfile && make typecheck build
+        run: pnpm -C web install --frozen-lockfile && make test-web typecheck build
       - if: steps.scaffold.outputs.present == 'true' && hashFiles('shared/contracts/openapi.json') != ''
         name: contract types are up to date
         run: make types && git diff --exit-code -- shared/contracts web/src/api/types.ts

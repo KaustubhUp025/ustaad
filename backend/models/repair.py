@@ -11,6 +11,8 @@ ApplianceType = Literal[
 ]
 GateId = Literal["G_MAINS_OFF", "G_CAP_DISCHARGE"]
 GateState = Literal["open", "passed", "failed"]
+# Hard stops (SAFETY.md): a step with one of these is never emitted. The hazard levels above do not change.
+StopReason = Literal["refrigerant", "microwave_hv", "crt", "geyser_open"]
 
 
 class StepSource(BaseModel):
@@ -30,3 +32,13 @@ class RepairStep(BaseModel):
     instruction: str
     hazard: Hazard
     source: StepSource
+
+
+class RepairJob(BaseModel):
+    """The part of `jobs/{jid}` the repair tools and the gate callback read and write. A new job has all gates open."""
+
+    model_config = ConfigDict(extra="forbid")
+    job_id: str
+    steps: list[RepairStep] = []
+    gates: dict[GateId, GateState] = {"G_MAINS_OFF": "open", "G_CAP_DISCHARGE": "open"}
+    current_step: Annotated[int, Field(ge=0)] = 0

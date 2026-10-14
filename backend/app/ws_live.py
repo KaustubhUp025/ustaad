@@ -14,11 +14,13 @@ from google.adk.agents.live_request_queue import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.events import Event
 from google.adk.runners import InMemoryRunner
+from google.cloud import firestore
 from google.genai import types
 from pydantic import ValidationError
 
 from agent.ustaad import build_ustaad
 from app.live_events import to_frames
+from clients.firestore import JobStore
 from models.ws import Error, Frame, Ping, Pong, Ptt, SessionReady, Text, client_frame
 
 router = APIRouter()
@@ -36,14 +38,18 @@ LANGS = {
 }
 
 
-async def live_events(queue: LiveRequestQueue, lang: str, resume: str | None) -> AsyncIterator[Event]:
+async def live_events(
+    queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str
+) -> AsyncIterator[Event]:
     """One Live session with the model. Unit tests replace this with a fake."""
     speech_code, language_name = LANGS[lang]
+    jobs = JobStore(firestore.Client(database=os.environ["FIRESTORE_DB"]))
     runner = InMemoryRunner(
-        agent=build_ustaad(os.environ["LIVE_MODEL"], os.environ["LIVE_LOCATION"]), app_name=APP
+        agent=build_ustaad(os.environ["LIVE_MODEL"], os.environ["LIVE_LOCATION"], jobs), app_name=APP
     )
+    # The repair tools and the gate callback read the job from here; the model never chooses it.
     session = await runner.session_service.create_session(
-        app_name=APP, user_id="demo", state={"language_name": language_name}
+        app_name=APP, user_id="demo", state={"language_name": language_name, "job_id": job_id}
     )
     config = RunConfig(
         streaming_mode=StreamingMode.BIDI,
@@ -75,10 +81,12 @@ async def _replay(ws: WebSocket) -> None:
         await ws.send_json(entry["frame"])
 
 
-async def _downstream(ws: WebSocket, queue: LiveRequestQueue, lang: str, resume: str | None) -> None:
+async def _downstream(
+    ws: WebSocket, queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str
+) -> None:
     partials: dict[str, str] = {}
     try:
-        async for event in live_events(queue, lang, resume):
+        async for event in live_events(queue, lang, resume, job_id):
             for item in to_frames(event, partials):
                 if isinstance(item, bytes):
                     await ws.send_bytes(item)
@@ -124,7 +132,9 @@ async def _upstream(ws: WebSocket, queue: LiveRequestQueue | None) -> None:
 
 
 @router.websocket("/ws/live")
-async def ws_live(ws: WebSocket, token: str = "", lang: str = "hi", resume: str | None = None) -> None:
+async def ws_live(
+    ws: WebSocket, token: str = "", lang: str = "hi", resume: str | None = None, job_id: str = ""
+) -> None:
     await ws.accept()
     origin = ws.headers.get("origin")
     allowed = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
@@ -139,9 +149,10 @@ async def ws_live(ws: WebSocket, token: str = "", lang: str = "hi", resume: str 
             await _upstream(ws, None)
             return
         session_id = f"s_{uuid.uuid4().hex[:8]}"
+        job_id = job_id or f"j_{uuid.uuid4().hex[:8]}"
         await _send(ws, SessionReady(session_id=session_id, live_model=os.getenv("LIVE_MODEL", "unset"), resumable=True))
         queue = LiveRequestQueue()
-        down = create_task(_downstream(ws, queue, lang, resume))
+        down = create_task(_downstream(ws, queue, lang, resume, job_id))
         try:
             await _upstream(ws, queue)
         finally:

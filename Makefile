@@ -1,6 +1,6 @@
 # One command set for every person and every coding agent (see AGENTS.md).
 # Local env comes from backend/.env (copy .env.example) and web/.env.local (copy web/.env.example).
-.PHONY: help setup test lint typecheck build check types golden dev-api dev-web mock \
+.PHONY: help setup test test-web lint typecheck build check types golden dev-api dev-web mock \
         agent-engine smoke-live deploy-dev deploy-demo deploy-hosting
 
 WEB := $(wildcard web/package.json)
@@ -18,6 +18,9 @@ setup:           ## install backend and web dependencies
 test:            ## backend unit tests (offline, fixtures only)
 	uv run --directory backend pytest tests/unit -q
 
+test-web:        ## web unit tests (Playwright test runner, no browser)
+	@if [ -n "$(WEB)" ]; then pnpm -C web exec playwright test src/; else echo "web/ not scaffolded yet (T04)"; fi
+
 lint:            ## ruff on backend
 	uv run --directory backend ruff check .
 
@@ -27,7 +30,7 @@ typecheck:       ## TypeScript typecheck (web)
 build:           ## production web build
 	@if [ -n "$(WEB)" ]; then pnpm -C web build; else echo "web/ not scaffolded yet (T04)"; fi
 
-check: lint test typecheck build   ## run before finishing any task
+check: lint test test-web typecheck build   ## run before finishing any task
 
 types:           ## export OpenAPI from FastAPI and regenerate web/src/api/types.ts
 	uv run --directory backend python -c "import json; from app.main import app; print(json.dumps(app.openapi(), indent=2, sort_keys=True))" > shared/contracts/openapi.json

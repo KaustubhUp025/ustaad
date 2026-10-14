@@ -1,18 +1,20 @@
 import { Mic } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 
 import { useLive } from '@/audio/useLive'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-// The job screen, voice part (T11): live captions and the push-to-talk mic.
+// The job screen: live captions, the current step card, the safety gate and stop screens, and the push-to-talk mic.
 export default function Job() {
   const { t, i18n } = useTranslation()
   // ?lang= picks the language until onboarding (T21) saves it on the profile.
   const lang = useSearchParams()[0].get('lang') ?? i18n.language
-  const live = useLive(lang)
+  const { id = '' } = useParams()
+  const live = useLive(lang, id)
+  const { step, gate, failReason, stop } = live.repair
 
   useEffect(() => {
     void i18n.changeLanguage(lang)
@@ -24,10 +26,12 @@ export default function Job() {
   ]
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col">
-      <header className="bg-graphite px-4 py-4 text-housing">
-        <h1 className="font-heading text-[length:var(--text-xl)] font-bold">Ustaad</h1>
-      </header>
+    <main className={cn('mx-auto flex min-h-dvh max-w-md flex-col', stop && 'bg-destructive text-housing')}>
+      {!stop && (
+        <header className="bg-graphite px-4 py-4 text-housing">
+          <h1 className="font-heading text-[length:var(--text-xl)] font-bold">Ustaad</h1>
+        </header>
+      )}
 
       {notice && (
         <div role="status" className="flex flex-col items-start gap-3 border-b border-border px-4 py-3">
@@ -40,21 +44,52 @@ export default function Job() {
         </div>
       )}
 
-      <section aria-live="polite" className="flex flex-1 flex-col justify-end gap-3 px-4 py-6 text-[length:var(--text-caption)]">
-        {live.captions.length === 0 && <p className="text-muted-foreground">{t('live.empty')}</p>}
-        {live.captions.map((line, i) => (
-          <p
-            key={i}
-            className={cn(
-              line.who === 'user' && 'ml-6 border-l-2 border-ok pl-3',
-              !line.final && 'text-muted-foreground',
-            )}
-          >
-            <span className="sr-only">{t(line.who === 'user' ? 'live.you' : 'live.ustaad')}: </span>
-            {line.text}
-          </p>
-        ))}
-      </section>
+      {stop ? (
+        // SAFETY.md: the whole screen turns Fault Red with one fixed sentence for the reason; no audio.
+        <section role="alert" className="flex flex-1 items-center px-6 py-10">
+          <p className="text-[length:var(--text-lg)] font-semibold">{t([`repair.stop.${stop.reason}`, 'repair.stop.other'])}</p>
+        </section>
+      ) : gate ? (
+        <section role="alert" className="flex flex-1 flex-col justify-center gap-4 bg-graphite px-6 py-10 text-housing">
+          <h2 className="font-heading text-[length:var(--text-xl)] font-bold text-primary">{t('repair.gateTitle')}</h2>
+          <p className="text-[length:var(--text-lg)]">{t(`repair.gate.${gate.gate_id}`)}</p>
+          <p className="text-[length:var(--text-body)]">{t(`repair.evidence.${gate.gate_id}`)}</p>
+          {failReason && (
+            <p className="border-l-4 border-primary pl-3 text-[length:var(--text-body)]">
+              {t('repair.gateFailed', { reason: failReason })}
+            </p>
+          )}
+        </section>
+      ) : (
+        <>
+          <section aria-live="polite" className="flex flex-1 flex-col justify-end gap-3 px-4 py-6 text-[length:var(--text-caption)]">
+            {live.captions.length === 0 && <p className="text-muted-foreground">{t('live.empty')}</p>}
+            {live.captions.map((line, i) => (
+              <p
+                key={i}
+                className={cn(
+                  line.who === 'user' && 'ml-6 border-l-2 border-ok pl-3',
+                  !line.final && 'text-muted-foreground',
+                )}
+              >
+                <span className="sr-only">{t(line.who === 'user' ? 'live.you' : 'live.ustaad')}: </span>
+                {line.text}
+              </p>
+            ))}
+          </section>
+
+          {step && (
+            // A service tag: 4px radius and one punched-hole notch at the left (DESIGN.md).
+            <article className="relative mx-4 rounded-sm border border-border bg-card px-5 py-3">
+              <span aria-hidden className="absolute top-1/2 -left-1.5 size-3 -translate-y-1/2 rounded-full border border-border bg-background" />
+              <p className="text-[length:var(--text-sm)] text-muted-foreground">
+                {t('repair.step', { n: step.n, of: step.of })} · {step.source.label}
+              </p>
+              <p className="text-[length:var(--text-caption)]">{step.instruction}</p>
+            </article>
+          )}
+        </>
+      )}
 
       <footer className="flex flex-col items-center gap-2 px-4 pt-2 pb-6">
         {live.micBlocked && <p role="alert">{t('live.micBlocked')}</p>}
@@ -87,7 +122,9 @@ export default function Job() {
         >
           <Mic aria-hidden className="size-9" />
         </button>
-        <p className="text-[length:var(--text-sm)] text-muted-foreground">{t(live.talking ? 'live.listening' : 'live.hold')}</p>
+        <p className={cn('text-[length:var(--text-sm)]', !stop && 'text-muted-foreground')}>
+          {t(live.talking ? 'live.listening' : 'live.hold')}
+        </p>
       </footer>
     </main>
   )

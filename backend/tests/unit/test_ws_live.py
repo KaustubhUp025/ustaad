@@ -18,7 +18,7 @@ def fake_live(monkeypatch):
     """Stands in for the Live model: echoes audio, and answers the end of a spoken turn or a typed line."""
     opened = []
 
-    async def live_events(queue, lang, resume):
+    async def live_events(queue, lang, resume, job_id):
         opened.append((lang, resume))
         if lang == "xx":
             raise RuntimeError("model not found")

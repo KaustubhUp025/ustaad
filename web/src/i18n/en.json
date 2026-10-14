@@ -19,5 +19,22 @@
     "micBlocked": "Ustaad can't hear you. Allow the microphone in your browser settings.",
     "you": "You",
     "ustaad": "Ustaad"
+  },
+  "repair": {
+    "step": "Step {{n}} of {{of}}",
+    "gateTitle": "Safety check first",
+    "gate": {
+      "G_MAINS_OFF": "Switch off the MCB or pull out the plug.",
+      "G_CAP_DISCHARGE": "Discharge the capacitor and measure it with the multimeter."
+    },
+    "evidence": {
+      "G_MAINS_OFF": "Send a photo of the MCB in the OFF position, or of the plug pulled out.",
+      "G_CAP_DISCHARGE": "Send a photo of the multimeter reading across the capacitor terminals."
+    },
+    "gateFailed": "Not passed: {{reason}}",
+    "stop": {
+      "refrigerant": "Gas work is only for a certified gas technician. I can help with the other checks.",
+      "other": "This work isn't safe to guide. Only a trained technician should do it. I can help with the other checks."
+    }
   }
 }

@@ -1,0 +1,12 @@
+[
+  {
+    "origin": [
+      "https://ustaad101.web.app",
+      "https://ustaad101.firebaseapp.com",
+      "http://localhost:5173"
+    ],
+    "method": ["PUT"],
+    "responseHeader": ["Content-Type", "x-goog-content-length-range"],
+    "maxAgeSeconds": 3600
+  }
+]

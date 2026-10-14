@@ -31,6 +31,7 @@ done
 if ! gcloud storage buckets describe "gs://${BUCKET}" >/dev/null 2>&1; then
   gcloud storage buckets create "gs://${BUCKET}" --location="$REGION" --uniform-bucket-level-access
 fi
+gcloud storage buckets update "gs://${BUCKET}" --cors-file=infra/storage-cors.json
 
 # Runtime service account for Cloud Run service + jobs, with only what it needs
 if ! gcloud iam service-accounts describe "$RUN_SA" >/dev/null 2>&1; then

@@ -11,5 +11,6 @@ Every change to a file in `shared/contracts/` adds a line here in the same PR (b
 | 2026-10-13 | firestore.md | `workers.trades[]` is 1 to 3 values, no duplicates, from a listed set; `jobs.appliance.type` uses the `appliance_type` values; `jobs.steps[].source.kind` values named, including `general` (T38) | A | |
 | 2026-10-13 | ws-events.md | `step_card.source.kind` accepts `general` (general guidance with no verified source) (T38) | A | |
 | 2026-10-13 | rest.md | `GET /api/fault-cards` takes an optional `appliance_type` filter (T38) | A | |
+| 2026-10-14 | rest.md | Upload URL responses include the exact signed PUT headers; kind-specific content types and binary size limits are fixed | B (Samyak) | A (Kaustubh) and B (Samyak) |
 | 2026-10-13 | firestore.md, rest.md | T10 inventory only: required strict fields, nullable category/price, UTC, part_ IDs, list/delta validation; whole-float normalization at future voice boundary | B (Samyak) | A (Kaustubh), explicit approval relayed by Samyak; inventory only |
 | 2026-10-13 | openapi.json (unchanged), generated web/src/api/types.ts | Run make types; commit existing health-route TypeScript baseline; inventory schemas await routes | B | No contract change |

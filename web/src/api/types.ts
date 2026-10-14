@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/media/upload-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Media Upload Url */
+        post: operations["create_media_upload_url_api_media_upload_url_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -41,7 +58,67 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** MediaUploadError */
+        MediaUploadError: {
+            /** Detail */
+            detail: string;
+        };
+        /** MediaUploadHeaders */
+        MediaUploadHeaders: {
+            /** Content-Type */
+            "Content-Type": string;
+            /** X-Goog-Content-Length-Range */
+            "x-goog-content-length-range": string;
+        };
+        /** MediaUploadRequest */
+        MediaUploadRequest: {
+            /** Content Type */
+            content_type: string;
+            /** Filename */
+            filename?: string | null;
+            /** Import Id */
+            import_id?: string | null;
+            /** Job Id */
+            job_id?: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "photo" | "video" | "import";
+        };
+        /** MediaUploadResponse */
+        MediaUploadResponse: {
+            /**
+             * Expires In
+             * @constant
+             */
+            expires_in: 900;
+            headers: components["schemas"]["MediaUploadHeaders"];
+            /** Upload Url */
+            upload_url: string;
+            /** Uri */
+            uri: string;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -68,6 +145,48 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    create_media_upload_url_api_media_upload_url_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaUploadResponse"];
+                };
+            };
+            /** @description Unsupported content type for upload kind */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaUploadError"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

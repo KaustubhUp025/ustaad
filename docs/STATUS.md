@@ -55,6 +55,16 @@ clip timed out until 1.5 s of silence was appended: a turn only ends when the mo
 word, which T11's push-to-talk release must provide. Its input transcript came back in Latin letters, not
 Devanagari. First-audio times are for text turns over home broadband, not speech over 4G.
 
+## WhatsApp share-target manual test (T07)
+
+Samyak reported testing on two phones. The installed Ustaad PWA appeared as a WhatsApp share target on both
+phones. Selecting Ustaad opened the PWA, which displayed “connecting to server” and then “server connected”.
+No visible file-received acknowledgement, import progress, or import result appeared.
+
+Share-target registration and PWA launch were verified on two phones. Actual file handoff is unverified.
+Import processing is not implemented yet and remains dependent on T13. This test does not establish that an
+export was imported successfully. T07 is complete; actual import processing remains pending T13.
+
 ## Measured quality bar (fill on Thu, T29; the deck uses these numbers)
 | Measure | Target | Actual |
 | --- | --- | --- |

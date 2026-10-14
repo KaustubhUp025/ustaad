@@ -172,6 +172,16 @@ async def test_route_uses_fake_without_creating_google_client(fake_storage, monk
 
 
 def test_storage_client_signs_a_v4_put_for_exact_expiry():
+    class FakeCredentials:
+        service_account_email = "ustaad-run@example.invalid"
+        token = "test-access-token"
+
+        def __init__(self) -> None:
+            self.refresh_calls = []
+
+        def refresh(self, request) -> None:
+            self.refresh_calls.append(request)
+
     class FakeBlob:
         def __init__(self) -> None:
             self.kwargs = None
@@ -197,7 +207,14 @@ def test_storage_client_signs_a_v4_put_for_exact_expiry():
             return FakeBucket(self._blob)
 
     blob = FakeBlob()
-    client = StorageUploadClient("media-bucket", client=FakeGoogleClient(blob))
+    credentials = FakeCredentials()
+    auth_request = object()
+    client = StorageUploadClient(
+        "media-bucket",
+        client=FakeGoogleClient(blob),
+        credentials=credentials,
+        auth_request=auth_request,
+    )
     required_headers = {
         "Content-Type": "image/jpeg",
         "x-goog-content-length-range": "0,15728640",
@@ -210,9 +227,12 @@ def test_storage_client_signs_a_v4_put_for_exact_expiry():
         uri="gs://media-bucket/jobs/j_1/random-panel.jpg",
         headers=required_headers,
     )
+    assert credentials.refresh_calls == [auth_request]
     assert blob.kwargs == {
         "version": "v4",
         "expiration": timedelta(seconds=900),
         "method": "PUT",
         "headers": required_headers,
+        "service_account_email": "ustaad-run@example.invalid",
+        "access_token": "test-access-token",
     }

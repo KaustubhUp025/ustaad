@@ -1119,6 +1119,10 @@ Out of scope: a new Firestore index; manual metadata in Agent Search
 6. Rate limiter: in-process token bucket is enough for one instance with `min-instances` 1; note Cloud Run can run several instances, so keep per-IP limits simple (Suggested: accept that limits are per instance).
 7. Live sessions: counter with a semaphore (3); the 4th gets `error{rate_limited}`.
 
+**From T11 (phone test on dev, Oct 14).** Two follow-ups found while testing the Live bridge; do them here because both touch the Live-session limit:
+1. *Close dead sockets.* When a phone loses its network, the server keeps that connection, and its Live session, open until TCP gives up (13 s in the test, can be longer). Each one counts against the 3-session limit, so a judge's dropped connections could lock out the next judge. The client already pings every 20 s: in `app/ws_live.py`, close a connection that has sent nothing for 45 s (a named constant), and release its semaphore slot. Test with a fake clock or a short constant: a silent client is closed; a pinging one is not.
+2. *Faster first turn after a reconnect.* The mic stays disabled until the new session's `session_ready`, and opening a Live session takes 2 to 4 s, so after a network change the worker waits. Let the mic be pressed while `reconnecting`: buffer up to about 5 s of PCM in `liveClient.ts` and send it, inside `ptt start`/`end`, once the socket is open (drop it if the reconnect fails). Recheck on 4G only: in the Wi-Fi test the phone reconnected 4 times in 3 minutes, most likely from switching networks.
+
 **Design rules.** The cache sits behind one wrapper used by `/api/chat` and the tool-response path; it never changes the *safety* behaviour: a cached response for a hazardous step still goes through gate logic (cache before the model, not before the safety layer).
 
 **Tests.** Unit: same input hits cache; slow fake model plus cache hit returns after the timer; no cache entry and a slow model returns the slow result. Manual: incognito phone, backend models slowed (add an artificial delay env), G2 still completes.
@@ -1129,7 +1133,8 @@ Out of scope: a new Firestore index; manual metadata in Agent Search
 ID: T27 / M10   Owner: A   Branch: a/M10-demo-safe
 Goal: demo-safe cache (hash key, 6 s fallback), rate limits (20/min/IP, 3 Live), Try the demo, /api/demo/session
 Read: SPEC §10, SPEC §5, shared/contracts/rest.md (demo/session), backend/AGENTS.md
-Done when: incognito phone completes G2 with models artificially slowed; unit tests for cache + limiter
+Done when: incognito phone completes G2 with models artificially slowed; unit tests for cache + limiter;
+           a silent connection is closed after 45 s and frees its Live slot; mic usable while reconnecting
 Don't touch: shared/contracts/, docs/SAFETY.md, backend/agent/callbacks.py
 ```
 

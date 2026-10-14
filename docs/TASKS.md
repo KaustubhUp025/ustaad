@@ -62,7 +62,7 @@ Lane A's code is folded into T12, T16 and T21 above. These rows are the rest. Fi
 ## Thu Oct 15 — harden (freeze 18:00)
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T27 | P0 | A | Demo-safe cache, rate limits, "Try the demo" (M10) | SPEC §10 | incognito phone runs G2 with backend models slowed | T26 | todo |
+| T27 | P0 | A | Demo-safe cache, rate limits, "Try the demo" (M10); T11 follow-ups: close silent sockets after 45 s, mic usable while reconnecting (BUILD-GUIDE T27) | SPEC §10 | incognito phone runs G2 with backend models slowed; silent socket closed and its Live slot freed | T26 | todo |
 | T28 | P1 | B | UI polish pass on every screen | DESIGN.md, playbooks/ui-pass.md | screenshots at 360/1280 in PR | T26 | todo |
 | T29 | P1 | A | Golden tests + measure the quality bar | GOLDEN_PATHS, SPEC §10 | numbers in STATUS.md | T26 | todo |
 | T30 | P0 | both | Feature freeze; tag `v1-rc`; `make deploy-demo` | WORKFLOW | demo service on v1-rc | T27–T29 | todo |

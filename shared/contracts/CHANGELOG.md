@@ -14,4 +14,4 @@ Every change to a file in `shared/contracts/` adds a line here in the same PR (b
 | 2026-10-14 | rest.md | Upload URL responses include the exact signed PUT headers; kind-specific content types and binary size limits are fixed | B (Samyak) | A (Kaustubh) and B (Samyak) |
 | 2026-10-13 | firestore.md, rest.md | T10 inventory only: required strict fields, nullable category/price, UTC, part_ IDs, list/delta validation; whole-float normalization at future voice boundary | B (Samyak) | A (Kaustubh), explicit approval relayed by Samyak; inventory only |
 | 2026-10-13 | openapi.json (unchanged), generated web/src/api/types.ts | Run make types; commit existing health-route TypeScript baseline; inventory schemas await routes | B | No contract change |
-| 2026-10-15 | firestore.md | `jobs.current_step` (int): which step `next_step` hands out next, so a reconnect or a parked repair resumes at the same step (T16, T36) | A | |
+| 2026-10-15 | firestore.md | `jobs.current_step` (int): which step `next_step` hands out next, so a reconnect or a parked repair resumes at the same step (T16, T36) | A | A (Kaustubh) and B (Samyak) |

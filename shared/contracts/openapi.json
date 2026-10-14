@@ -44,6 +44,107 @@
         "title": "ErrorResponse",
         "type": "object"
       },
+      "InventoryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "aliases": {
+            "items": {
+              "pattern": "\\S",
+              "type": "string"
+            },
+            "title": "Aliases",
+            "type": "array"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "pattern": "\\S",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "id": {
+            "pattern": "^part_\\S+$",
+            "title": "Id",
+            "type": "string"
+          },
+          "min_qty": {
+            "minimum": 0.0,
+            "title": "Min Qty",
+            "type": "integer"
+          },
+          "name": {
+            "pattern": "\\S",
+            "title": "Name",
+            "type": "string"
+          },
+          "qty": {
+            "minimum": 0.0,
+            "title": "Qty",
+            "type": "integer"
+          },
+          "source": {
+            "enum": [
+              "voice",
+              "photo",
+              "manual"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "unit_cost_inr": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Cost Inr"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "category",
+          "aliases",
+          "qty",
+          "min_qty",
+          "unit_cost_inr",
+          "source",
+          "updated_at"
+        ],
+        "title": "InventoryItem",
+        "type": "object"
+      },
+      "InventoryListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "InventoryListResponse",
+        "type": "object"
+      },
       "MediaUploadHeaders": {
         "additionalProperties": false,
         "properties": {
@@ -259,6 +360,104 @@
           }
         },
         "summary": "Healthz"
+      }
+    },
+    "/api/inventory": {
+      "get": {
+        "operationId": "list_inventory_api_inventory_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "List Inventory"
       }
     },
     "/api/media/upload-url": {

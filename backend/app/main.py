@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.errors import HTTP_ERRORS, install_error_handlers
+from app.inventory import router as inventory_router
 from app.media import router as media_router
 from app.ws_live import router as ws_live_router
 from models.errors import ErrorResponse
@@ -26,6 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(media_router)
+app.include_router(inventory_router)
 app.include_router(ws_live_router)
 
 

@@ -10,6 +10,12 @@ know what already works; humans append one block per day.
   the Hosting rewrite to `ustaad-api` (min instances 0, deployed from the local tag `v0-skeleton`)
 - Works locally (not deployed): `/ws/live` stub answers pings; `MOCK_LIVE=1 make dev-api` replays the G2 script
   from `seed/fixtures/live_session.jsonl` (T09, Oct 13). Its step texts are placeholders until T08's real notes.
+- Works locally (not deployed, T11, Oct 14): `/ws/live` runs a real `gemini-3.8-live` session; the job screen
+  `/w/job/<id>?lang=hi` holds a push-to-talk Hindi turn with spoken reply and captions, barge-in (`interrupted`), and
+  reconnects with the resume handle after a dropped connection (headless Chromium, recorded clip as the mic). Reply
+  starts 0.9–1.1 s after release. Not yet tried on a phone or on `dev`. Ustaad's captions often come back in Latin
+  letters (instruction wording, see the T11 PR). The laptop clip's input transcript is wrong ("AC chal raha hai,
+  laptop…") even when sent straight to the model, so judge transcription quality on the phone.
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)
 - Blocked: —
 

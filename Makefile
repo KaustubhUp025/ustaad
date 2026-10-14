@@ -5,6 +5,7 @@
 
 WEB := $(wildcard web/package.json)
 ENVFILE := $(wildcard backend/.env)
+MOCKFILES := $(wildcard seed/fixtures/*.json seed/fixtures/*.jsonl)
 UVENV := $(if $(ENVFILE),--env-file .env,)
 
 help:            ## list targets
@@ -34,8 +35,8 @@ types:           ## export OpenAPI from FastAPI and regenerate web/src/api/types
 
 mock:            ## copy fixtures the web mock mode reads into web/public/mock
 	mkdir -p web/public/mock
-	@ls seed/fixtures/*.json seed/fixtures/*.jsonl >/dev/null 2>&1 || (echo "no fixtures yet (T09/T10)"; exit 1)
-	cp seed/fixtures/*.json seed/fixtures/*.jsonl web/public/mock/
+	@test -n "$(MOCKFILES)" || (echo "no fixtures yet (T09/T10)"; exit 1)
+	cp $(MOCKFILES) web/public/mock/
 
 golden:          ## real-model golden paths (costs money; before demo deploys only)
 	@if ls backend/tests/golden/test_*.py >/dev/null 2>&1; then cd backend && uv run $(UVENV) pytest tests/golden -q; else echo "no golden tests yet (T29)"; fi

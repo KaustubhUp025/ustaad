@@ -61,8 +61,11 @@ export interface components {
     schemas: {
         /** ErrorDetail */
         ErrorDetail: {
-            /** Code */
-            code: string;
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "bad_request" | "unauthorized" | "forbidden" | "not_found" | "conflict" | "validation_error" | "rate_limited" | "internal_error" | "http_error";
             /** Message */
             message: string;
         };

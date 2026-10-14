@@ -6,14 +6,14 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.errors import install_error_handlers
+from app.errors import HTTP_ERRORS, install_error_handlers
 from app.media import router as media_router
 from app.ws_live import router as ws_live_router
 from models.errors import ErrorResponse
 
 ERROR_RESPONSES = {
     status: {"model": ErrorResponse}
-    for status in (400, 401, 403, 404, 409, 422, 429, 500)
+    for status in HTTP_ERRORS
 }
 
 app = FastAPI(title="ustaad-api", version="0.1.0", responses=ERROR_RESPONSES)

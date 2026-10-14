@@ -3,7 +3,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 
-HTTP_ERRORS = {
+from models.errors import ErrorCode
+
+HTTP_ERRORS: dict[int, tuple[ErrorCode, str]] = {
     400: ("bad_request", "Bad request"),
     401: ("unauthorized", "Authentication required"),
     403: ("forbidden", "Forbidden"),
@@ -13,10 +15,10 @@ HTTP_ERRORS = {
     429: ("rate_limited", "Too many requests"),
     500: ("internal_error", "Internal server error"),
 }
-HTTP_ERROR_FALLBACK = ("http_error", "Request failed")
+HTTP_ERROR_FALLBACK: tuple[ErrorCode, str] = ("http_error", "Request failed")
 
 
-def _body(code: str, message: str) -> dict[str, dict[str, str]]:
+def _body(code: ErrorCode, message: str) -> dict[str, dict[str, str]]:
     return {"error": {"code": code, "message": message}}
 
 

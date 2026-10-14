@@ -1,9 +1,28 @@
+import json
+import re
+from pathlib import Path
+
 import httpx
 import pytest
 from fastapi import HTTPException
+from pydantic import ValidationError
 
 from app.main import app
 from app.media import get_storage_client
+from models.errors import ErrorResponse
+
+ROOT = Path(__file__).parents[3]
+ERROR_CODES = {
+    "bad_request",
+    "unauthorized",
+    "forbidden",
+    "not_found",
+    "conflict",
+    "validation_error",
+    "rate_limited",
+    "internal_error",
+    "http_error",
+}
 
 
 class UnusedStorageClient:
@@ -38,6 +57,29 @@ async def request(method: str, path: str, **kwargs) -> httpx.Response:
     transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         return await client.request(method, path, **kwargs)
+
+
+def test_error_response_rejects_unknown_code():
+    with pytest.raises(ValidationError):
+        ErrorResponse(error={"code": "unknown_error", "message": "Safe message"})
+
+
+def test_openapi_exposes_exact_approved_error_codes():
+    document = json.loads((ROOT / "shared/contracts/openapi.json").read_text())
+
+    error_code = document["components"]["schemas"]["ErrorDetail"]["properties"]["code"]
+    assert set(error_code["enum"]) == ERROR_CODES
+
+
+def test_generated_typescript_uses_error_code_literal_union():
+    generated = (ROOT / "web/src/api/types.ts").read_text()
+    detail = re.search(r"ErrorDetail:\s*\{(?P<body>.*?)\n\s*\};", generated, re.DOTALL)
+
+    assert detail is not None
+    declaration = re.search(r"code:\s*(?P<type>[^;]+);", detail.group("body"))
+    assert declaration is not None
+    assert set(re.findall(r'"([^"]+)"', declaration.group("type"))) == ERROR_CODES
+    assert declaration.group("type").strip() != "string"
 
 
 async def test_invalid_media_type_uses_error_envelope():

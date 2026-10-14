@@ -98,11 +98,14 @@ def test_started_never_carries_instruction_text():
     assert "Test secret" not in out.model_dump_json()
 
 
-def test_start_repair_starts_again_from_the_first_step_and_keeps_gates():
-    job = RepairJob(job_id="j_1", gates={"G_MAINS_OFF": "passed", "G_CAP_DISCHARGE": "open"}, current_step=3)
-    _, job = start_repair(StartRepairIn(card_ids=["fc_none"]), job, [card()])
+def test_a_new_plan_on_the_same_job_starts_from_the_first_step_with_all_gates_open():
+    # Power may have been switched back on between plans, so earlier passes do not carry over.
+    job = RepairJob(job_id="j_1", gates={"G_MAINS_OFF": "passed", "G_CAP_DISCHARGE": "passed"}, current_step=3)
+    _, job = start_repair(StartRepairIn(card_ids=["fc_capacitor"]), job, [card("capacitor")])
     assert job.current_step == 0
-    assert job.gates["G_MAINS_OFF"] == "passed"
+    assert job.gates == {"G_MAINS_OFF": "open", "G_CAP_DISCHARGE": "open"}
+    out, _ = next_step(job)
+    assert out.status == "SAFETY_GATE" and out.gate_id == "G_MAINS_OFF"
 
 
 def test_after_the_last_step_next_step_says_done():

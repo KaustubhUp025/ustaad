@@ -52,7 +52,8 @@ def start_repair(
             return StopRefer(reason=stop), job
         drafts.append((proposed.instruction, hazard, GENERAL))
     steps = [RepairStep(n=n, instruction=i, hazard=h, source=s) for n, (i, h, s) in enumerate(drafts, 1)]
-    job = job.model_copy(update={"steps": steps, "current_step": 0})
+    # A new plan starts with every gate open: power may have been switched back on since the last plan.
+    job = RepairJob(job_id=job.job_id, steps=steps)
     return Started(of=len(steps), steps=[PlannedStep(n=s.n, hazard=s.hazard, source=s.source) for s in steps]), job
 
 

@@ -187,7 +187,8 @@ def test_storage_client_signs_a_v4_put_for_exact_expiry():
             self.kwargs = None
 
         def generate_signed_url(self, **kwargs):
-            self.kwargs = kwargs
+            self.kwargs = {**kwargs, "headers": dict(kwargs["headers"])}
+            kwargs["headers"]["Host"] = "storage.googleapis.com"
             return "https://storage.example/signed"
 
     class FakeBucket:
@@ -219,20 +220,22 @@ def test_storage_client_signs_a_v4_put_for_exact_expiry():
         "Content-Type": "image/jpeg",
         "x-goog-content-length-range": "0,15728640",
     }
+    expected_headers = dict(required_headers)
 
     result = client.sign_put("jobs/j_1/random-panel.jpg", required_headers, 900)
 
     assert result == SignedUpload(
         upload_url="https://storage.example/signed",
         uri="gs://media-bucket/jobs/j_1/random-panel.jpg",
-        headers=required_headers,
+        headers=expected_headers,
     )
+    assert required_headers == expected_headers
     assert credentials.refresh_calls == [auth_request]
     assert blob.kwargs == {
         "version": "v4",
         "expiration": timedelta(seconds=900),
         "method": "PUT",
-        "headers": required_headers,
+        "headers": expected_headers,
         "service_account_email": "ustaad-run@example.invalid",
         "access_token": "test-access-token",
     }

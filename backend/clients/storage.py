@@ -33,11 +33,12 @@ class StorageUploadClient:
     def sign_put(self, object_name: str, headers: dict[str, str], expires_in: int) -> SignedUpload:
         self._credentials.refresh(self._auth_request)
         blob = self._client.bucket(self._bucket_name).blob(object_name)
+        signed_headers = dict(headers)
         upload_url = blob.generate_signed_url(
             version="v4",
             expiration=timedelta(seconds=expires_in),
             method="PUT",
-            headers=headers,
+            headers=signed_headers,
             service_account_email=self._credentials.service_account_email,
             access_token=self._credentials.token,
         )

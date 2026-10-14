@@ -1,9 +1,23 @@
 {
-  "app": { "tagline": "Repair help you can talk to" },
+  "app": {
+    "tagline": "Repair help you can talk to"
+  },
   "health": {
     "checking": "Checking the server…",
     "ok": "Server connected",
     "error": "Server not reachable. Check your network, then try again.",
     "retry": "Check again"
+  },
+  "live": {
+    "hold": "Hold to talk",
+    "listening": "Listening…",
+    "empty": "Hold the mic and ask about the fault.",
+    "connecting": "Connecting to Ustaad…",
+    "reconnecting": "Network dropped. Reconnecting…",
+    "failed": "Can't reach Ustaad. Check your network, then try again.",
+    "retry": "Try again",
+    "micBlocked": "Ustaad can't hear you. Allow the microphone in your browser settings.",
+    "you": "You",
+    "ustaad": "Ustaad"
   }
 }

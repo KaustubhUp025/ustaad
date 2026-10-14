@@ -23,7 +23,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T09 | P0 | A | Pydantic models for WS frames + photo-tool I/O (other tools' I/O with their own tasks); `/ws/live` echo stub; hand-written `seed/fixtures/live_session.jsonl` (G2 script) | contracts/ws-events.md, SPEC §6, GOLDEN_PATHS G2 | `MOCK_LIVE=1` replays G2; tests pass | T04 | done |
 | T10 | P0 | B | Pydantic models for REST + Firestore entities; stub routers returning fixtures; fixtures JSON; `make types` | contracts/rest.md, firestore.md, fault_card.schema.json | `openapi.json` + `types.ts` committed; stubs serve fixtures | T04 | todo |
-| T11 | P0 | A | Live bridge (ADK `run_live`), PCM worklets, push-to-talk, captions, barge-in — Hindi end to end (M3) | SPEC §6 Live, contracts/ws-events.md | phone ↔ Ustaad in Hindi with captions on dev | T05, T09 | todo |
+| T11 | P0 | A | Live bridge (ADK `run_live`), PCM worklets, push-to-talk, captions, barge-in — Hindi end to end (M3) | SPEC §6 Live, contracts/ws-events.md | phone ↔ Ustaad in Hindi with captions on dev | T05, T09 | done |
 | T12 | P1 | A | `identify_appliance` + 6 golden photos (M2); `type` normalised to the `appliance_type` values, and the one mapping constant from a `trades` value to card types (T38) | SPEC §6, GOLDEN_PATHS | 6/6 golden photos correct in unit test with recorded responses; normalisation and mapping tests | T09 | todo |
 | T13 | P0 | B | Ingest job: parse Android/iOS, ffmpeg, transcribe, threads (M6) | SPEC §4, contracts/firestore.md (imports) | small export fixture → messages + transcripts in test | T08, T10 | todo |
 | T14 | P2 | B | Agent Search store with 3 brands' manuals (S1) | SPEC §5 | query returns a page-cited snippet | T03 | todo |
@@ -62,7 +62,7 @@ Lane A's code is folded into T12, T16 and T21 above. These rows are the rest. Fi
 ## Thu Oct 15 — harden (freeze 18:00)
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T27 | P0 | A | Demo-safe cache, rate limits, "Try the demo" (M10) | SPEC §10 | incognito phone runs G2 with backend models slowed | T26 | todo |
+| T27 | P0 | A | Demo-safe cache, rate limits, "Try the demo" (M10); T11 follow-ups: close silent sockets after 45 s, mic usable while reconnecting (BUILD-GUIDE T27) | SPEC §10 | incognito phone runs G2 with backend models slowed; silent socket closed and its Live slot freed | T26 | todo |
 | T28 | P1 | B | UI polish pass on every screen | DESIGN.md, playbooks/ui-pass.md | screenshots at 360/1280 in PR | T26 | todo |
 | T29 | P1 | A | Golden tests + measure the quality bar | GOLDEN_PATHS, SPEC §10 | numbers in STATUS.md | T26 | todo |
 | T30 | P0 | both | Feature freeze; tag `v1-rc`; `make deploy-demo` | WORKFLOW | demo service on v1-rc | T27–T29 | todo |

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "fc_model_validation_no_guidance",
+    "created_at": "2026-10-14T12:00:00Z",
+    "brand": "Model validation fixture; contains no repair guidance",
+    "error_code": "Model validation fixture; contains no repair guidance",
+    "symptom": "Model validation fixture; contains no repair guidance",
+    "fix_steps": [
+      "Model validation fixture only; contains no repair guidance"
+    ],
+    "hazard": "none",
+    "source": {
+      "type": "synthetic"
+    },
+    "confidence": 0,
+    "review_status": "needs_review"
+  }
+]

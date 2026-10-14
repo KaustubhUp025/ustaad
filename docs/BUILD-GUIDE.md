@@ -521,12 +521,29 @@ Don't touch: shared/contracts/, backend/agent/instruction.md
 
 **Steps.**
 1. Models for Worker, Job, FaultCard, InventoryItem, Vendor, QuoteRequest, Quote, Import, Cluster, from `firestore.md`. API entities = Firestore doc + `id`, minus server-only fields (`embedding`, raw webhook bodies).
-2. FaultCard from `fault_card.schema.json`. **Note:** that file is only in the starter zip (see §12). Read it in the repo before modelling.
+2. FaultCard from `fault_card.schema.json`. Read the version committed in `shared/contracts/` before modelling, including the T38 appliance types.
 3. One router per area with stub handlers reading `seed/fixtures/*.json`. Error format `{"error": {"code","message"}}`.
 4. Run `make types`; commit `shared/contracts/openapi.json` and `web/src/api/types.ts`.
 5. Auth: bearer token on everything except `/healthz`, `/api/demo/session`, webhook.
 
-**Design rules.** IDs are prefixed (`w_`, `j_`, `fc_`, `qr_`, `q_`, `i_`); money is integer rupees; times are UTC ISO-8601. Put the Firestore-only fields in a separate internal model so the response model can never leak `embedding`.
+**Design rules.** IDs are prefixed (`w_`, `j_`, `fc_`, `qr_`, `q_`, `i_`, `part_`); money is integer rupees; times are UTC ISO-8601. Put the Firestore-only fields in a separate internal model so the response model can never leak `embedding`.
+
+**From T38 (general appliances).** For the remaining T10 models, follow the merged contracts:
+- Worker `trades`: 1–3 unique values from the list in `firestore.md`; do not silently truncate.
+- FaultCard `appliance_type`: use the current `fault_card.schema.json` values, including the general appliances.
+- Job `appliance.type`: the same appliance-type values or null; step sources also allow `general`.
+  Merged PR #19 owns `backend/models/repair.py`; import `Hazard`, `ApplianceType`, `RepairStep`, `GateId`
+  and `GateState` rather than defining copies. `StepSource` is shared for repair steps. Gate
+  transitions, step progression and safety enforcement remain T16 work. New-job creation starts gates open;
+  validation and loading must preserve existing gate states.
+- FaultCard `source` is a separate shape and must independently match `fault_card.schema.json`; do not use
+  repair `StepSource` for it.
+- The fault-card list's optional `appliance_type` filter follows `rest.md`; retrieval filtering and the relevance
+  floor remain T41 work, and extraction classification remains T40 work.
+
+The approved inventory slice stays appliance-independent: `category` remains nullable free text, not an
+appliance enum. Its required nullable fields and strict REST deltas are unchanged. This note does not extend
+inventory approval to the remaining T10 contracts or mark their implementation complete.
 
 **Tests.** Each stub endpoint returns a body that validates against its response model. A "drift" test: regenerate OpenAPI and diff.
 

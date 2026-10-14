@@ -13,7 +13,14 @@ know what already works; humans append one block per day.
 - Works locally (not deployed, T11, Oct 14): `/ws/live` runs a real `gemini-3.8-live` session; the job screen
   `/w/job/<id>?lang=hi` holds a push-to-talk Hindi turn with spoken reply and captions, barge-in (`interrupted`), and
   reconnects with the resume handle after a dropped connection (headless Chromium, recorded clip as the mic). Reply
-  starts 0.9–1.1 s after release. Not yet tried on a phone or on `dev`. Ustaad's captions often come back in Latin
+  starts 0.9–1.1 s after release.
+- Works on dev (T11, Oct 14, A's Android phone over a temporary preview link, since closed): Hindi question answered
+  aloud with captions; pressing the mic stops Ustaad at once; Wi-Fi off shows the Hindi "reconnecting" notice and the
+  session resumes with its handle. After Wi-Fi came back the phone reconnected 4 times in about 3 minutes (dev logs),
+  each 2 s after the previous socket ended, so the next turn was slow to start. The server is not the cause: a
+  resumed session stayed open 90 s idle and still knew the worker's name and brand. Likely the phone switching
+  networks; recheck on 4G only.
+- Not yet measured on 4G. Ustaad's captions often come back in Latin
   letters (instruction wording, see the T11 PR). The laptop clip's input transcript is wrong ("AC chal raha hai,
   laptop…") even when sent straight to the model, so judge transcription quality on the phone.
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)

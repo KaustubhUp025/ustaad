@@ -23,6 +23,11 @@ know what already works; humans append one block per day.
 - Not yet measured on 4G. Ustaad's captions often come back in Latin
   letters (instruction wording, see the T11 PR). The laptop clip's input transcript is wrong ("AC chal raha hai,
   laptop…") even when sent straight to the model, so judge transcription quality on the phone.
+- Works locally against real models (T17, Oct 15, scripted client, no phone yet): a typed turn made
+  `gemini-3.8-live` call `request_media`; a blurred photo got the Hindi retake reason on the same request ID, the
+  sharp one passed (0.98), the photo was listed in `jobs.media`, and Ustaad answered when idle. This run found and
+  fixed a bug in `read_photo` (T16): its temporary Gemini client was closed mid-call, so no gate photo could pass.
+  The phone run (camera sheet, real upload through the signed URL) is still to do.
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)
 - Blocked: —
 

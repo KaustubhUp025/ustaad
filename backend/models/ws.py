@@ -4,9 +4,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
-from models.repair import GateId, Hazard, StepSource
-
-MediaKind = Literal["photo", "video", "document"]
+from models.repair import GateId, Hazard, MediaKind, StepSource
 
 
 class Frame(BaseModel):

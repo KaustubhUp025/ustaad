@@ -18,10 +18,11 @@ from google.cloud import firestore
 from google.genai import types
 from pydantic import ValidationError
 
+from agent.media_tools import MediaDesk
 from agent.ustaad import build_ustaad
 from app.live_events import to_frames
 from clients.firestore import JobStore
-from models.ws import Error, Frame, Ping, Pong, Ptt, SessionReady, Text, client_frame
+from models.ws import Error, Frame, MediaCancel, MediaReady, Ping, Pong, Ptt, SessionReady, Text, client_frame
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -39,17 +40,17 @@ LANGS = {
 
 
 async def live_events(
-    queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str
+    queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str, desk: MediaDesk
 ) -> AsyncIterator[Event]:
     """One Live session with the model. Unit tests replace this with a fake."""
     speech_code, language_name = LANGS[lang]
     jobs = JobStore(firestore.Client(database=os.environ["FIRESTORE_DB"]))
     runner = InMemoryRunner(
-        agent=build_ustaad(os.environ["LIVE_MODEL"], os.environ["LIVE_LOCATION"], jobs), app_name=APP
+        agent=build_ustaad(os.environ["LIVE_MODEL"], os.environ["LIVE_LOCATION"], jobs, desk), app_name=APP
     )
     # The repair tools and the gate callback read the job from here; the model never chooses it.
     session = await runner.session_service.create_session(
-        app_name=APP, user_id="demo", state={"language_name": language_name, "job_id": job_id}
+        app_name=APP, user_id="demo", state={"language_name": language_name, "lang": lang, "job_id": job_id}
     )
     config = RunConfig(
         streaming_mode=StreamingMode.BIDI,
@@ -82,11 +83,11 @@ async def _replay(ws: WebSocket) -> None:
 
 
 async def _downstream(
-    ws: WebSocket, queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str
+    ws: WebSocket, queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str, desk: MediaDesk
 ) -> None:
     partials: dict[str, str] = {}
     try:
-        async for event in live_events(queue, lang, resume, job_id):
+        async for event in live_events(queue, lang, resume, job_id, desk):
             for item in to_frames(event, partials):
                 if isinstance(item, bytes):
                     await ws.send_bytes(item)
@@ -100,8 +101,9 @@ async def _downstream(
         await ws.close(code=1011)
 
 
-async def _upstream(ws: WebSocket, queue: LiveRequestQueue | None) -> None:
-    """Reads the phone's frames until it disconnects. `queue` is None in mock mode: only pings are answered."""
+async def _upstream(ws: WebSocket, queue: LiveRequestQueue | None, desk: MediaDesk | None) -> None:
+    """Reads the phone's frames until it disconnects. `queue` and `desk` are None in mock mode: only pings are
+    answered."""
     talking = False
     while True:
         message = await ws.receive()
@@ -129,6 +131,10 @@ async def _upstream(ws: WebSocket, queue: LiveRequestQueue | None) -> None:
                 queue.send_activity_end()
         elif isinstance(frame, Text):
             queue.send_content(types.Content(role="user", parts=[types.Part(text=frame.text)]))
+        elif isinstance(frame, MediaReady | MediaCancel):
+            taken = desk.ready(frame) if isinstance(frame, MediaReady) else desk.cancel(frame)
+            if not taken:
+                await _send(ws, Error(code="bad_request", message="no open media request with that id"))
 
 
 @router.websocket("/ws/live")
@@ -146,15 +152,17 @@ async def ws_live(
     try:
         if os.getenv("MOCK_LIVE") == "1":
             await _replay(ws)
-            await _upstream(ws, None)
+            await _upstream(ws, None, None)
             return
         session_id = f"s_{uuid.uuid4().hex[:8]}"
         job_id = job_id or f"j_{uuid.uuid4().hex[:8]}"
         await _send(ws, SessionReady(session_id=session_id, live_model=os.getenv("LIVE_MODEL", "unset"), resumable=True))
         queue = LiveRequestQueue()
-        down = create_task(_downstream(ws, queue, lang, resume, job_id))
+        # The phone uploads with POST /api/media/upload-url, which puts a job's photos under jobs/<job_id>/.
+        desk = MediaDesk(lambda frame: _send(ws, frame), f"gs://{os.getenv('MEDIA_BUCKET', '')}/jobs/{job_id}/")
+        down = create_task(_downstream(ws, queue, lang, resume, job_id, desk))
         try:
-            await _upstream(ws, queue)
+            await _upstream(ws, queue, desk)
         finally:
             queue.close()
             down.cancel()

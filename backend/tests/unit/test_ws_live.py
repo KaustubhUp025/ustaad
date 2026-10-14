@@ -18,7 +18,7 @@ def fake_live(monkeypatch):
     """Stands in for the Live model: echoes audio, and answers the end of a spoken turn or a typed line."""
     opened = []
 
-    async def live_events(queue, lang, resume, job_id):
+    async def live_events(queue, lang, resume, job_id, desk):
         opened.append((lang, resume))
         if lang == "xx":
             raise RuntimeError("model not found")
@@ -159,3 +159,11 @@ def test_mock_live_never_opens_a_model_session(mock_live, fake_live):
     with TestClient(app).websocket_connect(URL) as ws:
         ws.receive_json()
     assert fake_live == []
+
+
+def test_media_ready_for_an_unknown_request_gets_bad_request(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    with TestClient(app).websocket_connect(URL) as ws:
+        ws.receive_json()
+        ws.send_json({"v": 1, "type": "media_ready", "request_id": "r_9", "uri": "gs://b/jobs/j_1/x.jpg", "kind": "photo"})
+        assert ws.receive_json()["code"] == "bad_request"

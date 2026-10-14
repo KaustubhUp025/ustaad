@@ -1,4 +1,4 @@
-import { Mic } from 'lucide-react'
+import { Camera, Mic } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useSearchParams } from 'react-router-dom'
@@ -7,7 +7,10 @@ import { useLive } from '@/audio/useLive'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-// The job screen: live captions, the current step card, the safety gate and stop screens, and the push-to-talk mic.
+import { CameraSheet } from './CameraSheet'
+
+// The job screen: live captions, the current step card, the safety gate and stop screens, the camera sheet, and the
+// push-to-talk mic.
 export default function Job() {
   const { t, i18n } = useTranslation()
   // ?lang= picks the language until onboarding (T21) saves it on the profile.
@@ -15,6 +18,7 @@ export default function Job() {
   const { id = '' } = useParams()
   const live = useLive(lang, id)
   const { step, gate, failReason, stop } = live.repair
+  const { request } = live.media
 
   useEffect(() => {
     void i18n.changeLanguage(lang)
@@ -49,6 +53,14 @@ export default function Job() {
         <section role="alert" className="flex flex-1 items-center px-6 py-10">
           <p className="text-[length:var(--text-lg)] font-semibold">{t([`repair.stop.${stop.reason}`, 'repair.stop.other'])}</p>
         </section>
+      ) : request ? (
+        <CameraSheet
+          key={`${request.request_id}:${live.media.retakeReason}`}
+          view={{ ...live.media, request }}
+          jobId={id}
+          onSent={(uri) => live.mediaReady(request.request_id, uri, request.kind)}
+          onCancel={live.cancelMedia}
+        />
       ) : gate ? (
         <section role="alert" className="flex flex-1 flex-col justify-center gap-4 bg-graphite px-6 py-10 text-housing">
           <h2 className="font-heading text-[length:var(--text-xl)] font-bold text-primary">{t('repair.gateTitle')}</h2>
@@ -59,6 +71,16 @@ export default function Job() {
               {t('repair.gateFailed', { reason: failReason })}
             </p>
           )}
+          {/* A gate photo must come from a server-issued request, so the button asks Ustaad for one; the
+              media_request it sends opens the camera sheet. */}
+          <Button
+            className="h-(--touch) gap-2 self-start px-6 text-[length:var(--text-body)]"
+            disabled={live.status !== 'ready'}
+            onClick={() => live.say(t('camera.askGatePhoto'))}
+          >
+            <Camera aria-hidden className="size-6" />
+            {t('camera.sendGatePhoto')}
+          </Button>
         </section>
       ) : (
         <>

@@ -11,6 +11,8 @@ ApplianceType = Literal[
 ]
 GateId = Literal["G_MAINS_OFF", "G_CAP_DISCHARGE"]
 GateState = Literal["open", "passed", "failed"]
+MediaKind = Literal["photo", "video", "document"]
+Confidence = Annotated[float, Field(ge=0, le=1)]
 # Hard stops (SAFETY.md): a step with one of these is never emitted. The hazard levels above do not change.
 StopReason = Literal["refrigerant", "microwave_hv", "crt", "geyser_open"]
 
@@ -24,6 +26,12 @@ class StepSource(BaseModel):
     page: int | None
 
 
+class Observation(BaseModel):
+    label: str
+    value: str
+    confidence: Confidence
+
+
 class RepairStep(BaseModel):
     """One entry of `jobs.steps[]`."""
 
@@ -34,11 +42,24 @@ class RepairStep(BaseModel):
     source: StepSource
 
 
+class JobMedia(BaseModel):
+    """One entry of `jobs.media[]`: a photo or clip the server asked for and checked."""
+
+    model_config = ConfigDict(extra="forbid")
+    request_id: str
+    uri: str
+    kind: MediaKind
+    findings: list[Observation]
+    confidence: Confidence
+    reason: Literal["requested", "side_issue", "manual"] | None = None
+
+
 class RepairJob(BaseModel):
-    """The part of `jobs/{jid}` the repair tools and the gate callback read and write. A new job has all gates open."""
+    """The part of `jobs/{jid}` the repair, gate and media tools read and write. A new job has all gates open."""
 
     model_config = ConfigDict(extra="forbid")
     job_id: str
     steps: list[RepairStep] = []
     gates: dict[GateId, GateState] = {"G_MAINS_OFF": "open", "G_CAP_DISCHARGE": "open"}
     current_step: Annotated[int, Field(ge=0)] = 0
+    media: list[JobMedia] = []

@@ -36,5 +36,15 @@
       "refrigerant": "Gas work is only for a certified gas technician. I can help with the other checks.",
       "other": "This work isn't safe to guide. Only a trained technician should do it. I can help with the other checks."
     }
+  },
+  "camera": {
+    "take": "Take photo",
+    "retake": "Take photo again",
+    "notNow": "Not now",
+    "sending": "Sending photo…",
+    "checking": "Ustaad is looking at the photo…",
+    "failed": "Photo didn't send. Check the network, then take it again.",
+    "sendGatePhoto": "Send photo",
+    "askGatePhoto": "I want to send the safety check photo."
   }
 }

@@ -27,6 +27,7 @@ RETRY_DISCHARGE = (
     "Capacitor is not shown discharged. Discharge it safely with an insulated tool, then measure again and send "
     "a photo of the meter."
 )
+NOT_ISSUED = "Only the latest photo from request_media can pass a gate. Ask for the gate photo with request_media."
 
 
 def _card_source(card: FaultCard) -> StepSource:
@@ -68,6 +69,12 @@ def next_step(job: RepairJob) -> tuple[StepOut | SafetyGateOut | RepairDone, Rep
     return StepOut(job_id=job.job_id, of=len(job.steps), step=step), job.model_copy(
         update={"current_step": job.current_step + 1}
     )
+
+
+def issued_photo(job: RepairJob, media_uri: str) -> bool:
+    """Only the job's latest photo from a server-issued request can pass a gate, so an old photo (taken before
+    power may have been switched back on) or a made-up URI cannot."""
+    return bool(job.media) and job.media[-1].uri == media_uri and job.media[-1].kind == "photo"
 
 
 def confirm_safety(inp: ConfirmSafetyIn, job: RepairJob, check: GateCheck) -> tuple[ConfirmSafetyOut, RepairJob]:

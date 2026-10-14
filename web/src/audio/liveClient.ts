@@ -4,6 +4,7 @@ import captureUrl from './capture.worklet.ts?worker&url'
 import playbackUrl from './playback.worklet.ts?worker&url'
 
 export type GateId = 'G_MAINS_OFF' | 'G_CAP_DISCHARGE'
+export type MediaKind = 'photo' | 'video' | 'document'
 export type Hazard = 'none' | 'HV' | 'capacitor' | 'refrigerant'
 export type StepSource = {
   kind: 'whatsapp_voice' | 'whatsapp_text' | 'manual' | 'job' | 'synthetic' | 'manual_photo' | 'general'
@@ -26,12 +27,25 @@ export type ServerFrame =
   | { v: 1; type: 'safety_gate'; gate_id: GateId; message: string; required_evidence: string }
   | { v: 1; type: 'gate_result'; gate_id: GateId; passed: boolean; reason: string | null }
   | { v: 1; type: 'safety_stop'; reason: string; message: string }
+  | {
+      v: 1
+      type: 'media_request'
+      request_id: string
+      kind: MediaKind
+      target: string
+      framing_tip: string
+      max_seconds: number | null
+    }
+  | { v: 1; type: 'media_result'; request_id: string; matches_expected: boolean; confidence: number; retake_reason: string | null }
 
 export type LiveStatus = 'connecting' | 'ready' | 'reconnecting' | 'failed'
 
 export interface LiveConnection {
   startTalking(): Promise<void>
   stopTalking(): void
+  say(text: string): void
+  mediaReady(requestId: string, uri: string, kind: MediaKind): void
+  mediaCancel(requestId: string): void
   close(): void
 }
 
@@ -161,6 +175,15 @@ export function openLive(
       if (!talking) return
       talking = false
       sendFrame({ type: 'ptt', state: 'end' })
+    },
+    say(text) {
+      sendFrame({ type: 'text', text })
+    },
+    mediaReady(requestId, uri, kind) {
+      sendFrame({ type: 'media_ready', request_id: requestId, uri, kind })
+    },
+    mediaCancel(requestId) {
+      sendFrame({ type: 'media_cancel', request_id: requestId })
     },
     close() {
       closed = true

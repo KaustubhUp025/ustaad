@@ -10,7 +10,7 @@ Errors: `{"error": {"code": "not_found", "message": "…"}}` with the matching H
 | --- | --- | --- |
 | `POST /api/demo/session` | `{"worker_id": "w_hi_demo"}` (optional; default Hindi demo worker) | `{"token": "…", "worker": Worker, "ws_url": "wss://…/ws/live"}` — token is a signed, 24 h demo token |
 | `POST /api/chat` | `{"job_id": "j_1", "text": "…"}` or `{"job_id", "audio_uri": "gs://…"}` | `{"text": "…", "events": [WsServerFrame], "tts_url": "https://… signed" or null}` — same events as the WebSocket |
-| `POST /api/media/upload-url` | `{"kind": "photo"\|"video"\|"import", "content_type": "image/jpeg", "job_id"?: "j_1", "import_id"?: "i_1", "filename"?: "x.zip"}` | `{"upload_url": "https://… signed PUT", "uri": "gs://…", "expires_in": 900}` |
+| `POST /api/media/upload-url` | `{"kind": "photo"\|"video"\|"import", "content_type": "image/jpeg", "job_id"?: "j_1", "import_id"?: "i_1", "filename"?: "x.zip"}` | `{"upload_url": "https://… signed PUT", "uri": "gs://…", "expires_in": 900, "headers": {"Content-Type": "image/jpeg", "x-goog-content-length-range": "0,15728640"}}` |
 | `GET /api/jobs` | — | `{"items": [Job]}` (this worker, newest first) |
 | `POST /api/jobs` | `{"appliance"?: {...}, "symptom"?: "…"}` | `Job` |
 | `GET /api/jobs/{id}` | — | `Job` |
@@ -34,3 +34,16 @@ Errors: `{"error": {"code": "not_found", "message": "…"}}` with the matching H
 
 Entity shapes (Worker, Job, FaultCard, InventoryItem, Vendor, QuoteRequest, Quote, Import, Cluster) are the
 Firestore documents in `firestore.md` plus `id`, minus server-only fields (`embedding`, raw webhook bodies).
+
+## Media upload URL validation
+
+The browser must send every header returned in `headers` with the signed PUT. Both returned headers are part of
+the V4 signature. Allowed content types and binary size limits are:
+
+| Kind | Content types | Maximum bytes |
+| --- | --- | ---: |
+| `photo` | `image/jpeg`, `image/png` | 15,728,640 (15 MiB) |
+| `video` | `video/mp4` | 52,428,800 (50 MiB) |
+| `import` | `application/zip`, `audio/ogg`, `audio/opus`, `text/plain`, `image/jpeg`, `image/png` | 104,857,600 (100 MiB) |
+
+An unsupported content type, or a listed type used with the wrong kind, returns HTTP 400.

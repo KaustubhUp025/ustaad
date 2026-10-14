@@ -1,4 +1,183 @@
 {
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "MediaUploadError": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "MediaUploadError",
+        "type": "object"
+      },
+      "MediaUploadHeaders": {
+        "additionalProperties": false,
+        "properties": {
+          "Content-Type": {
+            "title": "Content-Type",
+            "type": "string"
+          },
+          "x-goog-content-length-range": {
+            "title": "X-Goog-Content-Length-Range",
+            "type": "string"
+          }
+        },
+        "required": [
+          "Content-Type",
+          "x-goog-content-length-range"
+        ],
+        "title": "MediaUploadHeaders",
+        "type": "object"
+      },
+      "MediaUploadRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "content_type": {
+            "minLength": 1,
+            "title": "Content Type",
+            "type": "string"
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filename"
+          },
+          "import_id": {
+            "anyOf": [
+              {
+                "pattern": "^i_[A-Za-z0-9][A-Za-z0-9_-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Import Id"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "pattern": "^j_[A-Za-z0-9][A-Za-z0-9_-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "kind": {
+            "enum": [
+              "photo",
+              "video",
+              "import"
+            ],
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "content_type"
+        ],
+        "title": "MediaUploadRequest",
+        "type": "object"
+      },
+      "MediaUploadResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "expires_in": {
+            "const": 900,
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "headers": {
+            "$ref": "#/components/schemas/MediaUploadHeaders"
+          },
+          "upload_url": {
+            "title": "Upload Url",
+            "type": "string"
+          },
+          "uri": {
+            "title": "Uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "upload_url",
+          "uri",
+          "expires_in",
+          "headers"
+        ],
+        "title": "MediaUploadResponse",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
   "info": {
     "title": "ustaad-api",
     "version": "0.1.0"
@@ -23,6 +202,54 @@
           }
         },
         "summary": "Healthz"
+      }
+    },
+    "/api/media/upload-url": {
+      "post": {
+        "operationId": "create_media_upload_url_api_media_upload_url_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaUploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaUploadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaUploadError"
+                }
+              }
+            },
+            "description": "Unsupported content type for upload kind"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Media Upload Url"
       }
     },
     "/healthz": {

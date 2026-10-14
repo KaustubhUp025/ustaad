@@ -82,3 +82,6 @@ enforcement and T18 voice-boundary normalization remain pending; no update_inven
 Other T10 entities/stubs remain pending. Inventory is not exposed in OpenAPI until a route references it.
 T10 aligned with T38 docs on main (`3c163eb`): inventory rules unchanged; remaining Worker,
 Job and FaultCard models must use the general-appliance constraints noted in BUILD-GUIDE T10.
+T10 coordination: PR #19 owns the shared repair types. FaultCard source/part shapes can proceed
+independently; the complete FaultCard and Job steps/gates wait for those imports. Job validation/loading
+must preserve stored gate states, while the later creation flow starts new jobs with gates open.

@@ -3,6 +3,16 @@
 import captureUrl from './capture.worklet.ts?worker&url'
 import playbackUrl from './playback.worklet.ts?worker&url'
 
+export type GateId = 'G_MAINS_OFF' | 'G_CAP_DISCHARGE'
+export type Hazard = 'none' | 'HV' | 'capacitor' | 'refrigerant'
+export type StepSource = {
+  kind: 'whatsapp_voice' | 'whatsapp_text' | 'manual' | 'job' | 'synthetic' | 'manual_photo' | 'general'
+  label: string
+  audio_uri: string | null
+  doc: string | null
+  page: number | null
+}
+
 // Frames this module and the job screen read; the other server frames arrive with their own tasks.
 export type ServerFrame =
   | { v: 1; type: 'session_ready'; session_id: string; live_model: string; resumable: boolean }
@@ -12,6 +22,10 @@ export type ServerFrame =
   | { v: 1; type: 'resume_handle'; handle: string }
   | { v: 1; type: 'error'; code: 'live_unavailable' | 'rate_limited' | 'auth' | 'bad_request'; message: string }
   | { v: 1; type: 'pong' }
+  | { v: 1; type: 'step_card'; job_id: string; n: number; of: number; instruction: string; hazard: Hazard; source: StepSource }
+  | { v: 1; type: 'safety_gate'; gate_id: GateId; message: string; required_evidence: string }
+  | { v: 1; type: 'gate_result'; gate_id: GateId; passed: boolean; reason: string | null }
+  | { v: 1; type: 'safety_stop'; reason: string; message: string }
 
 export type LiveStatus = 'connecting' | 'ready' | 'reconnecting' | 'failed'
 
@@ -54,6 +68,7 @@ async function openAudio(): Promise<Audio> {
 
 export function openLive(
   lang: string,
+  jobId: string,
   onFrame: (frame: ServerFrame) => void,
   onStatus: (status: LiveStatus) => void,
 ): LiveConnection {
@@ -85,7 +100,7 @@ export function openLive(
   }
 
   const connect = () => {
-    const params = new URLSearchParams({ token: TOKEN, lang })
+    const params = new URLSearchParams({ token: TOKEN, lang, job_id: jobId })
     if (resume) params.set('resume', resume)
     ws = new WebSocket(`${WS_URL}?${params}`)
     ws.binaryType = 'arraybuffer'

@@ -18,3 +18,4 @@ CLAUDE.local.md
 web/.env.local
 AGENTS.override.md
 GEMINI.local.md
+web/test-results/

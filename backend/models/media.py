@@ -29,10 +29,6 @@ class MediaUploadHeaders(BaseModel):
     content_length_range: str = Field(alias="x-goog-content-length-range")
 
 
-class MediaUploadError(BaseModel):
-    detail: str
-
-
 class MediaUploadResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

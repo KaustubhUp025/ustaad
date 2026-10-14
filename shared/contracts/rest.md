@@ -4,7 +4,11 @@ Owner: B (A owns `/api/chat` and `/api/demo/session`). Frozen Mon Oct 12, 12:00.
 Source of truth flow: **this file → Pydantic models in `backend/models/` → `make types` →
 `shared/contracts/openapi.json` + `web/src/api/types.ts`**. CI fails if the generated files are stale.
 All JSON. Auth: `Authorization: Bearer <session token>` except `/healthz`, `/api/demo/session` and the webhook.
-Errors: `{"error": {"code": "not_found", "message": "…"}}` with the matching HTTP status.
+Errors use `{"error": {"code": "<stable code>", "message": "<safe message>"}}` with the matching HTTP status.
+Allowed codes are `bad_request` (400), `unauthorized` (401), `forbidden` (403), `not_found` (404),
+`conflict` (409), `validation_error` (422), `rate_limited` (429), `internal_error` (500), and `http_error`
+(other explicitly raised HTTP statuses). Messages are fixed by code and never include submitted values, IDs,
+numbers, exception text, request-validation details, tracebacks, credentials, secrets, or implementation details.
 
 | Method + path | Request | Response |
 | --- | --- | --- |

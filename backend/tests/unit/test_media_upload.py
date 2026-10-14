@@ -122,7 +122,12 @@ async def test_upload_url_rejects_unsupported_or_wrong_kind_content_type(
     response = await post_upload({"kind": kind, "content_type": content_type})
 
     assert response.status_code == 400
-    assert response.json() == {"detail": "unsupported content type for upload kind"}
+    assert response.json() == {
+        "error": {
+            "code": "bad_request",
+            "message": "Bad request",
+        }
+    }
     assert fake_storage.calls == []
 
 

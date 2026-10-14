@@ -5,7 +5,8 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException
 
 from clients.storage import SignedUpload, StorageUploadClient
-from models.media import MediaUploadError, MediaUploadRequest, MediaUploadResponse
+from models.errors import ErrorResponse
+from models.media import MediaUploadRequest, MediaUploadResponse
 
 UPLOAD_URL_EXPIRES_IN = 900
 UPLOAD_RULES = {
@@ -45,7 +46,7 @@ def _object_name(request: MediaUploadRequest) -> str:
     responses={
         400: {
             "description": "Unsupported content type for upload kind",
-            "model": MediaUploadError,
+            "model": ErrorResponse,
         }
     },
 )

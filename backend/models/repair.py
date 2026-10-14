@@ -1,0 +1,32 @@
+"""Shapes shared by repair steps, safety gates and fault cards (SAFETY.md, firestore.md `jobs`, fault_card.schema.json).
+Defined once here; the Job, FaultCard and WebSocket models import them."""
+
+from typing import Annotated, Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+Hazard = Literal["none", "HV", "capacitor", "refrigerant"]
+ApplianceType = Literal[
+    "split_ac", "window_ac", "fridge", "washing_machine", "led_tv", "microwave", "geyser", "fan_cooler", "other"
+]
+GateId = Literal["G_MAINS_OFF", "G_CAP_DISCHARGE"]
+GateState = Literal["open", "passed", "failed"]
+
+
+class StepSource(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["whatsapp_voice", "whatsapp_text", "manual", "job", "synthetic", "manual_photo", "general"]
+    label: str
+    audio_uri: str | None
+    doc: str | None
+    page: int | None
+
+
+class RepairStep(BaseModel):
+    """One entry of `jobs.steps[]`."""
+
+    model_config = ConfigDict(extra="forbid")
+    n: Annotated[int, Field(ge=1)]
+    instruction: str
+    hazard: Hazard
+    source: StepSource

@@ -40,6 +40,11 @@ know what already works; humans append one block per day.
   passed, Ustaad called `next_step` only 3/5 (2/5 he said the step from memory, no step card). So the server now
   hands out the next step itself after a pass, through the same gate-checked `next_step`: step card 5/5 within
   0.4 s, Ustaad spoke that step 5/5, and never also called `next_step` (no skipped step, 5/5, two-step plan).
+  First phone test (Oct 15, A's Android, office AC, preview link on dev): the sheet locked on "checking" after two
+  retakes with the same reason (fixed: every server answer unlocks it); no zoom in the in-page camera (added 1x/2x/4x
+  where the camera supports it); the viewfinder was a wide strip of a tall photo (now portrait, so what he sees is
+  sent); the sheet now fits above the mic at 360 x 800. Phone-side sharpness on two real photos: blurred 6.3, sharp
+  683 (threshold 15).
   Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
   The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)

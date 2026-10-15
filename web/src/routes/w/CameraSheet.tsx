@@ -1,4 +1,4 @@
-import { Camera, Flashlight } from 'lucide-react'
+import { Camera, Flashlight, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -22,14 +22,15 @@ type Phase = 'ready' | 'dark' | 'blurry' | 'sending' | 'checking' | 'failed'
 // It takes the job's middle area and leaves the mic below it, so he can still talk to Ustaad. A very dark or blurry
 // photo is caught on the phone before any upload; "send anyway" lets him overrule it. The parent keys the sheet by
 // request, so the camera keeps running through retakes; a new retake reason resets the sheet.
-export function CameraSheet({ view: { request, retakeReason }, title, jobId, onSent, onCancel }: Props) {
+export function CameraSheet({ view: { request, retakeReason, answers }, title, jobId, onSent, onCancel }: Props) {
   const { t } = useTranslation()
   const camera = useCamera()
   const fallback = useRef<HTMLInputElement>(null)
   const [phase, setPhase] = useState<Phase>('ready')
-  const [reasonShown, setReasonShown] = useState(retakeReason)
-  if (retakeReason !== reasonShown) {
-    setReasonShown(retakeReason)
+  // Each server answer unlocks the sheet, even a second retake with the same reason (found on the phone, Oct 15).
+  const [answersSeen, setAnswersSeen] = useState(answers)
+  if (answers !== answersSeen) {
+    setAnswersSeen(answers)
     setPhase('ready')
   }
   const held = useRef<Blob | null>(null) // the photo the phone-side check rejected, for "send anyway"
@@ -53,6 +54,8 @@ export function CameraSheet({ view: { request, retakeReason }, title, jobId, onS
   }
 
   const live = camera.state === 'live'
+  // One button cycles the zoom steps the camera supports (1x, 2x, 4x), so it costs no extra row.
+  const nextZoom = camera.zoomSteps[(camera.zoomSteps.indexOf(camera.zoom) + 1) % camera.zoomSteps.length] ?? 1
   const busy = phase === 'sending' || phase === 'checking'
   const message = {
     ready: retakeReason,
@@ -64,36 +67,54 @@ export function CameraSheet({ view: { request, retakeReason }, title, jobId, onS
   }[phase]
   const warn = phase === 'dark' || phase === 'blurry' || phase === 'failed' || (phase === 'ready' && retakeReason)
 
+  const controls = 'size-(--touch) rounded-full bg-graphite/80 text-housing hover:bg-graphite'
+
   return (
     <section
       role="dialog"
       aria-labelledby="camera-title"
-      className="mt-auto flex animate-in flex-col gap-4 rounded-t-xl bg-card px-4 pt-5 pb-6 shadow-lg slide-in-from-bottom motion-reduce:animate-none"
+      className="mt-auto flex animate-in flex-col gap-3 rounded-t-xl bg-card px-4 pt-4 pb-4 shadow-lg slide-in-from-bottom motion-reduce:animate-none"
     >
-      <h2 id="camera-title" className="font-heading text-[length:var(--text-lg)] leading-tight font-bold">
-        {title}
-      </h2>
+      {/* Everything fits above the mic on a 360 x 800 phone, so he can still talk while framing (phone test, Oct 15). */}
+      <div className="flex items-start gap-2">
+        <div className="flex-1">
+          <h2 id="camera-title" className="font-heading text-[length:var(--text-lg)] leading-tight font-bold">
+            {title}
+          </h2>
+          {request.framing_tip && <p className="text-[length:var(--text-sm)] text-muted-foreground">{request.framing_tip}</p>}
+        </div>
+        <Button variant="ghost" size="icon" aria-label={t('camera.notNow')} className="size-(--touch) shrink-0" disabled={busy} onClick={onCancel}>
+          <X aria-hidden className="size-6" />
+        </Button>
+      </div>
 
-      {/* Viewfinder: the live back camera when allowed, else a hint; the framing outline marks what should fill it. */}
-      <div className="relative flex aspect-video items-end justify-center overflow-hidden rounded-lg bg-graphite text-center text-housing">
+      {/* Viewfinder: the live back camera when allowed, else a hint; the framing outline marks what should fill it.
+          Portrait like the photo it takes, so what he sees is what gets sent. Zoom and torch sit in the bottom
+          corners, clear of the middle he is framing. */}
+      <div className="relative mx-auto flex aspect-[3/4] h-[min(300px,36dvh)] items-center justify-center overflow-hidden rounded-lg bg-graphite text-center text-housing">
         <video ref={camera.video} muted playsInline aria-hidden className={live ? 'absolute inset-0 size-full object-cover' : 'hidden'} />
         {['top-3 left-3 border-t-4 border-l-4', 'top-3 right-3 border-t-4 border-r-4', 'bottom-3 left-3 border-b-4 border-l-4', 'right-3 bottom-3 border-r-4 border-b-4'].map(
           (corner) => (
             <span key={corner} aria-hidden className={`absolute size-8 border-primary ${corner}`} />
           ),
         )}
-        {request.framing_tip && (
-          <p className={live ? 'relative mb-4 bg-graphite/80 px-2 text-[length:var(--text-sm)]' : 'relative mb-auto mt-auto px-10 text-[length:var(--text-body)]'}>
-            {request.framing_tip}
-          </p>
+        {camera.zoomSteps.length > 0 && (
+          <Button
+            variant="ghost"
+            aria-label={t('camera.zoom', { n: nextZoom })}
+            className={`absolute bottom-2 left-2 ${controls} text-[length:var(--text-sm)] font-semibold`}
+            onClick={() => void camera.setZoom(nextZoom)}
+          >
+            {camera.zoom}×
+          </Button>
         )}
         {camera.torch !== null && (
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             aria-label={t('camera.flash')}
             aria-pressed={camera.torch}
-            className="absolute top-3 right-14 size-(--touch) bg-graphite/80 text-housing"
+            className={`absolute right-2 bottom-2 ${controls} ${camera.torch ? 'text-primary' : ''}`}
             onClick={() => void camera.toggleTorch()}
           >
             <Flashlight aria-hidden className="size-6" />
@@ -123,22 +144,21 @@ export function CameraSheet({ view: { request, retakeReason }, title, jobId, onS
           e.target.value = ''
         }}
       />
-      <Button
-        className="h-(--touch) gap-2 text-[length:var(--text-body)]"
-        disabled={busy || camera.state === 'starting'}
-        onClick={() => (live ? void camera.capture().then(take) : fallback.current?.click())}
-      >
-        <Camera aria-hidden className="size-6" />
-        {t(phase === 'ready' && !retakeReason ? 'camera.take' : 'camera.retake')}
-      </Button>
-      {(phase === 'dark' || phase === 'blurry') && (
-        <Button variant="outline" className="h-(--touch) text-[length:var(--text-body)]" onClick={() => void upload(held.current!)}>
-          {t('camera.sendAnyway')}
+      <div className="flex gap-2">
+        <Button
+          className="h-(--touch) flex-1 gap-2 text-[length:var(--text-body)]"
+          disabled={busy || camera.state === 'starting'}
+          onClick={() => (live ? void camera.capture().then(take) : fallback.current?.click())}
+        >
+          <Camera aria-hidden className="size-6" />
+          {t(phase === 'ready' && !retakeReason ? 'camera.take' : 'camera.retake')}
         </Button>
-      )}
-      <Button variant="outline" className="h-(--touch) text-[length:var(--text-body)]" disabled={busy} onClick={onCancel}>
-        {t('camera.notNow')}
-      </Button>
+        {(phase === 'dark' || phase === 'blurry') && (
+          <Button variant="outline" className="h-(--touch) text-[length:var(--text-body)]" onClick={() => void upload(held.current!)}>
+            {t('camera.sendAnyway')}
+          </Button>
+        )}
+      </div>
     </section>
   )
 }

@@ -24,12 +24,12 @@ const result = (retake_reason: string | null, request_id = 'r_1'): ServerFrame =
 })
 
 test('a media request opens the sheet with no retake reason', () => {
-  expect(mediaReducer(noMedia, request)).toEqual({ request, retakeReason: null })
+  expect(mediaReducer(noMedia, request)).toEqual({ request, retakeReason: null, answers: 0 })
 })
 
 test('a poor photo keeps the sheet open on the same request and shows the reason', () => {
   const view = mediaReducer(mediaReducer(noMedia, request), result('Photo dhundhli hai'))
-  expect(view).toEqual({ request, retakeReason: 'Photo dhundhli hai' })
+  expect(view).toEqual({ request, retakeReason: 'Photo dhundhli hai', answers: 1 })
 })
 
 test('a good photo after a retake closes the sheet', () => {
@@ -46,5 +46,12 @@ test('a new session closes the sheet; the server sends its open request again', 
   const open = mediaReducer(noMedia, request)
   const ready: ServerFrame = { v: 1, type: 'session_ready', session_id: 's_2', live_model: 'm', resumable: true }
   expect(mediaReducer(open, ready)).toEqual(noMedia)
-  expect(mediaReducer(mediaReducer(open, ready), request)).toEqual({ request, retakeReason: null })
+  expect(mediaReducer(mediaReducer(open, ready), request)).toEqual({ request, retakeReason: null, answers: 0 })
+})
+
+test('a second retake with the same reason still counts as a new answer, so the sheet unlocks', () => {
+  const once = mediaReducer(mediaReducer(noMedia, request), result('Photo dhundhli hai'))
+  const twice = mediaReducer(once, result('Photo dhundhli hai'))
+  expect(twice.answers).toBe(once.answers + 1)
+  expect(twice.retakeReason).toBe('Photo dhundhli hai')
 })

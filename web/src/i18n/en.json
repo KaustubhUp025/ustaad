@@ -49,6 +49,7 @@
     "sendAnyway": "Send anyway",
     "dark": "Photo is too dark. Turn the flash on and take it again.",
     "blurry": "Photo is blurry. Hold the phone still and move a little closer.",
-    "ownTitle": "Take a photo of what you want to show"
+    "ownTitle": "Take a photo of what you want to show",
+    "zoom": "Zoom {{n}} times"
   }
 }

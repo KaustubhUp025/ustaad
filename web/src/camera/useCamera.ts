@@ -3,6 +3,8 @@
 // 'unavailable' (no permission, no camera, old browser) falls back to the phone's own camera app.
 import { useEffect, useRef, useState } from 'react'
 
+const ZOOM_STEPS = [1, 2, 4]
+
 type ImageCaptureLike = { takePhoto(): Promise<Blob> }
 declare const ImageCapture: { new (track: MediaStreamTrack): ImageCaptureLike } | undefined
 
@@ -11,6 +13,9 @@ export function useCamera() {
   const track = useRef<MediaStreamTrack | null>(null)
   const [state, setState] = useState<'starting' | 'live' | 'unavailable'>('starting')
   const [torch, setTorch] = useState<boolean | null>(null) // null: this camera has no torch control
+  // Zoom steps the camera supports (empty: no zoom control). A nameplate high on a wall needs it (phone test, Oct 15).
+  const [zoomSteps, setZoomSteps] = useState<number[]>([])
+  const [zoom, setZoomState] = useState(1)
 
   useEffect(() => {
     let stream: MediaStream | null = null
@@ -21,8 +26,9 @@ export function useCamera() {
         stream = s
         if (stopped) return s.getTracks().forEach((t) => t.stop())
         track.current = s.getVideoTracks()[0]
-        const caps = track.current.getCapabilities?.() as { torch?: boolean } | undefined
+        const caps = track.current.getCapabilities?.() as { torch?: boolean; zoom?: { min: number; max: number } } | undefined
         setTorch(caps?.torch ? false : null)
+        if (caps?.zoom && caps.zoom.max > 1) setZoomSteps(ZOOM_STEPS.filter((z) => z >= caps.zoom!.min && z <= caps.zoom!.max))
         video.current!.srcObject = s
         await video.current!.play()
         setState('live')
@@ -38,6 +44,12 @@ export function useCamera() {
     video,
     state,
     torch,
+    zoomSteps,
+    zoom,
+    async setZoom(level: number) {
+      await track.current?.applyConstraints({ advanced: [{ zoom: level } as MediaTrackConstraintSet] })
+      setZoomState(level)
+    },
     async toggleTorch() {
       const on = !torch
       await track.current?.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] })

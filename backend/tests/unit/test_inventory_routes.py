@@ -7,10 +7,11 @@ import httpx
 import pytest
 from google.cloud import firestore, storage
 
+from app.inventory import FIXTURE_PATH
 from app.main import app
 from models.inventory import InventoryListResponse
 
-ROOT = Path(__file__).parents[3]
+BACKEND_ROOT = Path(__file__).parents[2]
 
 
 @pytest.fixture(autouse=True)
@@ -28,7 +29,9 @@ def forbid_external_services(monkeypatch):
 
 
 async def test_inventory_replays_fixture_through_response_model():
-    fixture = json.loads((ROOT / "seed/fixtures/inventory.json").read_text())
+    assert FIXTURE_PATH.is_relative_to(BACKEND_ROOT)
+    assert FIXTURE_PATH.is_file()
+    fixture = json.loads(FIXTURE_PATH.read_text())
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/api/inventory")

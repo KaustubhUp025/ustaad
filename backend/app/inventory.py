@@ -7,7 +7,7 @@ from fastapi import APIRouter
 from models.inventory import InventoryListResponse
 
 router = APIRouter(prefix="/api/inventory")
-FIXTURE_PATH = Path(__file__).parents[2] / "seed/fixtures/inventory.json"
+FIXTURE_PATH = Path(__file__).parents[1] / "fixtures/inventory.json"
 
 
 @router.get("", response_model=InventoryListResponse)

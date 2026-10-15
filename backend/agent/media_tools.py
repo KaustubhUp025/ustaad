@@ -102,12 +102,14 @@ class MediaDesk:
             elif request.call_id:
                 del self._open[request.request_id]
 
-    def detach(self) -> None:
-        self._send = self._queue = None
+    def detach(self, queue: LiveRequestQueue) -> None:
+        """Only the attached connection lets go: an old socket can end after the phone has reconnected."""
+        if self._queue is queue:
+            self._send = self._queue = None
 
     @property
     def idle(self) -> bool:
-        return not self._open and not self._held
+        return self._queue is None and not self._open and not self._held
 
     async def open(self, request: OpenRequest) -> None:
         self._open[request.request_id] = request

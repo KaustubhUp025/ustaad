@@ -187,7 +187,7 @@ async def ws_live(
         try:
             await _upstream(ws, queue, desk)
         finally:
-            desk.detach()
+            desk.detach(queue)
             if desk.idle:
                 DESKS.pop(job_id, None)
             queue.close()

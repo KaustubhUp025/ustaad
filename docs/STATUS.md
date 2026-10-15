@@ -58,6 +58,12 @@ know what already works; humans append one block per day.
   locally in headless Chromium with the real model: after a refresh the socket carries `resume=` and Ustaad still
   named the worker and his AC; a bogus stored handle gave one `live_unavailable`, then a fresh session.
   Flash photo checks were slow that afternoon (5-60 s from the laptop, two 30 s timeouts on dev): T27.
+  Fourth phone test (Oct 15, 15:53-16:01, dev 59c2ab7): a refresh and a Retry after ~15 s offline both kept
+  Ustaad's memory of the name and brand. A second tab opened without a handle got the job's gate request but not
+  Ustaad's earlier request, as intended. It showed a bug, now fixed: the job's photo requests stopped reaching the
+  phone when an older socket ended after a newer one had connected (as after a dropped network). No gate appeared in
+  a job where Ustaad never started a repair plan (smoke: he said to cut the supply). Once Ustaad spoke a bracketed
+  note aloud ("[Photo from the worker shows …]") despite the instruction line against it.
   Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
   The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)

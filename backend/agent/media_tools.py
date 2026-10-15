@@ -18,8 +18,26 @@ from google.genai import types
 
 from clients.firestore import JobStore
 from models.repair import GateId, MediaKind
-from models.tools import ConfirmSafetyIn, GateCheck, MediaCheck, RequestMediaIn, RequestMediaOut
-from models.ws import Frame, GateResult, MediaCancel, MediaReady, MediaRequest, MediaResult
+from models.tools import (
+    ConfirmSafetyIn,
+    GateCheck,
+    MediaCheck,
+    RepairDone,
+    RequestMediaIn,
+    RequestMediaOut,
+    SafetyGateOut,
+    StepOut,
+)
+from models.ws import (
+    Frame,
+    GateResult,
+    MediaCancel,
+    MediaReady,
+    MediaRequest,
+    MediaResult,
+    SafetyGate,
+    StepCard,
+)
 from tools import repair
 from tools import request_media as rules
 from tools.gates import EVIDENCE, QUESTIONS, open_gate
@@ -253,11 +271,35 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             )
         )
         response = out.model_dump(mode="json") | {"media_uri": uri, "retaking": not out.passed}
-        if out.passed:
-            notice = f"[Safety check passed: gate {gate_id} is open. Call next_step for the step.]"
-        else:
+        if not out.passed:
             notice = f"[Safety check photo for gate {gate_id} failed: {out.reason} He will send another; tell him why.]"
-        desk.answer(request, response, done=out.passed, notice=notice)
+            desk.answer(request, response, done=False, notice=notice)
+            return
+        # The server hands out what comes next, through the same gate-checked next_step, so the step card always
+        # shows and Ustaad says the step it handed out (he called next_step himself for only 3 of 5 passes, Oct 15).
+        after = jobs.update(desk.job_id, repair.next_step)
+        notice = await _hand_out(gate_id, after)
+        desk.answer(request, response | {"next": after.model_dump(mode="json")}, done=True, notice=notice)
+
+    async def _hand_out(gate_id: GateId, after: StepOut | SafetyGateOut | RepairDone) -> str:
+        """Shows what next_step returned after a passed gate and returns the note that tells Ustaad."""
+        if isinstance(after, StepOut):
+            step = after.step
+            await desk.show(StepCard(job_id=after.job_id, of=after.of, **step.model_dump()))
+            return (
+                f"[Safety check {gate_id} passed. The app handed out step {step.n} of {after.of}; it is on his screen: "
+                f'"{step.instruction}". Say this step to him now; do not call next_step until he reports back on it.]'
+            )
+        if isinstance(after, SafetyGateOut):
+            await desk.show(
+                SafetyGate(gate_id=after.gate_id, message="Safety check first", required_evidence=after.required_evidence)
+            )
+            await desk.open_gate(after.gate_id)
+            return (
+                f"[Safety check {gate_id} passed. Another safety check comes before the next step: {after.gate_id}, "
+                f"{after.required_evidence}. His phone asks for that photo; tell him what to do. Do not say the step.]"
+            )
+        return f"[Safety check {gate_id} passed. Every step has been given.]"
 
     def _record(job, request: OpenRequest, uri: str, findings, confidence: float, reason="requested"):
         return rules.record(job, request.request_id, request.inp.kind, uri, findings, confidence, reason)

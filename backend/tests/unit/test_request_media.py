@@ -9,7 +9,7 @@ from google.genai import types
 from agent.media_tools import MediaDesk, media_tools
 from models.repair import RepairJob, RepairStep
 from models.tools import GateCheck, MediaCheck, RequestMediaIn
-from models.ws import GateResult, MediaCancel, MediaReady, MediaRequest, MediaResult
+from models.ws import GateResult, MediaCancel, MediaReady, MediaRequest, MediaResult, SafetyGate, StepCard
 from tools.gates import EVIDENCE
 from tools.request_media import CANCELLED, GATE_RETAKE, MAX_RETAKES, NOT_CHECKED, RETAKE, judge, record
 
@@ -284,7 +284,7 @@ async def test_a_server_opened_gate_photo_is_judged_and_ustaad_gets_a_notice():
     assert phone.of(MediaResult)[0].retake_reason == GATE_RETAKE["hi"]["G_MAINS_OFF"]
     assert jobs.job.gates["G_MAINS_OFF"] == "passed"
     assert queue.answers == []
-    assert len(queue.notices) == 2 and "G_MAINS_OFF" in queue.notices[1] and "next_step" in queue.notices[1]
+    assert len(queue.notices) == 2 and "G_MAINS_OFF" in queue.notices[1]
     assert not desk.ready(ready(rid))
 
 
@@ -398,3 +398,41 @@ def test_his_own_photo_is_retaken_only_when_blurry_or_dark():
     assert not retake and out.matches_expected and out.follow_up is None
     _, retake = judge(BLURRY, URI, 0, "hi", own=True)
     assert retake
+
+
+
+# After a gate passes the server hands out the next step itself (Ustaad called next_step for only 3 of 5 passes,
+# Oct 15), so the step card always shows and Ustaad says the step the server handed out.
+
+
+async def test_a_passed_gate_hands_out_the_next_step_and_tells_ustaad_its_text():
+    desk, phone, queue, jobs, _ = session(gate_checks=[MCB_OFF], job=gated_job())
+    await desk.open_gate("G_MAINS_OFF")
+    await photo(desk, phone.of(MediaRequest)[0].request_id)
+    (card,) = phone.of(StepCard)
+    assert (card.n, card.of, card.instruction, card.hazard) == (1, 1, "Test step at the PCB", "HV")
+    assert jobs.job.current_step == 1
+    (notice,) = queue.notices
+    assert "Test step at the PCB" in notice and "do not call next_step" in notice
+
+
+async def test_a_passed_gate_before_another_gate_opens_that_gate_instead_of_a_step():
+    step = RepairStep(n=1, instruction="Test step at the capacitor", hazard="capacitor", source=GENERAL)
+    desk, phone, queue, jobs, _ = session(gate_checks=[MCB_OFF], job=RepairJob(job_id="j_1", steps=[step]))
+    await desk.open_gate("G_MAINS_OFF")
+    await photo(desk, phone.of(MediaRequest)[0].request_id)
+    assert phone.of(StepCard) == []
+    assert [g.gate_id for g in phone.of(SafetyGate)] == ["G_CAP_DISCHARGE"]
+    assert [r.target for r in phone.of(MediaRequest)][-1] == EVIDENCE["G_CAP_DISCHARGE"]
+    assert jobs.job.current_step == 0
+    assert "Test step at the capacitor" not in queue.notices[0] and "G_CAP_DISCHARGE" in queue.notices[0]
+
+
+async def test_ustaads_own_gate_call_also_gets_the_handed_out_step():
+    desk, phone, queue, _, tool = session(gate_checks=[MCB_OFF], job=gated_job())
+    await desk.open_gate("G_MAINS_OFF")
+    gate_photo = RequestMediaIn(kind="photo", target="MCB OFF", reason="gate", framing_tip="", gate_id="G_MAINS_OFF")
+    await tool.func(context("call_g"), **gate_photo.model_dump())
+    await photo(desk, phone.of(MediaRequest)[0].request_id)
+    assert queue.answers[0].response["next"]["status"] == "STEP"
+    assert len(phone.of(StepCard)) == 1

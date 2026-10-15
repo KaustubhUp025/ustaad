@@ -37,7 +37,9 @@ know what already works; humans append one block per day.
   The worker can start a photo himself ("फ़ोटो भेजो" beside the mic, `media_offer`): the sheet opens 0.7–1.0 s
   after the tap with no model in the way, and with the new instruction lines Ustaad talked about his photo 3/3
   (1.5–1.75 s after the result) and opened a request for a spoken photo offer 3/3 (was 1/3). After a gate photo
-  passed, Ustaad called `next_step` 3/5; 2/5 he said the step himself without it, so no step card (open decision).
+  passed, Ustaad called `next_step` only 3/5 (2/5 he said the step from memory, no step card). So the server now
+  hands out the next step itself after a pass, through the same gate-checked `next_step`: step card 5/5 within
+  0.4 s, Ustaad spoke that step 5/5, and never also called `next_step` (no skipped step, 5/5, two-step plan).
   Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
   The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)

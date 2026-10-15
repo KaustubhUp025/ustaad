@@ -32,6 +32,13 @@ class MediaCancel(Frame):
     request_id: str
 
 
+class MediaOffer(Frame):
+    """The worker starts a photo himself; the server answers with a media_request it issues."""
+
+    type: Literal["media_offer"] = "media_offer"
+    kind: Literal["photo", "document"]
+
+
 class Text(Frame):
     type: Literal["text"] = "text"
     text: str
@@ -177,7 +184,7 @@ class Error(Frame):
     message: str
 
 
-WsClientFrame = Annotated[Ptt | MediaReady | MediaCancel | Text | Ping, Field(discriminator="type")]
+WsClientFrame = Annotated[Ptt | MediaReady | MediaCancel | MediaOffer | Text | Ping, Field(discriminator="type")]
 WsServerFrame = Annotated[
     SessionReady
     | Caption

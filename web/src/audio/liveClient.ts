@@ -43,7 +43,7 @@ export type LiveStatus = 'connecting' | 'ready' | 'reconnecting' | 'failed'
 export interface LiveConnection {
   startTalking(): Promise<void>
   stopTalking(): void
-  say(text: string): void
+  mediaOffer(kind: 'photo' | 'document'): void
   mediaReady(requestId: string, uri: string, kind: MediaKind): void
   mediaCancel(requestId: string): void
   close(): void
@@ -176,8 +176,8 @@ export function openLive(
       talking = false
       sendFrame({ type: 'ptt', state: 'end' })
     },
-    say(text) {
-      sendFrame({ type: 'text', text })
+    mediaOffer(kind) {
+      sendFrame({ type: 'media_offer', kind })
     },
     mediaReady(requestId, uri, kind) {
       sendFrame({ type: 'media_ready', request_id: requestId, uri, kind })

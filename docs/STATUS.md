@@ -34,6 +34,10 @@ know what already works; humans append one block per day.
   and for 1 of 3 side-issue offers (otherwise he only said "bhejo"), 2 of 2 for a manual page. So the server now
   opens a gate's request itself, 4 ms after `safety_gate`; a wrong photo fails the gate with a Hindi reason and
   Ustaad says why from the server's note. A failed or hung vision call (30 s) asks for the photo again.
+  The worker can start a photo himself ("फ़ोटो भेजो" beside the mic, `media_offer`): the sheet opens 0.7–1.0 s
+  after the tap with no model in the way, and with the new instruction lines Ustaad talked about his photo 3/3
+  (1.5–1.75 s after the result) and opened a request for a spoken photo offer 3/3 (was 1/3). After a gate photo
+  passed, Ustaad called `next_step` 3/5; 2/5 he said the step himself without it, so no step card (open decision).
   Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
   The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)

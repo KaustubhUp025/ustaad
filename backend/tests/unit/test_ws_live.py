@@ -186,3 +186,12 @@ def test_a_safety_gate_from_the_model_opens_its_photo_request(monkeypatch):
         assert ws.receive_json()["type"] == "safety_gate"
         request = ws.receive_json()
         assert (request["type"], request["kind"], request["framing_tip"]) == ("media_request", "photo", "")
+
+
+def test_media_offer_gets_a_media_request_from_the_server(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    with TestClient(app).websocket_connect("/ws/live?token=t&lang=hi&job_id=j_offer") as ws:
+        ws.receive_json()
+        ws.send_json({"v": 1, "type": "media_offer", "kind": "photo"})
+        request = ws.receive_json()
+        assert (request["type"], request["kind"], request["target"]) == ("media_request", "photo", "")

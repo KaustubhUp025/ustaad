@@ -2,7 +2,7 @@
 worker's language, give up after MAX_RETAKES, and list the photo on the job. Pure: the vision call is the caller's.
 A gate photo is not judged here: the gate check in tools/repair.py decides, and it has no retake limit."""
 
-from models.repair import JobMedia, MediaKind, Observation, RepairJob
+from models.repair import JobMedia, MediaKind, MediaReason, Observation, RepairJob
 from models.tools import MediaCheck, RequestMediaIn, RequestMediaOut
 
 MIN_MEDIA_CONFIDENCE = 0.6
@@ -73,6 +73,13 @@ CANCELLED = "He did not send the photo. Do not ask again unless he offers; ask h
 
 
 def question(inp: RequestMediaIn) -> str:
+    if not inp.target:  # he sent it on his own, so there is nothing to match: judge only whether it is readable
+        return (
+            "A repair technician sent this photo of an appliance. matches_expected: true if it is clear enough to see "
+            "what it shows. confidence: 0 to 1. problem: 'blurry', 'dark', 'not_visible' (nothing recognisable), or "
+            "null. findings: what you can read or see that matters for repairing it, each {label, value, confidence}. "
+            "Do not guess text you cannot read."
+        )
     return (
         f"This photo should show: {inp.target}. matches_expected: true only if it clearly shows that. "
         "confidence: 0 to 1, how sure you are. problem: 'blurry', 'dark', 'not_visible' (missing or cut off), or "
@@ -81,9 +88,14 @@ def question(inp: RequestMediaIn) -> str:
     )
 
 
-def judge(check: MediaCheck, uri: str, retakes: int, lang: str) -> tuple[RequestMediaOut, bool]:
-    """`retakes` is how many retakes he has already sent. Returns the answer and whether to ask for another."""
-    good = check.matches_expected and check.confidence >= MIN_MEDIA_CONFIDENCE
+def judge(check: MediaCheck, uri: str, retakes: int, lang: str, own: bool = False) -> tuple[RequestMediaOut, bool]:
+    """`retakes` is how many retakes he has already sent. Returns the answer and whether to ask for another.
+    `own`: he sent it himself, so nothing was asked for; only a blurry or dark photo is retaken, and Ustaad asks
+    about anything he does not recognise."""
+    if own:
+        good = check.problem not in ("blurry", "dark")
+    else:
+        good = check.matches_expected and check.confidence >= MIN_MEDIA_CONFIDENCE
     retake = not good and retakes < MAX_RETAKES
     if good:
         follow_up = None
@@ -103,9 +115,13 @@ def judge(check: MediaCheck, uri: str, retakes: int, lang: str) -> tuple[Request
 
 
 def record(
-    job: RepairJob, request_id: str, kind: MediaKind, uri: str, findings: list[Observation], confidence: float
+    job: RepairJob,
+    request_id: str,
+    kind: MediaKind,
+    uri: str,
+    findings: list[Observation],
+    confidence: float,
+    reason: MediaReason = "requested",
 ) -> RepairJob:
-    entry = JobMedia(
-        request_id=request_id, uri=uri, kind=kind, findings=findings, confidence=confidence, reason="requested"
-    )
+    entry = JobMedia(request_id=request_id, uri=uri, kind=kind, findings=findings, confidence=confidence, reason=reason)
     return job.model_copy(update={"media": [*job.media, entry]})

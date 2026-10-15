@@ -11,6 +11,7 @@ The client connects straight to Cloud Run (Firebase Hosting rewrites don't carry
 | `ptt` | `{"v":1,"type":"ptt","state":"start"}` / `"end"` |
 | `media_ready` | `{"v":1,"type":"media_ready","request_id":"r_1","uri":"gs://bucket/jobs/j_1/r_1.jpg","kind":"photo"}` (`kind`: `photo`\|`video`\|`document`) |
 | `media_cancel` | `{"v":1,"type":"media_cancel","request_id":"r_1"}` |
+| `media_offer` | `{"v":1,"type":"media_offer","kind":"photo"}` (`kind`: `photo`\|`document`): the worker starts a photo himself ("Photo bhejo"). The server answers with a `media_request`: the open safety-gate request if there is one, else the open request from Ustaad, else a new one |
 | `text` | `{"v":1,"type":"text","text":"PCB nahi hai"}` (typed fallback) |
 | `ping` | `{"v":1,"type":"ping"}` every 20 s |
 
@@ -37,6 +38,10 @@ The client connects straight to Cloud Run (Firebase Hosting rewrites don't carry
 | `resume_handle` | `{"v":1,"type":"resume_handle","handle":"opaque"}` | client reconnects with `&resume=<handle>` |
 | `pong` | `{"v":1,"type":"pong"}` | |
 | `error` | `{"v":1,"type":"error","code":"live_unavailable","message":"…"}` | codes: `live_unavailable`, `rate_limited`, `auth`, `bad_request` |
+
+A `media_request` comes from Ustaad (`request_media`), from the server when a safety gate stands before the next
+step, or in answer to `media_offer`; every `request_id` is issued by the server, and only a `media_ready` for an
+open request is accepted. After a reconnect the server sends every open request of the job again.
 
 Mock: with `MOCK_LIVE=1` (server) or `VITE_MOCK_LIVE=1` (client), `seed/fixtures/live_session.jsonl` is replayed:
 one JSON object per line, `{"t_ms": 1200, "frame": {…server frame…}}`; audio frames are omitted.

@@ -16,7 +16,7 @@ def examples(section: str) -> list[str]:
 
 
 def test_contract_examples_were_found():
-    assert len(examples(CLIENT_PART)) == 5
+    assert len(examples(CLIENT_PART)) == 6
     assert len(examples(SERVER_PART)) == 19
 
 

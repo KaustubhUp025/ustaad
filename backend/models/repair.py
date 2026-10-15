@@ -12,6 +12,8 @@ ApplianceType = Literal[
 GateId = Literal["G_MAINS_OFF", "G_CAP_DISCHARGE"]
 GateState = Literal["open", "passed", "failed"]
 MediaKind = Literal["photo", "video", "document"]
+# Why a photo is on the job: Ustaad asked for it, or the worker sent it himself (a side issue or a manual page).
+MediaReason = Literal["requested", "side_issue", "manual"]
 Confidence = Annotated[float, Field(ge=0, le=1)]
 # Hard stops (SAFETY.md): a step with one of these is never emitted. The hazard levels above do not change.
 StopReason = Literal["refrigerant", "microwave_hv", "crt", "geyser_open"]
@@ -51,7 +53,7 @@ class JobMedia(BaseModel):
     kind: MediaKind
     findings: list[Observation]
     confidence: Confidence
-    reason: Literal["requested", "side_issue", "manual"] | None = None
+    reason: MediaReason | None = None
 
 
 class RepairJob(BaseModel):

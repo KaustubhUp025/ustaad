@@ -65,7 +65,7 @@ export default function Job() {
         <CameraSheet
           key={request.request_id}
           view={{ ...live.media, request }}
-          title={gate ? t(`repair.evidence.${gate.gate_id}`) : request.target}
+          title={gate ? t(`repair.evidence.${gate.gate_id}`) : request.target || t('camera.ownTitle')}
           jobId={id}
           onSent={(uri) => live.mediaReady(request.request_id, uri, request.kind)}
           // A gate's photo request belongs to the gate: closing the sheet goes back to the gate screen.
@@ -81,11 +81,14 @@ export default function Job() {
               {t('repair.gateFailed', { reason: failReason })}
             </p>
           )}
-          {/* The server opens the gate's photo request with the gate; until it arrives, the button asks for it. */}
+          {/* The server opens the gate's photo request with the gate; if it has not arrived, the offer fetches it. */}
           <Button
             className="h-(--touch) gap-2 self-start px-6 text-[length:var(--text-body)]"
             disabled={live.status !== 'ready'}
-            onClick={() => (request ? setGatePhoto(true) : live.say(t('camera.askGatePhoto')))}
+            onClick={() => {
+              setGatePhoto(true)
+              if (!request) live.offerPhoto()
+            }}
           >
             <Camera aria-hidden className="size-6" />
             {t('camera.sendGatePhoto')}
@@ -124,6 +127,21 @@ export default function Job() {
 
       <footer className="flex flex-col items-center gap-2 px-4 pt-2 pb-6">
         {live.micBlocked && <p role="alert">{t('live.micBlocked')}</p>}
+        {/* Mic in the middle; beside it he can show Ustaad something himself. The mic stays the main action. */}
+        <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+          {!stop && !gate && !request ? (
+            <Button
+              variant="outline"
+              className="h-auto min-h-(--touch) flex-col gap-0.5 justify-self-start px-3 py-1 text-[length:var(--text-sm)]"
+              disabled={live.status !== 'ready'}
+              onClick={live.offerPhoto}
+            >
+              <Camera aria-hidden className="size-6" />
+              {t('camera.sendGatePhoto')}
+            </Button>
+          ) : (
+            <span />
+          )}
         <button
           type="button"
           aria-pressed={live.talking}
@@ -153,6 +171,7 @@ export default function Job() {
         >
           <Mic aria-hidden className="size-9" />
         </button>
+        </div>
         <p className={cn('text-[length:var(--text-sm)]', !stop && 'text-muted-foreground')}>
           {t(live.talking ? 'live.listening' : 'live.hold')}
         </p>

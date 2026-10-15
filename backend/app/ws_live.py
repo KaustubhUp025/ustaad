@@ -26,6 +26,7 @@ from models.ws import (
     Error,
     Frame,
     MediaCancel,
+    MediaOffer,
     MediaReady,
     Ping,
     Pong,
@@ -148,6 +149,8 @@ async def _upstream(ws: WebSocket, queue: LiveRequestQueue | None, desk: MediaDe
                 queue.send_activity_end()
         elif isinstance(frame, Text):
             queue.send_content(types.Content(role="user", parts=[types.Part(text=frame.text)]))
+        elif isinstance(frame, MediaOffer):
+            await desk.offer(frame.kind)
         elif isinstance(frame, MediaReady | MediaCancel):
             taken = desk.ready(frame) if isinstance(frame, MediaReady) else desk.cancel(frame)
             if not taken:

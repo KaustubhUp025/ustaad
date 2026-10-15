@@ -9,7 +9,7 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 from uuid import uuid4
 
 from google.adk.agents.live_request_queue import LiveRequestQueue
@@ -35,10 +35,17 @@ VISION_TIMEOUT_S = 30
 @dataclass
 class OpenRequest:
     request_id: str
-    call_id: str | None  # the model's request_media call; None when the server opened the request
+    call_id: str | None  # the model's request_media call; None when the server or the worker opened the request
     inp: RequestMediaIn
     lang: str
     retakes: int = 0
+
+
+def _own_photo_note(out: RequestMediaOut) -> str:
+    if not out.matches_expected:
+        return f"[Photo from the worker, sent on his own, is still unclear. {out.follow_up}]"
+    seen = "; ".join(f"{o.label}: {o.value} ({o.confidence:.2f})" for o in out.findings) or "nothing specific"
+    return f"[Photo from the worker, sent on his own; checked by vision] findings: {seen}."
 
 
 class MediaDesk:
@@ -84,6 +91,17 @@ class MediaDesk:
         inp = RequestMediaIn(kind="photo", target=EVIDENCE[gate_id], reason="safety gate", framing_tip="", gate_id=gate_id)
         await self.open(OpenRequest(f"r_{uuid4().hex[:8]}", None, inp, self.lang))
 
+    async def offer(self, kind: Literal["photo", "document"]) -> None:
+        """He wants to send a photo himself. An open gate request takes it first, then a request from Ustaad (the
+        phone gets that request again); otherwise a new request with no target, judged only for readability."""
+        open_requests = list(self._open.values())
+        request = next((r for r in open_requests if r.inp.gate_id), None) or next(reversed(open_requests), None)
+        if request:
+            await self.show(self._frame(request))
+            return
+        inp = RequestMediaIn(kind=kind, target="", reason="worker", framing_tip="")
+        await self.open(OpenRequest(f"r_{uuid4().hex[:8]}", None, inp, self.lang))
+
     def join_gate(self, gate_id: GateId, call_id: str) -> bool:
         """Ustaad asked for a gate photo the server already asked for: his call gets that request's answer."""
         request = self._gate_request(gate_id)
@@ -112,9 +130,9 @@ class MediaDesk:
         if self._send:
             await self._send(frame)
 
-    def answer(self, request: OpenRequest, response: dict, done: bool, notice: str) -> None:
-        """Tells Ustaad about this request when he is idle: the answer to his call, or `notice` when he made none.
-        Held while disconnected."""
+    def answer(self, request: OpenRequest, response: dict, done: bool, notice: str | None) -> None:
+        """Tells Ustaad about this request when he is idle: the answer to his call, or `notice` when he made none
+        (nothing when `notice` is None). Held while disconnected."""
         if done:
             del self._open[request.request_id]
         if request.call_id:
@@ -125,8 +143,10 @@ class MediaDesk:
                 scheduling=types.FunctionResponseScheduling.WHEN_IDLE,
             )
             content = types.Content(role="user", parts=[types.Part(function_response=answer)])
-        else:
+        elif notice:
             content = types.Content(role="user", parts=[types.Part(text=notice)])
+        else:
+            return
         if self._queue:
             self._queue.send_content(content)
         else:
@@ -194,7 +214,8 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             await _photo(request, uri, check)
 
     async def _photo(request: OpenRequest, uri: str, check: MediaCheck) -> None:
-        out, retake = rules.judge(check, uri, request.retakes, request.lang)
+        own = not request.inp.target
+        out, retake = rules.judge(check, uri, request.retakes, request.lang, own)
         request.retakes += retake
         await desk.show(
             MediaResult(
@@ -205,8 +226,13 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             )
         )
         if not retake:
-            jobs.update(desk.job_id, lambda job: (None, _record(job, request, uri, out.findings, out.confidence)))
-        desk.answer(request, out.model_dump(mode="json"), done=not retake, notice="")
+            reason = ("manual" if request.inp.kind == "document" else "side_issue") if own else "requested"
+            jobs.update(
+                desk.job_id, lambda job: (None, _record(job, request, uri, out.findings, out.confidence, reason))
+            )
+        # His own photo: Ustaad hears only the final result; the phone shows the retake reasons.
+        notice = None if retake or not own else _own_photo_note(out)
+        desk.answer(request, out.model_dump(mode="json"), done=not retake, notice=notice)
 
     async def _gate_photo(request: OpenRequest, uri: str, check: GateCheck) -> None:
         """The gate check alone judges a gate photo, with no retake limit: the gate stays locked until one passes."""
@@ -233,8 +259,8 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             notice = f"[Safety check photo for gate {gate_id} failed: {out.reason} He will send another; tell him why.]"
         desk.answer(request, response, done=out.passed, notice=notice)
 
-    def _record(job, request: OpenRequest, uri: str, findings, confidence: float):
-        return rules.record(job, request.request_id, request.inp.kind, uri, findings, confidence)
+    def _record(job, request: OpenRequest, uri: str, findings, confidence: float, reason="requested"):
+        return rules.record(job, request.request_id, request.inp.kind, uri, findings, confidence, reason)
 
     desk.on_photo = on_photo
     # After a reconnect, possibly on another instance: a gate before the next step needs its photo request again.

@@ -339,3 +339,62 @@ async def test_a_hung_vision_check_times_out(monkeypatch):
 
 def test_every_language_has_the_not_checked_reason():
     assert set(NOT_CHECKED) == set(RETAKE)
+
+
+# The worker starts a photo himself (media_offer): measured on Oct 15, Ustaad opened a request for only 1 of 3 offers.
+
+
+async def test_his_own_photo_opens_a_server_request_and_ustaad_gets_the_findings():
+    desk, phone, queue, jobs, _ = session(checks=[CLEAR])
+    await desk.offer("photo")
+    (request,) = phone.of(MediaRequest)
+    assert (request.kind, request.target) == ("photo", "")
+    await photo(desk, request.request_id)
+    assert queue.answers == []
+    (notice,) = queue.notices
+    assert notice.startswith("[Photo from the worker") and "bulged top" in notice
+    assert [(m.uri, m.reason) for m in jobs.job.media] == [(URI, "side_issue")]
+
+
+async def test_his_manual_page_is_recorded_as_manual():
+    desk, phone, _, jobs, _ = session(checks=[CLEAR])
+    await desk.offer("document")
+    request = phone.of(MediaRequest)[0]
+    assert request.kind == "document"
+    assert desk.ready(ready(request.request_id, kind="document"))
+    await asyncio.gather(*desk.tasks)
+    assert [m.reason for m in jobs.job.media] == ["manual"]
+
+
+async def test_his_offer_during_a_gate_goes_to_the_gate_request():
+    desk, phone, _, _, _ = session(job=gated_job())
+    await desk.open_gate("G_MAINS_OFF")
+    await desk.offer("photo")
+    gate_request, again = phone.of(MediaRequest)
+    assert again == gate_request
+
+
+async def test_his_offer_while_ustaad_waits_for_a_photo_answers_ustaads_request():
+    desk, phone, _, _, tool = session()
+    await tool.func(context(), **PCB.model_dump())
+    await desk.offer("photo")
+    asked, again = phone.of(MediaRequest)
+    assert again == asked
+
+
+async def test_a_poor_photo_of_his_own_is_retaken_without_bothering_ustaad():
+    desk, phone, queue, _, _ = session(checks=[BLURRY, CLEAR])
+    await desk.offer("photo")
+    rid = phone.of(MediaRequest)[0].request_id
+    await photo(desk, rid)
+    assert phone.of(MediaResult)[-1].retake_reason == RETAKE["hi"]["blurry"]
+    assert queue.notices == []
+    await photo(desk, rid)
+    assert len(queue.notices) == 1
+
+
+def test_his_own_photo_is_retaken_only_when_blurry_or_dark():
+    out, retake = judge(WALL, URI, 0, "hi", own=True)
+    assert not retake and out.matches_expected and out.follow_up is None
+    _, retake = judge(BLURRY, URI, 0, "hi", own=True)
+    assert retake

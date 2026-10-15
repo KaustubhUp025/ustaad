@@ -62,7 +62,8 @@ export function useLive(lang: string, jobId: string) {
       setTalking(false)
       conn.current?.stopTalking()
     },
-    say: (text: string) => conn.current?.say(text),
+    // He starts a photo himself; the server answers with the request to send it on.
+    offerPhoto: () => conn.current?.mediaOffer('photo'),
     mediaReady: (requestId: string, uri: string, kind: MediaKind) => conn.current?.mediaReady(requestId, uri, kind),
     // Closing the sheet ends the request on the server too, so the tool answers the model.
     cancelMedia() {

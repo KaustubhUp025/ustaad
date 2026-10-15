@@ -41,7 +41,9 @@ The client connects straight to Cloud Run (Firebase Hosting rewrites don't carry
 
 A `media_request` comes from Ustaad (`request_media`), from the server when a safety gate stands before the next
 step, or in answer to `media_offer`; every `request_id` is issued by the server, and only a `media_ready` for an
-open request is accepted. After a reconnect the server sends every open request of the job again.
+open request is accepted. After a reconnect with `resume`, the server sends every open request of the job again.
+A connect without `resume` starts a new Ustaad: the requests the old Ustaad opened are dropped, and the safety-gate
+and worker-started requests are sent again.
 
 Mock: with `MOCK_LIVE=1` (server) or `VITE_MOCK_LIVE=1` (client), `seed/fixtures/live_session.jsonl` is replayed:
 one JSON object per line, `{"t_ms": 1200, "frame": {…server frame…}}`; audio frames are omitted.

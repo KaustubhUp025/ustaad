@@ -95,6 +95,8 @@ export interface components {
              * @enum {string}
              */
             kind: "photo" | "video" | "import";
+            /** Request Id */
+            request_id?: string | null;
         };
         /** MediaUploadResponse */
         MediaUploadResponse: {

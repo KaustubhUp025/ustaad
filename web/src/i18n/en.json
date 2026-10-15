@@ -36,5 +36,20 @@
       "refrigerant": "Gas work is only for a certified gas technician. I can help with the other checks.",
       "other": "This work isn't safe to guide. Only a trained technician should do it. I can help with the other checks."
     }
+  },
+  "camera": {
+    "take": "Take photo",
+    "retake": "Take photo again",
+    "notNow": "Not now",
+    "sending": "Sending photo…",
+    "checking": "Ustaad is looking at the photo…",
+    "failed": "Photo didn't send. Check the network, then take it again.",
+    "sendGatePhoto": "Send photo",
+    "flash": "Flash",
+    "sendAnyway": "Send anyway",
+    "dark": "Photo is too dark. Turn the flash on and take it again.",
+    "blurry": "Photo is blurry. Hold the phone still and move a little closer.",
+    "ownTitle": "Take a photo of what you want to show",
+    "zoom": "Zoom {{n}} times"
   }
 }

@@ -4,6 +4,7 @@ import captureUrl from './capture.worklet.ts?worker&url'
 import playbackUrl from './playback.worklet.ts?worker&url'
 
 export type GateId = 'G_MAINS_OFF' | 'G_CAP_DISCHARGE'
+export type MediaKind = 'photo' | 'video' | 'document'
 export type Hazard = 'none' | 'HV' | 'capacitor' | 'refrigerant'
 export type StepSource = {
   kind: 'whatsapp_voice' | 'whatsapp_text' | 'manual' | 'job' | 'synthetic' | 'manual_photo' | 'general'
@@ -26,12 +27,25 @@ export type ServerFrame =
   | { v: 1; type: 'safety_gate'; gate_id: GateId; message: string; required_evidence: string }
   | { v: 1; type: 'gate_result'; gate_id: GateId; passed: boolean; reason: string | null }
   | { v: 1; type: 'safety_stop'; reason: string; message: string }
+  | {
+      v: 1
+      type: 'media_request'
+      request_id: string
+      kind: MediaKind
+      target: string
+      framing_tip: string
+      max_seconds: number | null
+    }
+  | { v: 1; type: 'media_result'; request_id: string; matches_expected: boolean; confidence: number; retake_reason: string | null }
 
 export type LiveStatus = 'connecting' | 'ready' | 'reconnecting' | 'failed'
 
 export interface LiveConnection {
   startTalking(): Promise<void>
   stopTalking(): void
+  mediaOffer(kind: 'photo' | 'document'): void
+  mediaReady(requestId: string, uri: string, kind: MediaKind): void
+  mediaCancel(requestId: string): void
   close(): void
 }
 
@@ -42,6 +56,25 @@ const TOKEN = 'demo'
 const PING_MS = 20_000
 const RETRIES = 5
 const RETRY_MS = 2_000
+
+// The handle is kept per job so a page refresh or Retry resumes the same Ustaad instead of a new one with no memory
+// (phone test 3, Oct 15). Storage can throw in private windows; then only in-page reconnects resume.
+const handleKey = (jobId: string) => `ustaad.resume.${jobId}`
+function storeHandle(jobId: string, handle: string | null) {
+  try {
+    if (handle) sessionStorage.setItem(handleKey(jobId), handle)
+    else sessionStorage.removeItem(handleKey(jobId))
+  } catch {
+    // not stored: a refresh starts a new session
+  }
+}
+function storedHandle(jobId: string): string | null {
+  try {
+    return sessionStorage.getItem(handleKey(jobId))
+  } catch {
+    return null
+  }
+}
 
 interface Audio {
   capture: MessagePort
@@ -75,7 +108,7 @@ export function openLive(
   let ws: WebSocket | null = null
   let audio: Promise<Audio> | null = null
   let playback: MessagePort | null = null
-  let resume: string | null = null
+  let resume = storedHandle(jobId)
   let lastError: string | null = null
   let failures = 0
   let closed = false
@@ -93,9 +126,17 @@ export function openLive(
       failures = 0
       onStatus('ready')
     }
-    if (frame.type === 'resume_handle') resume = frame.handle
+    if (frame.type === 'resume_handle') {
+      resume = frame.handle
+      storeHandle(jobId, resume)
+    }
     if (frame.type === 'interrupted') playback?.postMessage('clear')
     if (frame.type === 'error') lastError = frame.code
+    // An expired handle would fail every reconnect; the next one starts a new session instead.
+    if (frame.type === 'error' && frame.code === 'live_unavailable') {
+      resume = null
+      storeHandle(jobId, null)
+    }
     onFrame(frame)
   }
 
@@ -161,6 +202,15 @@ export function openLive(
       if (!talking) return
       talking = false
       sendFrame({ type: 'ptt', state: 'end' })
+    },
+    mediaOffer(kind) {
+      sendFrame({ type: 'media_offer', kind })
+    },
+    mediaReady(requestId, uri, kind) {
+      sendFrame({ type: 'media_ready', request_id: requestId, uri, kind })
+    },
+    mediaCancel(requestId) {
+      sendFrame({ type: 'media_cancel', request_id: requestId })
     },
     close() {
       closed = true

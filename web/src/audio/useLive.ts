@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { type LiveConnection, type LiveStatus, type ServerFrame, openLive } from './liveClient'
+import { type LiveConnection, type LiveStatus, type MediaKind, type ServerFrame, openLive } from './liveClient'
+import { mediaReducer, noMedia } from './media'
 import { noRepair, repairReducer } from './safety'
 
 export type CaptionLine = { who: 'user' | 'ustaad'; text: string; final: boolean }
@@ -19,6 +20,7 @@ export function useLive(lang: string, jobId: string) {
   const [status, setStatus] = useState<LiveStatus>('connecting')
   const [captions, setCaptions] = useState<CaptionLine[]>([])
   const [repair, setRepair] = useState(noRepair)
+  const [media, setMedia] = useState(noMedia)
   const [talking, setTalking] = useState(false)
   const [micBlocked, setMicBlocked] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -31,6 +33,7 @@ export function useLive(lang: string, jobId: string) {
       (frame) => {
         if (frame.type === 'caption') setCaptions((lines) => addCaption(lines, frame))
         setRepair((view) => repairReducer(view, frame))
+        setMedia((view) => mediaReducer(view, frame))
       },
       setStatus,
     )
@@ -42,6 +45,7 @@ export function useLive(lang: string, jobId: string) {
     status,
     captions,
     repair,
+    media,
     talking,
     micBlocked,
     async startTalking() {
@@ -57,6 +61,14 @@ export function useLive(lang: string, jobId: string) {
     stopTalking() {
       setTalking(false)
       conn.current?.stopTalking()
+    },
+    // He starts a photo himself; the server answers with the request to send it on.
+    offerPhoto: () => conn.current?.mediaOffer('photo'),
+    mediaReady: (requestId: string, uri: string, kind: MediaKind) => conn.current?.mediaReady(requestId, uri, kind),
+    // Closing the sheet ends the request on the server too, so the tool answers the model.
+    cancelMedia() {
+      if (media.request) conn.current?.mediaCancel(media.request.request_id)
+      setMedia(noMedia)
     },
     retry: () => setAttempt((n) => n + 1),
   }

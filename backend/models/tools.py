@@ -7,21 +7,21 @@ chatty model reply cannot flood the agent's context."""
 
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, Field, model_validator
+from pydantic import AfterValidator, BaseModel, model_validator
 
-from models.repair import GateId, Hazard, RepairStep, StepSource, StopReason
-from models.ws import MediaKind
+from models.repair import (
+    Confidence,
+    GateId,
+    Hazard,
+    MediaKind,
+    Observation,
+    RepairStep,
+    StepSource,
+    StopReason,
+)
 
 MIN_CONFIDENCE = 0.6
 MAX_OBSERVATIONS = 6
-
-Confidence = Annotated[float, Field(ge=0, le=1)]
-
-
-class Observation(BaseModel):
-    label: str
-    value: str
-    confidence: Confidence
 
 
 def _surest(items: list[Observation]) -> list[Observation]:
@@ -51,14 +51,27 @@ class RequestMediaIn(BaseModel):
     target: str
     reason: str
     framing_tip: str
+    # Set when the photo is a safety gate's evidence: the gate check then judges it (docs/SAFETY.md).
+    gate_id: GateId | None = None
+
+
+class MediaCheck(BaseModel):
+    """What Flash vision reads from a requested photo. Code, not the model, decides whether to ask for a retake."""
+
+    matches_expected: bool
+    confidence: Confidence
+    problem: Literal["blurry", "dark", "not_visible"] | None
+    findings: list[Observation]
 
 
 class RequestMediaOut(BaseModel):
-    media_uri: str
+    media_uri: str | None
     findings: Observations
     matches_expected: bool
     confidence: Confidence
     follow_up: str | None
+    # True while the same request waits for his retake: the next photo arrives on its own.
+    retaking: bool = False
 
 
 # Repair tools. The job ID is not an input: the tools take it from the session, so the model cannot pick a job.

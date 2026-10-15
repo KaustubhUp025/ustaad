@@ -7,7 +7,7 @@ from google.cloud import firestore
 from models.fault_card import FaultCard
 from models.repair import RepairJob
 
-REPAIR_FIELDS = {"steps", "gates", "current_step"}
+REPAIR_FIELDS = {"steps", "gates", "current_step", "media"}
 
 
 def _job(snapshot: firestore.DocumentSnapshot, job_id: str) -> RepairJob:

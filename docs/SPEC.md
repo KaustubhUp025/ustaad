@@ -97,12 +97,12 @@ Tools are framework-free functions in `backend/tools/` (fallback: raw `google-ge
 | --- | --- | --- | --- |
 | save_profile_fields | partial profile | profile | NON_BLOCKING, SILENT |
 | identify_appliance | media_uri | brand, model, series, type (normalised to the `appliance_type` values), error_code, confidence, observations | BLOCKING |
-| request_media | kind photo/video/document, target, reason, framing_tip | media_uri, findings, matches_expected, confidence, follow_up | NON_BLOCKING, WHEN_IDLE |
+| request_media | kind photo/video/document, target, reason, framing_tip, gate_id? | media_uri, findings, matches_expected, confidence, follow_up, retaking; answered once per checked photo on the same call (a retake reason, then the result); with gate_id, the gate check judges the photo instead (passed, reason) | NON_BLOCKING, WHEN_IDLE, long-running |
 | search_fault_cards | brand, model?, error_code?, symptom?, appliance_type? | top 5 with citation {author, date, audio_uri}; an empty list when the best match is below the relevance floor | BLOCKING |
 | search_manuals | query, brand, model? | snippets {text, doc, page} | BLOCKING |
 | start_repair | job_id, card_ids; or, when no card or manual matched, proposed steps [{instruction, summary_en}] | steps {n, instruction, hazard none/HV/capacitor/refrigerant, source} | BLOCKING |
 | next_step | job_id, observation, media_uri? | next step or SAFETY_GATE{gate_id, required_evidence} | BLOCKING |
-| confirm_safety | job_id, gate_id, media_uri | passed, reason | BLOCKING |
+| confirm_safety | (not a model tool) runs on each photo of a `request_media` with `gate_id` | passed, reason | — |
 | check_inventory / update_inventory | part / [{part, delta}] | stock + low flags | BLOCKING / SILENT |
 | find_vendors | part, pincode | saved + Places results | BLOCKING |
 | request_quotes | job_id, part, specs, vendor_ids | quote_request_id | NON_BLOCKING |

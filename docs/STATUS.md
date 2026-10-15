@@ -23,6 +23,55 @@ know what already works; humans append one block per day.
 - Not yet measured on 4G. Ustaad's captions often come back in Latin
   letters (instruction wording, see the T11 PR). The laptop clip's input transcript is wrong ("AC chal raha hai,
   laptop…") even when sent straight to the model, so judge transcription quality on the phone.
+- Works locally against real models (T17, Oct 15; headless Chromium with a fake back camera, local `/ws/live`,
+  uploads signed by the dev API; no phone yet): `request_media` opens the camera sheet with a live viewfinder in
+  0.3 s; the phone-side check catches a very blurry photo in ~0.22 s with no upload; a blurry photo sent anyway
+  gets the Hindi retake reason on the same request, and Ustaad says it 0.7–0.8 s later; the sharp retake is accepted
+  and Ustaad speaks the findings 1.6–1.9 s after the result. A dropped socket resumed with its handle gets the open
+  request again and the answer reaches the resumed session (2/2). A gate photo is judged by the gate check alone.
+  Measured: one Flash photo check takes ~5 s, with outliers of 15–25 s (T27: timeout or "still checking").
+  Who opens a photo request (Oct 15, real model): Ustaad opened the gate photo request himself for 1 of 5 gates
+  and for 1 of 3 side-issue offers (otherwise he only said "bhejo"), 2 of 2 for a manual page. So the server now
+  opens a gate's request itself, 4 ms after `safety_gate`; a wrong photo fails the gate with a Hindi reason and
+  Ustaad says why from the server's note. A failed or hung vision call (30 s) asks for the photo again.
+  The worker can start a photo himself ("फ़ोटो भेजो" beside the mic, `media_offer`): the sheet opens 0.7–1.0 s
+  after the tap with no model in the way, and with the new instruction lines Ustaad talked about his photo 3/3
+  (1.5–1.75 s after the result) and opened a request for a spoken photo offer 3/3 (was 1/3). After a gate photo
+  passed, Ustaad called `next_step` only 3/5 (2/5 he said the step from memory, no step card). So the server now
+  hands out the next step itself after a pass, through the same gate-checked `next_step`: step card 5/5 within
+  0.4 s, Ustaad spoke that step 5/5, and never also called `next_step` (no skipped step, 5/5, two-step plan).
+  First phone test (Oct 15, A's Android, office AC, preview link on dev): the sheet locked on "checking" after two
+  retakes with the same reason (fixed: every server answer unlocks it); no zoom in the in-page camera (added 1x/2x/4x
+  where the camera supports it); the viewfinder was a wide strip of a tall photo (now portrait, so what he sees is
+  sent); the sheet now fits above the mic at 360 x 800. Phone-side sharpness on two real photos: blurred 6.3, sharp
+  683 (threshold 15).
+  Second phone test (Oct 15, 13:06-13:09): zoom and torch work on A's Android; the sheet no longer locks. Fixed the
+  layout it showed (empty band above the sheet, zoom/torch over the corner brackets). Ustaad's own request text was
+  English once ("part in question"): the model's language drift, not the app's labels. Rewording the request_media
+  description made it worse in 6-run checks (English titles 0/6 as is, 2/6 and 3/5 reworded), so it stays as is;
+  the fix belongs with the session language work (T21, T39).
+  Third phone test (Oct 15, 15:02-15:08): the gate flow failed a wall photo and a switchboard without the plug with
+  sensible reasons (a passing photo not tried on the phone). Two bugs found and fixed: after ~10 s offline, Retry or
+  a page refresh opened a new Ustaad with no memory (the client now keeps the resume handle per job for the tab; a
+  handle the Live API rejects is dropped and the next connect starts fresh), and a new session was asked again for
+  photos the dead session had requested (a connect without a handle now drops those; gate requests stay). Checked
+  locally in headless Chromium with the real model: after a refresh the socket carries `resume=` and Ustaad still
+  named the worker and his AC; a bogus stored handle gave one `live_unavailable`, then a fresh session.
+  Flash photo checks were slow that afternoon (5-60 s from the laptop, two 30 s timeouts on dev): T27.
+  Fourth phone test (Oct 15, 15:53-16:01, dev 59c2ab7): a refresh and a Retry after ~15 s offline both kept
+  Ustaad's memory of the name and brand. A second tab opened without a handle got the job's gate request but not
+  Ustaad's earlier request, as intended. It showed a bug, now fixed: the job's photo requests stopped reaching the
+  phone when an older socket ended after a newer one had connected (as after a dropped network). No gate appeared in
+  a job where Ustaad never started a repair plan (smoke: he said to cut the supply). Once Ustaad spoke a bracketed
+  note aloud ("[Photo from the worker shows …]") despite the instruction line against it.
+  Fifth phone test (Oct 15, 16:19-16:24): a gate photo with the plug in failed, the plug-out photo passed, and the
+  step card came within a second; a Wi-Fi drop with a photo sheet open resumed, kept the sheet, and the photo was
+  answered. Ustaad again said "[Photo from the worker]" aloud on a requested photo, where no bracketed note is sent:
+  he copied the instruction's quoted example. The line no longer quotes notes (cd1d3be). On the laptop (text turns,
+  a real accepted photo) neither wording ever spoke a bracket (0/12 each), so the phone check moves to T26.
+  Twice a general step needed the power on right after the mains-off gate passed; recorded for T39.
+  Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
+  The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)
 - Blocked: —
 

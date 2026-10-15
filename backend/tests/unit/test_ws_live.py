@@ -18,7 +18,7 @@ def fake_live(monkeypatch):
     """Stands in for the Live model: echoes audio, and answers the end of a spoken turn or a typed line."""
     opened = []
 
-    async def live_events(queue, lang, resume, job_id):
+    async def live_events(queue, lang, resume, job_id, desk):
         opened.append((lang, resume))
         if lang == "xx":
             raise RuntimeError("model not found")
@@ -159,3 +159,39 @@ def test_mock_live_never_opens_a_model_session(mock_live, fake_live):
     with TestClient(app).websocket_connect(URL) as ws:
         ws.receive_json()
     assert fake_live == []
+
+
+def test_media_ready_for_an_unknown_request_gets_bad_request(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    with TestClient(app).websocket_connect(URL) as ws:
+        ws.receive_json()
+        ws.send_json({"v": 1, "type": "media_ready", "request_id": "r_9", "uri": "gs://b/jobs/j_1/x.jpg", "kind": "photo"})
+        assert ws.receive_json()["code"] == "bad_request"
+
+
+def test_a_safety_gate_from_the_model_opens_its_photo_request(monkeypatch):
+    """The gate photo request comes from the server as soon as the gate frame goes out, not from the model."""
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    gate = {"status": "SAFETY_GATE", "gate_id": "G_MAINS_OFF", "required_evidence": "MCB OFF photo"}
+
+    async def live_events(queue, lang, resume, job_id, desk):
+        response = types.FunctionResponse(name="next_step", response=gate)
+        yield Event(author="ustaad", content=types.Content(parts=[types.Part(function_response=response)]))
+        while not (await queue.get()).close:
+            pass
+
+    monkeypatch.setattr(ws_live, "live_events", live_events)
+    with TestClient(app).websocket_connect("/ws/live?token=t&lang=hi&job_id=j_gate") as ws:
+        ws.receive_json()
+        assert ws.receive_json()["type"] == "safety_gate"
+        request = ws.receive_json()
+        assert (request["type"], request["kind"], request["framing_tip"]) == ("media_request", "photo", "")
+
+
+def test_media_offer_gets_a_media_request_from_the_server(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    with TestClient(app).websocket_connect("/ws/live?token=t&lang=hi&job_id=j_offer") as ws:
+        ws.receive_json()
+        ws.send_json({"v": 1, "type": "media_offer", "kind": "photo"})
+        request = ws.receive_json()
+        assert (request["type"], request["kind"], request["target"]) == ("media_request", "photo", "")

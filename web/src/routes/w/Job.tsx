@@ -1,5 +1,5 @@
-import { Mic } from 'lucide-react'
-import { useEffect } from 'react'
+import { Camera, Mic } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useSearchParams } from 'react-router-dom'
 
@@ -7,7 +7,10 @@ import { useLive } from '@/audio/useLive'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-// The job screen: live captions, the current step card, the safety gate and stop screens, and the push-to-talk mic.
+import { CameraSheet } from './CameraSheet'
+
+// The job screen: live captions, the current step card, the safety gate and stop screens, the camera sheet, and the
+// push-to-talk mic.
 export default function Job() {
   const { t, i18n } = useTranslation()
   // ?lang= picks the language until onboarding (T21) saves it on the profile.
@@ -15,6 +18,15 @@ export default function Job() {
   const { id = '' } = useParams()
   const live = useLive(lang, id)
   const { step, gate, failReason, stop } = live.repair
+  const { request } = live.media
+  // While a gate shows, he first reads what to switch off; the gate's photo button then opens the sheet.
+  const [gatePhoto, setGatePhoto] = useState(false)
+  const [shownGate, setShownGate] = useState(gate?.gate_id)
+  if (gate?.gate_id !== shownGate) {
+    setShownGate(gate?.gate_id)
+    setGatePhoto(false)
+  }
+  const sheet = request && (!gate || gatePhoto)
 
   useEffect(() => {
     void i18n.changeLanguage(lang)
@@ -49,6 +61,16 @@ export default function Job() {
         <section role="alert" className="flex flex-1 items-center px-6 py-10">
           <p className="text-[length:var(--text-lg)] font-semibold">{t([`repair.stop.${stop.reason}`, 'repair.stop.other'])}</p>
         </section>
+      ) : sheet ? (
+        <CameraSheet
+          key={request.request_id}
+          view={{ ...live.media, request }}
+          title={gate ? t(`repair.evidence.${gate.gate_id}`) : request.target || t('camera.ownTitle')}
+          jobId={id}
+          onSent={(uri) => live.mediaReady(request.request_id, uri, request.kind)}
+          // A gate's photo request belongs to the gate: closing the sheet goes back to the gate screen.
+          onCancel={gate ? () => setGatePhoto(false) : live.cancelMedia}
+        />
       ) : gate ? (
         <section role="alert" className="flex flex-1 flex-col justify-center gap-4 bg-graphite px-6 py-10 text-housing">
           <h2 className="font-heading text-[length:var(--text-xl)] font-bold text-primary">{t('repair.gateTitle')}</h2>
@@ -59,6 +81,18 @@ export default function Job() {
               {t('repair.gateFailed', { reason: failReason })}
             </p>
           )}
+          {/* The server opens the gate's photo request with the gate; if it has not arrived, the offer fetches it. */}
+          <Button
+            className="h-(--touch) gap-2 self-start px-6 text-[length:var(--text-body)]"
+            disabled={live.status !== 'ready'}
+            onClick={() => {
+              setGatePhoto(true)
+              if (!request) live.offerPhoto()
+            }}
+          >
+            <Camera aria-hidden className="size-6" />
+            {t('camera.sendGatePhoto')}
+          </Button>
         </section>
       ) : (
         <>
@@ -93,6 +127,21 @@ export default function Job() {
 
       <footer className="flex flex-col items-center gap-2 px-4 pt-2 pb-6">
         {live.micBlocked && <p role="alert">{t('live.micBlocked')}</p>}
+        {/* Mic in the middle; beside it he can show Ustaad something himself. The mic stays the main action. */}
+        <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+          {!stop && !gate && !request ? (
+            <Button
+              variant="outline"
+              className="h-auto min-h-(--touch) flex-col gap-0.5 justify-self-start px-3 py-1 text-[length:var(--text-sm)]"
+              disabled={live.status !== 'ready'}
+              onClick={live.offerPhoto}
+            >
+              <Camera aria-hidden className="size-6" />
+              {t('camera.sendGatePhoto')}
+            </Button>
+          ) : (
+            <span />
+          )}
         <button
           type="button"
           aria-pressed={live.talking}
@@ -122,6 +171,7 @@ export default function Job() {
         >
           <Mic aria-hidden className="size-9" />
         </button>
+        </div>
         <p className={cn('text-[length:var(--text-sm)]', !stop && 'text-muted-foreground')}>
           {t(live.talking ? 'live.listening' : 'live.hold')}
         </p>

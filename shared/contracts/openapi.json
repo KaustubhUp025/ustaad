@@ -115,6 +115,18 @@
             ],
             "title": "Kind",
             "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "pattern": "^r_[A-Za-z0-9]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
           }
         },
         "required": [

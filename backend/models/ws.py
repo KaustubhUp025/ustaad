@@ -4,9 +4,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
-from models.repair import GateId, Hazard, StepSource
-
-MediaKind = Literal["photo", "video", "document"]
+from models.repair import GateId, Hazard, MediaKind, StepSource
 
 
 class Frame(BaseModel):
@@ -32,6 +30,13 @@ class MediaReady(Frame):
 class MediaCancel(Frame):
     type: Literal["media_cancel"] = "media_cancel"
     request_id: str
+
+
+class MediaOffer(Frame):
+    """The worker starts a photo himself; the server answers with a media_request it issues."""
+
+    type: Literal["media_offer"] = "media_offer"
+    kind: Literal["photo", "document"]
 
 
 class Text(Frame):
@@ -179,7 +184,7 @@ class Error(Frame):
     message: str
 
 
-WsClientFrame = Annotated[Ptt | MediaReady | MediaCancel | Text | Ping, Field(discriminator="type")]
+WsClientFrame = Annotated[Ptt | MediaReady | MediaCancel | MediaOffer | Text | Ping, Field(discriminator="type")]
 WsServerFrame = Annotated[
     SessionReady
     | Caption

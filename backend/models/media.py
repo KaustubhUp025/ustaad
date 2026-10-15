@@ -10,6 +10,7 @@ SafeFilename = Annotated[
 ContentType = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 JobId = Annotated[str, Field(pattern=r"^j_[A-Za-z0-9][A-Za-z0-9_-]*$")]
 ImportId = Annotated[str, Field(pattern=r"^i_[A-Za-z0-9][A-Za-z0-9_-]*$")]
+RequestId = Annotated[str, Field(pattern=r"^r_[A-Za-z0-9]+$")]
 
 
 class MediaUploadRequest(BaseModel):
@@ -19,6 +20,7 @@ class MediaUploadRequest(BaseModel):
     content_type: ContentType
     job_id: JobId | None = None
     import_id: ImportId | None = None
+    request_id: RequestId | None = None  # the open media_request this photo answers
     filename: SafeFilename | None = None
 
 

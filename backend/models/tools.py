@@ -51,6 +51,8 @@ class RequestMediaIn(BaseModel):
     target: str
     reason: str
     framing_tip: str
+    # Set when the photo is a safety gate's evidence: the gate check then judges it (docs/SAFETY.md).
+    gate_id: GateId | None = None
 
 
 class MediaCheck(BaseModel):
@@ -68,6 +70,8 @@ class RequestMediaOut(BaseModel):
     matches_expected: bool
     confidence: Confidence
     follow_up: str | None
+    # True while the same request waits for his retake: the next photo arrives on its own.
+    retaking: bool = False
 
 
 # Repair tools. The job ID is not an input: the tools take it from the session, so the model cannot pick a job.

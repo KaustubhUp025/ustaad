@@ -9,6 +9,8 @@ export type MediaView = { request: Of<'media_request'> | null; retakeReason: str
 export const noMedia: MediaView = { request: null, retakeReason: null }
 
 export function mediaReducer(view: MediaView, frame: ServerFrame): MediaView {
+  // After a reconnect the server sends the job's open requests again, so the sheet never waits on a dead request.
+  if (frame.type === 'session_ready') return noMedia
   if (frame.type === 'media_request') return { request: frame, retakeReason: null }
   if (frame.type !== 'media_result' || frame.request_id !== view.request?.request_id) return view
   return frame.retake_reason ? { ...view, retakeReason: frame.retake_reason } : noMedia

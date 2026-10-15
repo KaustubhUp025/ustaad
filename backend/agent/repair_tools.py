@@ -1,21 +1,16 @@
 """The repair tools as the Live agent calls them: each loads the session's job, runs the pure tool in
-tools/repair.py and saves the job. The job ID comes from session state, never from the model."""
-
-from collections.abc import Awaitable, Callable
+tools/repair.py and saves the job. The job ID comes from session state, never from the model. A gate photo is
+judged on its own server-issued request (agent/media_tools.py), so there is no tool that takes a photo URI."""
 
 from google.adk.tools import FunctionTool, ToolContext
 from google.genai import types
 
 from clients.firestore import JobStore
-from models.repair import GateId
-from models.tools import ConfirmSafetyIn, ConfirmSafetyOut, GateCheck, ProposedStep, StartRepairIn
+from models.tools import ProposedStep, StartRepairIn
 from tools import repair
-from tools.gates import QUESTIONS
-
-ReadPhoto = Callable[[str, str, type[GateCheck]], Awaitable[GateCheck]]
 
 
-def repair_tools(jobs: JobStore, read_photo: ReadPhoto) -> list[FunctionTool]:
+def repair_tools(jobs: JobStore) -> list[FunctionTool]:
     def start_repair(
         tool_context: ToolContext, card_ids: list[str] | None = None, steps: list[ProposedStep] | None = None
     ) -> dict:
@@ -31,22 +26,12 @@ def repair_tools(jobs: JobStore, read_photo: ReadPhoto) -> list[FunctionTool]:
 
     def next_step(tool_context: ToolContext, observation: str) -> dict:
         """Gets the next repair step. `observation` is what he reported about the last step. Say a step only
-        after this returns it. SAFETY_GATE means ask for the photo in `required_evidence` with
-        request_media, then pass its `media_uri` to confirm_safety; saying it is done does not open a gate. DONE means every step was given."""
+        after this returns it. SAFETY_GATE means call request_media with that `gate_id` for the photo in
+        `required_evidence`; only that photo opens the gate, saying it is done does not. DONE means every step was
+        given."""
         return jobs.update(tool_context.state["job_id"], repair.next_step).model_dump(mode="json")
 
-    async def confirm_safety(tool_context: ToolContext, gate_id: GateId, media_uri: str) -> dict:
-        """Checks the photo for a safety gate. `media_uri` is the one request_media just returned for this gate.
-        If it fails, tell him the reason and ask again."""
-        inp = ConfirmSafetyIn(gate_id=gate_id, media_uri=media_uri)
-        job_id = tool_context.state["job_id"]
-        if not repair.issued_photo(jobs.load(job_id), media_uri):
-            return ConfirmSafetyOut(gate_id=gate_id, passed=False, reason=repair.NOT_ISSUED).model_dump(mode="json")
-        check = await read_photo(QUESTIONS[gate_id], media_uri, GateCheck)
-        out = jobs.update(job_id, lambda job: repair.confirm_safety(inp, job, check))
-        return out.model_dump(mode="json")
-
-    tools = [FunctionTool(start_repair), FunctionTool(next_step), FunctionTool(confirm_safety)]
+    tools = [FunctionTool(start_repair), FunctionTool(next_step)]
     for tool in tools:
         tool.behavior = types.Behavior.BLOCKING
     return tools

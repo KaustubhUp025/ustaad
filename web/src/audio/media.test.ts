@@ -41,3 +41,10 @@ test('a result for another request is ignored', () => {
   const open = mediaReducer(noMedia, request)
   expect(mediaReducer(open, result(null, 'r_2'))).toBe(open)
 })
+
+test('a new session closes the sheet; the server sends its open request again', () => {
+  const open = mediaReducer(noMedia, request)
+  const ready: ServerFrame = { v: 1, type: 'session_ready', session_id: 's_2', live_model: 'm', resumable: true }
+  expect(mediaReducer(open, ready)).toEqual(noMedia)
+  expect(mediaReducer(mediaReducer(open, ready), request)).toEqual({ request, retakeReason: null })
+})

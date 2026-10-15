@@ -55,7 +55,7 @@ export default function Job() {
         </section>
       ) : request ? (
         <CameraSheet
-          key={`${request.request_id}:${live.media.retakeReason}`}
+          key={request.request_id}
           view={{ ...live.media, request }}
           jobId={id}
           onSent={(uri) => live.mediaReady(request.request_id, uri, request.kind)}

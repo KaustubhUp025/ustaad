@@ -23,11 +23,15 @@ know what already works; humans append one block per day.
 - Not yet measured on 4G. Ustaad's captions often come back in Latin
   letters (instruction wording, see the T11 PR). The laptop clip's input transcript is wrong ("AC chal raha hai,
   laptop…") even when sent straight to the model, so judge transcription quality on the phone.
-- Works locally against real models (T17, Oct 15, scripted client, no phone yet): a typed turn made
-  `gemini-3.8-live` call `request_media`; a blurred photo got the Hindi retake reason on the same request ID, the
-  sharp one passed (0.98), the photo was listed in `jobs.media`, and Ustaad answered when idle. This run found and
-  fixed a bug in `read_photo` (T16): its temporary Gemini client was closed mid-call, so no gate photo could pass.
-  The phone run (camera sheet, real upload through the signed URL) is still to do.
+- Works locally against real models (T17, Oct 15; headless Chromium with a fake back camera, local `/ws/live`,
+  uploads signed by the dev API; no phone yet): `request_media` opens the camera sheet with a live viewfinder in
+  0.3 s; the phone-side check catches a very blurry photo in ~0.22 s with no upload; a blurry photo sent anyway
+  gets the Hindi retake reason on the same request, and Ustaad says it 0.7–0.8 s later; the sharp retake is accepted
+  and Ustaad speaks the findings 1.6–1.9 s after the result. A dropped socket resumed with its handle gets the open
+  request again and the answer reaches the resumed session (2/2). A gate photo is judged by the gate check alone.
+  Measured: one Flash photo check takes ~5 s, with outliers of 15–25 s (T27: timeout or "still checking").
+  Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
+  The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)
 - Blocked: —
 

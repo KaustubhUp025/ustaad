@@ -28,6 +28,8 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 FIXTURE = Path(__file__).parents[2] / "seed/fixtures/live_session.jsonl"
+# Each job's open photo requests, kept across reconnects to this instance (session affinity routes them here).
+DESKS: dict[str, MediaDesk] = {}
 APP = "ustaad"
 # Speech code, and the wording the instruction uses: naming the script keeps captions out of Latin letters.
 LANGS = {
@@ -158,12 +160,16 @@ async def ws_live(
         job_id = job_id or f"j_{uuid.uuid4().hex[:8]}"
         await _send(ws, SessionReady(session_id=session_id, live_model=os.getenv("LIVE_MODEL", "unset"), resumable=True))
         queue = LiveRequestQueue()
-        # The phone uploads with POST /api/media/upload-url, which puts a job's photos under jobs/<job_id>/.
-        desk = MediaDesk(lambda frame: _send(ws, frame), f"gs://{os.getenv('MEDIA_BUCKET', '')}/jobs/{job_id}/")
+        # A photo request belongs to the job, not to this socket: a reconnect picks up its open requests.
+        desk = DESKS.setdefault(job_id, MediaDesk(job_id, os.getenv("MEDIA_BUCKET", "")))
+        desk.attach(lambda frame: _send(ws, frame), queue)
         down = create_task(_downstream(ws, queue, lang, resume, job_id, desk))
         try:
             await _upstream(ws, queue, desk)
         finally:
+            desk.detach()
+            if desk.idle:
+                DESKS.pop(job_id, None)
             queue.close()
             down.cancel()
     except WebSocketDisconnect:

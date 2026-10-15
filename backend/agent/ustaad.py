@@ -20,6 +20,6 @@ def build_ustaad(model: str, location: str, jobs: JobStore, desk: MediaDesk) -> 
         name="ustaad",
         model=Gemini(model=model, client_kwargs={"location": location}),
         instruction=INSTRUCTION,
-        tools=repair_tools(jobs, read_photo) + media_tools(desk, jobs, read_photo),
+        tools=repair_tools(jobs) + media_tools(desk, jobs, read_photo),
         before_tool_callback=gate_guard(jobs.load),
     )

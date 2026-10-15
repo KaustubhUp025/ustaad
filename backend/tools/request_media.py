@@ -1,7 +1,8 @@
 """request_media's rules (SPEC §6, BUILD-GUIDE T17): judge a checked photo, ask for a retake with a reason in the
-worker's language, give up after MAX_RETAKES, and list the photo on the job. Pure: the vision call is the caller's."""
+worker's language, give up after MAX_RETAKES, and list the photo on the job. Pure: the vision call is the caller's.
+A gate photo is not judged here: the gate check in tools/repair.py decides, and it has no retake limit."""
 
-from models.repair import JobMedia, MediaKind, RepairJob
+from models.repair import JobMedia, MediaKind, Observation, RepairJob
 from models.tools import MediaCheck, RequestMediaIn, RequestMediaOut
 
 MIN_MEDIA_CONFIDENCE = 0.6
@@ -35,6 +36,29 @@ RETAKE: dict[str, dict[str, str]] = {
         "not_visible": "I can't see what I asked for. Get the whole part in the frame and take it again.",
     },
 }
+# A failed gate photo, on the camera sheet. Same rule as docs/SAFETY.md "On fail"; the model gets the check's reason.
+GATE_RETAKE: dict[str, dict[str, str]] = {
+    "hi": {
+        "G_MAINS_OFF": "MCB की OFF वाली स्थिति या निकला हुआ प्लग साफ़ नहीं दिखा। पास से, फ़्लैश ऑन करके फिर फ़ोटो लो।",
+        "G_CAP_DISCHARGE": "कैपेसिटर डिस्चार्ज नहीं दिखा। इंसुलेटेड टूल से सुरक्षित डिस्चार्ज करो, फिर मीटर की रीडिंग की फ़ोटो लो।",
+    },
+    "te": {
+        "G_MAINS_OFF": "MCB OFF స్థితి లేదా తీసిన ప్లగ్ స్పష్టంగా కనిపించలేదు. దగ్గరగా, ఫ్లాష్ ఆన్ చేసి మళ్ళీ ఫోటో తీయండి.",
+        "G_CAP_DISCHARGE": "కెపాసిటర్ డిశ్చార్జ్ అయినట్లు కనిపించలేదు. ఇన్సులేటెడ్ టూల్‌తో సురక్షితంగా డిశ్చార్జ్ చేసి, మళ్ళీ కొలిచి మీటర్ ఫోటో తీయండి.",
+    },
+    "ta": {
+        "G_MAINS_OFF": "MCB OFF நிலை அல்லது பிடுங்கிய பிளக் தெளிவாகத் தெரியவில்லை. அருகில் சென்று, ஃபிளாஷ் ஆன் செய்து மீண்டும் எடுங்கள்.",
+        "G_CAP_DISCHARGE": "கெபாசிட்டர் டிஸ்சார்ஜ் ஆனதாகத் தெரியவில்லை. இன்சுலேட்டட் கருவியால் பாதுகாப்பாக டிஸ்சார்ஜ் செய்து, மீண்டும் அளந்து மீட்டரின் புகைப்படம் எடுங்கள்.",
+    },
+    "bn": {
+        "G_MAINS_OFF": "MCB-র OFF অবস্থা বা খোলা প্লাগ স্পষ্ট দেখা যাচ্ছে না। কাছ থেকে, ফ্ল্যাশ অন করে আবার ছবি তুলুন।",
+        "G_CAP_DISCHARGE": "ক্যাপাসিটর ডিসচার্জ হয়েছে বলে দেখা যাচ্ছে না। ইনসুলেটেড টুল দিয়ে নিরাপদে ডিসচার্জ করে আবার মেপে মিটারের ছবি তুলুন।",
+    },
+    "en": {
+        "G_MAINS_OFF": "The MCB in the OFF position, or the pulled-out plug, isn't clearly visible. Take it again from closer with the flash on.",
+        "G_CAP_DISCHARGE": "The capacitor isn't shown discharged. Discharge it safely with an insulated tool, measure again and photograph the meter.",
+    },
+}
 # For the model only.
 GAVE_UP = "The photo is still unclear after the retakes. Do not ask for it again; ask him what he sees."
 CANCELLED = "He did not send the photo. Do not ask again unless he offers; ask him what he sees."
@@ -65,17 +89,15 @@ def judge(check: MediaCheck, uri: str, retakes: int, lang: str) -> tuple[Request
         matches_expected=good,
         confidence=check.confidence,
         follow_up=follow_up,
+        retaking=retake,
     )
     return out, retake
 
 
-def record(job: RepairJob, request_id: str, kind: MediaKind, out: RequestMediaOut) -> RepairJob:
+def record(
+    job: RepairJob, request_id: str, kind: MediaKind, uri: str, findings: list[Observation], confidence: float
+) -> RepairJob:
     entry = JobMedia(
-        request_id=request_id,
-        uri=out.media_uri,
-        kind=kind,
-        findings=out.findings,
-        confidence=out.confidence,
-        reason="requested",
+        request_id=request_id, uri=uri, kind=kind, findings=findings, confidence=confidence, reason="requested"
     )
     return job.model_copy(update={"media": [*job.media, entry]})

@@ -73,7 +73,7 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, j
     <section
       role="dialog"
       aria-labelledby="camera-title"
-      className="mt-auto flex animate-in flex-col gap-3 rounded-t-xl bg-card px-4 pt-4 pb-4 shadow-lg slide-in-from-bottom motion-reduce:animate-none"
+      className="mt-3 flex flex-1 animate-in flex-col gap-3 rounded-t-xl bg-card px-4 pt-4 pb-4 shadow-lg slide-in-from-bottom motion-reduce:animate-none"
     >
       {/* Everything fits above the mic on a 360 x 800 phone, so he can still talk while framing (phone test, Oct 15). */}
       <div className="flex items-start gap-2">
@@ -91,9 +91,11 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, j
       {/* Viewfinder: the live back camera when allowed, else a hint; the framing outline marks what should fill it.
           Portrait like the photo it takes, so what he sees is what gets sent. Zoom and torch sit in the bottom
           corners, clear of the middle he is framing. */}
-      <div className="relative mx-auto flex aspect-[3/4] h-[min(300px,36dvh)] items-center justify-center overflow-hidden rounded-lg bg-graphite text-center text-housing">
+      {/* The viewfinder takes all the height the sheet has left (the phone test showed an empty band above it). */}
+      <div className="relative min-h-[240px] flex-1">
+      <div className="absolute inset-y-0 left-1/2 flex aspect-[3/4] h-full max-w-full -translate-x-1/2 items-center justify-center overflow-hidden rounded-lg bg-graphite text-center text-housing">
         <video ref={camera.video} muted playsInline aria-hidden className={live ? 'absolute inset-0 size-full object-cover' : 'hidden'} />
-        {['top-3 left-3 border-t-4 border-l-4', 'top-3 right-3 border-t-4 border-r-4', 'bottom-3 left-3 border-b-4 border-l-4', 'right-3 bottom-3 border-r-4 border-b-4'].map(
+        {['top-3 left-3 border-t-4 border-l-4', 'top-3 right-3 border-t-4 border-r-4', 'bottom-16 left-3 border-b-4 border-l-4', 'right-3 bottom-16 border-r-4 border-b-4'].map(
           (corner) => (
             <span key={corner} aria-hidden className={`absolute size-8 border-primary ${corner}`} />
           ),
@@ -120,6 +122,7 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, j
             <Flashlight aria-hidden className="size-6" />
           </Button>
         )}
+      </div>
       </div>
 
       {message && (

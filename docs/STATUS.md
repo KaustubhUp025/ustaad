@@ -45,6 +45,11 @@ know what already works; humans append one block per day.
   where the camera supports it); the viewfinder was a wide strip of a tall photo (now portrait, so what he sees is
   sent); the sheet now fits above the mic at 360 x 800. Phone-side sharpness on two real photos: blurred 6.3, sharp
   683 (threshold 15).
+  Second phone test (Oct 15, 13:06-13:09): zoom and torch work on A's Android; the sheet no longer locks. Fixed the
+  layout it showed (empty band above the sheet, zoom/torch over the corner brackets). Ustaad's own request text was
+  English once ("part in question"): the model's language drift, not the app's labels. Rewording the request_media
+  description made it worse in 6-run checks (English titles 0/6 as is, 2/6 and 3/5 reworded), so it stays as is;
+  the fix belongs with the session language work (T21, T39).
   Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
   The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)

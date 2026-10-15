@@ -1040,11 +1040,15 @@ Don't touch: shared/contracts/, docs/SAFETY.md
 
 #### T26 Integration gate (both, P0)
 **Goal.** G2 and G3 end to end on a real phone against `dev`, 21:00. **Do.** Run the G2 script from GOLDEN_PATHS with real photos, then G3 with the three team phones. Log pass/fail and timings in `docs/STATUS.md`. **If it fails.** Fix on Thursday morning; do not add features. **Pitfall.** Testing only from a laptop emulator.
+
+**From T17 (phone tests on dev, Oct 15).** G2 sends real photos, so check two things T17 could not close on the laptop:
+1. *Bracketed notes spoken aloud.* Twice Ustaad said "[Photo from the worker …]" aloud, in English, after a photo. The instruction line was reworded (commit cd1d3be), but the laptop never reproduced it (0/24 runs, old and new wording), so only the phone shows whether it is fixed. Send at least 3 photos (his own and requested) and note any bracket or English label in Ustaad's words.
+2. *Photo paths not yet tried on a phone:* the capacitor gate (`G_CAP_DISCHARGE`), closing the camera sheet with ✕, the retake limit (after 2 retakes Ustaad continues with a note), and all of it on 4G.
 ```
 ID: T26   Owner: both   Branch: none
 Goal: G2 + G3 on a real phone, dev
 Read: GOLDEN_PATHS
-Done when: both pass; logged in STATUS.md
+Done when: both pass; logged in STATUS.md, with the two T17 checks
 Don't touch: new features
 ```
 
@@ -1068,6 +1072,8 @@ Done: contracts PR #15 and the docs PR that added this section. Nothing to build
 4. Stop screen: full-screen red with fixed text per reason (`refrigerant`, `microwave_hv`, `crt`, `geyser_open`) in all five i18n files. No audio clip.
 5. Write the G8 mock fixture `seed/fixtures/live_session_general.jsonl`. Its step is a check the worker can prove with a photo, with no error-code meaning, component value or wiring.
 6. Manual instruction check, written into STATUS.md: 5 out-of-card questions in Hindi, one each for washing machine, fridge, LED TV, geyser and microwave. Each answer is labelled general, invents no error-code meaning, and asks to see before guessing.
+
+**From T17 (phone and laptop tests, Oct 15): general steps that need the power on.** Twice the Live model proposed a check that needs live supply right after the mains-off photo had passed: the step "पावर सप्लाई और एमसीबी चेक करें कि सप्लाई आ रही है या नहीं" (check at the MCB whether supply is coming; tagged `none`, job `j_p5a`), and, in a laptop run, "check the voltage at the socket" once the MCB is off. The tagger cannot catch this: a general job already needs `G_MAINS_OFF` before every step, and that gate had passed. So step 1's tier-3 text must also say: general guidance never proposes a step that needs the power on (voltage, supply or live tests); such checks come only from a card or manual, otherwise Ustaad says a qualified electrician should check. Propose the matching line for `docs/SAFETY.md` in the PR (human-owned; A approves) and add it to step 6's manual check: one question that invites a live test, answered without one.
 
 **Pitfalls.** Calling the backstop a gate; a chip label or stop text hard-coded outside `web/src/i18n/`; adding a model call to classify captions (the tagger is keyword rules only).
 
@@ -1139,6 +1145,8 @@ Out of scope: a new Firestore index; manual metadata in Agent Search
 **From T11 (phone test on dev, Oct 14).** Two follow-ups found while testing the Live bridge; do them here because both touch the Live-session limit:
 1. *Close dead sockets.* When a phone loses its network, the server keeps that connection, and its Live session, open until TCP gives up (13 s in the test, can be longer). Each one counts against the 3-session limit, so a judge's dropped connections could lock out the next judge. The client already pings every 20 s: in `app/ws_live.py`, close a connection that has sent nothing for 45 s (a named constant), and release its semaphore slot. Test with a fake clock or a short constant: a silent client is closed; a pinging one is not.
 2. *Faster first turn after a reconnect.* The mic stays disabled until the new session's `session_ready`, and opening a Live session takes 2 to 4 s, so after a network change the worker waits. Let the mic be pressed while `reconnecting`: buffer up to about 5 s of PCM in `liveClient.ts` and send it, inside `ptt start`/`end`, once the socket is open (drop it if the reconnect fails). Recheck on 4G only: in the Wi-Fi test the phone reconnected 4 times in 3 minutes, most likely from switching networks.
+
+**From T17 (Oct 15).** Photo checks (Flash) take 5–6 s, but about 1 in 4 took ~30 s and hit `VISION_TIMEOUT_S` (30 s), so the phone asked for the photo again. While a check runs, show "still checking" on the camera sheet after ~10 s (i18n string), and let the demo cache answer the shipped sample photos so a judge never waits on a slow check.
 
 **Design rules.** The cache sits behind one wrapper used by `/api/chat` and the tool-response path; it never changes the *safety* behaviour: a cached response for a hazardous step still goes through gate logic (cache before the model, not before the safety layer).
 

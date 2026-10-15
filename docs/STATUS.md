@@ -64,6 +64,12 @@ know what already works; humans append one block per day.
   phone when an older socket ended after a newer one had connected (as after a dropped network). No gate appeared in
   a job where Ustaad never started a repair plan (smoke: he said to cut the supply). Once Ustaad spoke a bracketed
   note aloud ("[Photo from the worker shows …]") despite the instruction line against it.
+  Fifth phone test (Oct 15, 16:19-16:24): a gate photo with the plug in failed, the plug-out photo passed, and the
+  step card came within a second; a Wi-Fi drop with a photo sheet open resumed, kept the sheet, and the photo was
+  answered. Ustaad again said "[Photo from the worker]" aloud on a requested photo, where no bracketed note is sent:
+  he copied the instruction's quoted example. The line no longer quotes notes (cd1d3be). On the laptop (text turns,
+  a real accepted photo) neither wording ever spoke a bracket (0/12 each), so the phone check moves to T26.
+  Twice a general step needed the power on right after the mains-off gate passed; recorded for T39.
   Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
   The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)

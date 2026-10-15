@@ -22,7 +22,19 @@ from agent.media_tools import MediaDesk
 from agent.ustaad import build_ustaad
 from app.live_events import to_frames
 from clients.firestore import JobStore
-from models.ws import Error, Frame, MediaCancel, MediaReady, Ping, Pong, Ptt, SessionReady, Text, client_frame
+from models.ws import (
+    Error,
+    Frame,
+    MediaCancel,
+    MediaReady,
+    Ping,
+    Pong,
+    Ptt,
+    SafetyGate,
+    SessionReady,
+    Text,
+    client_frame,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -95,6 +107,9 @@ async def _downstream(
                     await ws.send_bytes(item)
                 else:
                     await _send(ws, item)
+                # The server, not the model, opens the gate's photo request (Ustaad did for 1 of 5 gates, Oct 15).
+                if isinstance(item, SafetyGate):
+                    await desk.open_gate(item.gate_id)
     except WebSocketDisconnect:
         pass
     except Exception:  # whatever the Live session died of, the phone gets the contract's one answer
@@ -162,7 +177,7 @@ async def ws_live(
         queue = LiveRequestQueue()
         # A photo request belongs to the job, not to this socket: a reconnect picks up its open requests.
         desk = DESKS.setdefault(job_id, MediaDesk(job_id, os.getenv("MEDIA_BUCKET", "")))
-        desk.attach(lambda frame: _send(ws, frame), queue)
+        desk.attach(lambda frame: _send(ws, frame), queue, lang)
         down = create_task(_downstream(ws, queue, lang, resume, job_id, desk))
         try:
             await _upstream(ws, queue, desk)

@@ -1,5 +1,5 @@
 import { Camera, Mic } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useSearchParams } from 'react-router-dom'
 
@@ -19,6 +19,14 @@ export default function Job() {
   const live = useLive(lang, id)
   const { step, gate, failReason, stop } = live.repair
   const { request } = live.media
+  // While a gate shows, he first reads what to switch off; the gate's photo button then opens the sheet.
+  const [gatePhoto, setGatePhoto] = useState(false)
+  const [shownGate, setShownGate] = useState(gate?.gate_id)
+  if (gate?.gate_id !== shownGate) {
+    setShownGate(gate?.gate_id)
+    setGatePhoto(false)
+  }
+  const sheet = request && (!gate || gatePhoto)
 
   useEffect(() => {
     void i18n.changeLanguage(lang)
@@ -53,13 +61,15 @@ export default function Job() {
         <section role="alert" className="flex flex-1 items-center px-6 py-10">
           <p className="text-[length:var(--text-lg)] font-semibold">{t([`repair.stop.${stop.reason}`, 'repair.stop.other'])}</p>
         </section>
-      ) : request ? (
+      ) : sheet ? (
         <CameraSheet
           key={request.request_id}
           view={{ ...live.media, request }}
+          title={gate ? t(`repair.evidence.${gate.gate_id}`) : request.target}
           jobId={id}
           onSent={(uri) => live.mediaReady(request.request_id, uri, request.kind)}
-          onCancel={live.cancelMedia}
+          // A gate's photo request belongs to the gate: closing the sheet goes back to the gate screen.
+          onCancel={gate ? () => setGatePhoto(false) : live.cancelMedia}
         />
       ) : gate ? (
         <section role="alert" className="flex flex-1 flex-col justify-center gap-4 bg-graphite px-6 py-10 text-housing">
@@ -71,12 +81,11 @@ export default function Job() {
               {t('repair.gateFailed', { reason: failReason })}
             </p>
           )}
-          {/* A gate photo must come from a server-issued request, so the button asks Ustaad for one; the
-              media_request it sends opens the camera sheet. */}
+          {/* The server opens the gate's photo request with the gate; until it arrives, the button asks for it. */}
           <Button
             className="h-(--touch) gap-2 self-start px-6 text-[length:var(--text-body)]"
             disabled={live.status !== 'ready'}
-            onClick={() => live.say(t('camera.askGatePhoto'))}
+            onClick={() => (request ? setGatePhoto(true) : live.say(t('camera.askGatePhoto')))}
           >
             <Camera aria-hidden className="size-6" />
             {t('camera.sendGatePhoto')}

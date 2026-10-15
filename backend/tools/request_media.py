@@ -59,6 +59,14 @@ GATE_RETAKE: dict[str, dict[str, str]] = {
         "G_CAP_DISCHARGE": "The capacitor isn't shown discharged. Discharge it safely with an insulated tool, measure again and photograph the meter.",
     },
 }
+# The photo could not be checked (quota, network, a hung call); the request stays open.
+NOT_CHECKED: dict[str, str] = {
+    "hi": "फ़ोटो चेक नहीं हो पाई। दोबारा भेजो।",
+    "te": "ఫోటో చెక్ చేయలేకపోయాను. మళ్ళీ పంపండి.",
+    "ta": "புகைப்படத்தைச் சரிபார்க்க முடியவில்லை. மீண்டும் அனுப்புங்கள்.",
+    "bn": "ছবিটা যাচাই করা গেল না। আবার পাঠান।",
+    "en": "Couldn't check the photo. Send it again.",
+}
 # For the model only.
 GAVE_UP = "The photo is still unclear after the retakes. Do not ask for it again; ask him what he sees."
 CANCELLED = "He did not send the photo. Do not ask again unless he offers; ask him what he sees."

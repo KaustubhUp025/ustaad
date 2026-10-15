@@ -7,10 +7,11 @@ from types import SimpleNamespace
 from google.genai import types
 
 from agent.media_tools import MediaDesk, media_tools
-from models.repair import RepairJob
+from models.repair import RepairJob, RepairStep
 from models.tools import GateCheck, MediaCheck, RequestMediaIn
 from models.ws import GateResult, MediaCancel, MediaReady, MediaRequest, MediaResult
-from tools.request_media import CANCELLED, GATE_RETAKE, MAX_RETAKES, RETAKE, judge, record
+from tools.gates import EVIDENCE
+from tools.request_media import CANCELLED, GATE_RETAKE, MAX_RETAKES, NOT_CHECKED, RETAKE, judge, record
 
 URI = "gs://media/jobs/j_1/a1-photo.jpg"
 PCB = RequestMediaIn(kind="photo", target="Outdoor PCB, capacitor ke paas", reason="code E6", framing_tip="Flash on")
@@ -69,8 +70,8 @@ def test_record_lists_the_photo_on_the_job():
 
 
 class FakeJobs:
-    def __init__(self):
-        self.job = RepairJob(job_id="j_1")
+    def __init__(self, job=None):
+        self.job = job or RepairJob(job_id="j_1")
 
     def load(self, job_id):
         return self.job
@@ -81,13 +82,18 @@ class FakeJobs:
 
 
 class FakeQueue:
-    """Collects what the desk sends the model: function responses as Content."""
+    """Collects what the desk sends the model: answers to its calls, and notices for requests it did not make."""
 
     def __init__(self):
         self.answers = []
+        self.notices = []
 
     def send_content(self, content):
-        self.answers.append(content.parts[0].function_response)
+        part = content.parts[0]
+        if part.function_response:
+            self.answers.append(part.function_response)
+        else:
+            self.notices.append(part.text)
 
 
 class Phone:
@@ -101,14 +107,18 @@ class Phone:
         return [f for f in self.frames if isinstance(f, kind)]
 
 
-def session(checks=(), gate_checks=()):
-    """A desk attached to one phone connection, with the tool built around recorded vision answers."""
-    desk, phone, queue, jobs = MediaDesk("j_1", "media"), Phone(), FakeQueue(), FakeJobs()
-    desk.attach(phone.send, queue)
+def session(checks=(), gate_checks=(), job=None):
+    """A desk attached to one phone connection, with the tool built around recorded vision answers (an exception in
+    the list is raised, as a failed vision call would)."""
+    desk, phone, queue, jobs = MediaDesk("j_1", "media"), Phone(), FakeQueue(), FakeJobs(job)
+    desk.attach(phone.send, queue, "hi")
     answers = {MediaCheck: iter(checks), GateCheck: iter(gate_checks)}
 
     async def vision(question, uri, schema):
-        return next(answers[schema])
+        answer = next(answers[schema])
+        if isinstance(answer, Exception):
+            raise answer
+        return answer
 
     tool = media_tools(desk, jobs, vision)[0]
     return desk, phone, queue, jobs, tool
@@ -198,7 +208,7 @@ async def test_after_a_reconnect_the_phone_gets_the_open_request_again_and_the_a
 
     media_tools(desk, jobs, vision)
     new_phone, new_queue = Phone(), FakeQueue()
-    desk.attach(new_phone.send, new_queue)
+    desk.attach(new_phone.send, new_queue, "hi")
     await asyncio.gather(*desk.tasks)
     assert [f.request_id for f in new_phone.of(MediaRequest)] == [rid]
     await photo(desk, rid)
@@ -215,7 +225,7 @@ async def test_an_answer_ready_while_disconnected_is_held_until_the_next_connect
     await asyncio.gather(*desk.tasks)
 
     new_queue = FakeQueue()
-    desk.attach(Phone().send, new_queue)
+    desk.attach(Phone().send, new_queue, "hi")
     await asyncio.gather(*desk.tasks)
     assert [a.id for a in new_queue.answers] == ["call_3"]
 
@@ -242,3 +252,90 @@ async def test_a_gate_photo_is_judged_by_the_gate_check_alone_and_retakes_until_
     assert jobs.job.gates["G_MAINS_OFF"] == "passed"
     assert [a.response["passed"] for a in queue.answers] == [False] * len(fails) + [True]
     assert not desk.ready(ready(rid))
+
+
+# The server opens a gate's photo request itself: measured on Oct 15, Ustaad opened one for only 1 of 5 gates.
+
+GENERAL = {"kind": "general", "label": "General guidance", "audio_uri": None, "doc": None, "page": None}
+
+
+def gated_job():
+    """A job whose next step is an HV step, so G_MAINS_OFF stands before it."""
+    step = RepairStep(n=1, instruction="Test step at the PCB", hazard="HV", source=GENERAL)
+    return RepairJob(job_id="j_1", steps=[step])
+
+
+async def test_a_safety_gate_opens_its_photo_request_once_without_the_model():
+    desk, phone, queue, _, _ = session()
+    await desk.open_gate("G_MAINS_OFF")
+    await desk.open_gate("G_MAINS_OFF")
+    (request,) = phone.of(MediaRequest)
+    assert (request.kind, request.target, request.framing_tip) == ("photo", EVIDENCE["G_MAINS_OFF"], "")
+    assert queue.answers == [] and queue.notices == []
+
+
+async def test_a_server_opened_gate_photo_is_judged_and_ustaad_gets_a_notice():
+    desk, phone, queue, jobs, _ = session(gate_checks=[NO_MCB, MCB_OFF], job=gated_job())
+    await desk.open_gate("G_MAINS_OFF")
+    rid = phone.of(MediaRequest)[0].request_id
+    await photo(desk, rid)
+    await photo(desk, rid)
+    assert [g.passed for g in phone.of(GateResult)] == [False, True]
+    assert phone.of(MediaResult)[0].retake_reason == GATE_RETAKE["hi"]["G_MAINS_OFF"]
+    assert jobs.job.gates["G_MAINS_OFF"] == "passed"
+    assert queue.answers == []
+    assert len(queue.notices) == 2 and "G_MAINS_OFF" in queue.notices[1] and "next_step" in queue.notices[1]
+    assert not desk.ready(ready(rid))
+
+
+async def test_ustaads_own_gate_request_joins_the_open_one_and_gets_the_answer():
+    desk, phone, queue, _, tool = session(gate_checks=[MCB_OFF], job=gated_job())
+    await desk.open_gate("G_MAINS_OFF")
+    gate_photo = RequestMediaIn(kind="photo", target="MCB OFF", reason="gate", framing_tip="", gate_id="G_MAINS_OFF")
+    await tool.func(context("call_g"), **gate_photo.model_dump())
+    (request,) = phone.of(MediaRequest)
+    await photo(desk, request.request_id)
+    assert [(a.id, a.response["passed"]) for a in queue.answers] == [("call_g", True)]
+    assert queue.notices == []
+
+
+async def test_a_reconnect_reopens_the_gate_request_from_the_job_alone():
+    desk = MediaDesk("j_1", "media")
+    phone = Phone()
+    desk.attach(phone.send, FakeQueue(), "hi")
+    media_tools(desk, FakeJobs(gated_job()), None)
+    await asyncio.gather(*desk.tasks)
+    assert [r.target for r in phone.of(MediaRequest)] == [EVIDENCE["G_MAINS_OFF"]]
+
+
+# A vision call that fails or hangs must not leave the sheet waiting forever.
+
+
+async def test_a_failed_vision_check_asks_him_to_send_again_and_keeps_the_request():
+    desk, phone, queue, _, tool = session(checks=[RuntimeError("429 quota"), CLEAR])
+    await tool.func(context(), **PCB.model_dump())
+    rid = phone.of(MediaRequest)[0].request_id
+    await photo(desk, rid)
+    assert phone.of(MediaResult)[-1].retake_reason == NOT_CHECKED["hi"]
+    assert queue.answers == []
+    await photo(desk, rid)
+    assert queue.answers[-1].response["matches_expected"]
+
+
+async def test_a_hung_vision_check_times_out(monkeypatch):
+    from agent import media_tools as module
+
+    monkeypatch.setattr(module, "VISION_TIMEOUT_S", 0.01)
+    desk, phone, _, _, _ = session()
+
+    async def hangs(question, uri, schema):
+        await asyncio.sleep(1)
+
+    tool = media_tools(desk, FakeJobs(), hangs)[0]
+    await tool.func(context(), **PCB.model_dump())
+    await photo(desk, phone.of(MediaRequest)[0].request_id)
+    assert phone.of(MediaResult)[-1].retake_reason == NOT_CHECKED["hi"]
+
+
+def test_every_language_has_the_not_checked_reason():
+    assert set(NOT_CHECKED) == set(RETAKE)

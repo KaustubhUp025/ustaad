@@ -30,6 +30,10 @@ know what already works; humans append one block per day.
   and Ustaad speaks the findings 1.6–1.9 s after the result. A dropped socket resumed with its handle gets the open
   request again and the answer reaches the resumed session (2/2). A gate photo is judged by the gate check alone.
   Measured: one Flash photo check takes ~5 s, with outliers of 15–25 s (T27: timeout or "still checking").
+  Who opens a photo request (Oct 15, real model): Ustaad opened the gate photo request himself for 1 of 5 gates
+  and for 1 of 3 side-issue offers (otherwise he only said "bhejo"), 2 of 2 for a manual page. So the server now
+  opens a gate's request itself, 4 ms after `safety_gate`; a wrong photo fails the gate with a Hindi reason and
+  Ustaad says why from the server's note. A failed or hung vision call (30 s) asks for the photo again.
   Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
   The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)

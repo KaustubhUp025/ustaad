@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 
 type Props = {
   view: MediaView & { request: NonNullable<MediaView['request']> }
+  title: string
   jobId: string
   onSent: (uri: string) => void
   onCancel: () => void
@@ -21,7 +22,7 @@ type Phase = 'ready' | 'dark' | 'blurry' | 'sending' | 'checking' | 'failed'
 // It takes the job's middle area and leaves the mic below it, so he can still talk to Ustaad. A very dark or blurry
 // photo is caught on the phone before any upload; "send anyway" lets him overrule it. The parent keys the sheet by
 // request, so the camera keeps running through retakes; a new retake reason resets the sheet.
-export function CameraSheet({ view: { request, retakeReason }, jobId, onSent, onCancel }: Props) {
+export function CameraSheet({ view: { request, retakeReason }, title, jobId, onSent, onCancel }: Props) {
   const { t } = useTranslation()
   const camera = useCamera()
   const fallback = useRef<HTMLInputElement>(null)
@@ -70,7 +71,7 @@ export function CameraSheet({ view: { request, retakeReason }, jobId, onSent, on
       className="mt-auto flex animate-in flex-col gap-4 rounded-t-xl bg-card px-4 pt-5 pb-6 shadow-lg slide-in-from-bottom motion-reduce:animate-none"
     >
       <h2 id="camera-title" className="font-heading text-[length:var(--text-lg)] leading-tight font-bold">
-        {request.target}
+        {title}
       </h2>
 
       {/* Viewfinder: the live back camera when allowed, else a hint; the framing outline marks what should fill it. */}
@@ -81,9 +82,11 @@ export function CameraSheet({ view: { request, retakeReason }, jobId, onSent, on
             <span key={corner} aria-hidden className={`absolute size-8 border-primary ${corner}`} />
           ),
         )}
-        <p className={live ? 'relative mb-4 bg-graphite/80 px-2 text-[length:var(--text-sm)]' : 'relative mb-auto mt-auto px-10 text-[length:var(--text-body)]'}>
-          {request.framing_tip}
-        </p>
+        {request.framing_tip && (
+          <p className={live ? 'relative mb-4 bg-graphite/80 px-2 text-[length:var(--text-sm)]' : 'relative mb-auto mt-auto px-10 text-[length:var(--text-body)]'}>
+            {request.framing_tip}
+          </p>
+        )}
         {camera.torch !== null && (
           <Button
             variant="outline"

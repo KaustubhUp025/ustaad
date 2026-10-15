@@ -26,9 +26,9 @@ def repair_tools(jobs: JobStore) -> list[FunctionTool]:
 
     def next_step(tool_context: ToolContext, observation: str) -> dict:
         """Gets the next repair step. `observation` is what he reported about the last step. Say a step only
-        after this returns it. SAFETY_GATE means call request_media with that `gate_id` for the photo in
-        `required_evidence`; only that photo opens the gate, saying it is done does not. DONE means every step was
-        given."""
+        after this returns it. SAFETY_GATE means his phone already asks for the photo in `required_evidence`: tell
+        him what to do and what to photograph. Only that photo opens the gate, saying it is done does not; you get a
+        note when it passes. DONE means every step was given."""
         return jobs.update(tool_context.state["job_id"], repair.next_step).model_dump(mode="json")
 
     tools = [FunctionTool(start_repair), FunctionTool(next_step)]

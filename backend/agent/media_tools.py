@@ -1,10 +1,12 @@
-"""request_media as the Live agent calls it (BUILD-GUIDE T17). The tool only opens a request: it is long-running
-and NON_BLOCKING, so Ustaad keeps talking while the worker walks to the unit. The job's MediaDesk then answers the
-model's call once per checked photo (a retake reason, then the findings), always over the current connection, so a
-dropped and resumed session still gets the answer. Measured on gemini-3.8-live (Oct 15): a resumed session takes
-the answer to a call made before the drop, and a second answer on the same call is spoken too."""
+"""Photo requests for the Live agent (BUILD-GUIDE T17). A request is opened by Ustaad (request_media) or by the server
+when a safety gate stands before the next step; either way the server issues the request ID. The job's MediaDesk
+takes the phone's photo for it, checks it, and tells Ustaad once per checked photo: as the answer to his
+request_media call, or as a notice when he made no call. Measured on gemini-3.8-live (Oct 15): a resumed session
+takes the answer to a call made before the drop; a second answer on the same call is spoken too; Ustaad opened the
+gate photo request himself for only 1 of 5 gates, so the server opens it."""
 
 import asyncio
+import logging
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any
@@ -20,16 +22,20 @@ from models.tools import ConfirmSafetyIn, GateCheck, MediaCheck, RequestMediaIn,
 from models.ws import Frame, GateResult, MediaCancel, MediaReady, MediaRequest, MediaResult
 from tools import repair
 from tools import request_media as rules
-from tools.gates import QUESTIONS
+from tools.gates import EVIDENCE, QUESTIONS, open_gate
 
 ReadPhoto = Callable[[str, str, type], Awaitable[Any]]
 Send = Callable[[Frame], Awaitable[None]]
+logger = logging.getLogger(__name__)
+
+# Flash photo checks took ~5 s, with outliers up to 26 s (Oct 15); past this the phone asks for the photo again.
+VISION_TIMEOUT_S = 30
 
 
 @dataclass
 class OpenRequest:
     request_id: str
-    call_id: str
+    call_id: str | None  # the model's request_media call; None when the server opened the request
     inp: RequestMediaIn
     lang: str
     retakes: int = 0
@@ -45,19 +51,20 @@ class MediaDesk:
         # POST /api/media/upload-url puts a job's photos under jobs/<job_id>/.
         self._prefix = f"gs://{bucket}/jobs/{job_id}/"
         self._open: dict[str, OpenRequest] = {}
-        self._held: list[types.FunctionResponse] = []
+        self._held: list[types.Content] = []
         self._send: Send | None = None
         self._queue: LiveRequestQueue | None = None
+        self.lang = "hi"
         self.on_photo: Callable[[OpenRequest, str], Awaitable[None]] | None = None
         self.tasks: set[asyncio.Task] = set()
 
-    def attach(self, send: Send, queue: LiveRequestQueue) -> None:
-        self._send, self._queue = send, queue
-        for answer in self._held:
-            self._to_model(answer)
+    def attach(self, send: Send, queue: LiveRequestQueue, lang: str) -> None:
+        self._send, self._queue, self.lang = send, queue, lang
+        for content in self._held:
+            queue.send_content(content)
         self._held.clear()
         for request in self._open.values():
-            self._spawn(self._send(self._frame(request)))
+            self.spawn(send(self._frame(request)))
 
     def detach(self) -> None:
         self._send = self._queue = None
@@ -68,14 +75,28 @@ class MediaDesk:
 
     async def open(self, request: OpenRequest) -> None:
         self._open[request.request_id] = request
-        if self._send:
-            await self._send(self._frame(request))
+        await self.show(self._frame(request))
+
+    async def open_gate(self, gate_id: GateId) -> None:
+        """Opens the photo request for a gate that stands before the next step, unless one is open already."""
+        if self._gate_request(gate_id):
+            return
+        inp = RequestMediaIn(kind="photo", target=EVIDENCE[gate_id], reason="safety gate", framing_tip="", gate_id=gate_id)
+        await self.open(OpenRequest(f"r_{uuid4().hex[:8]}", None, inp, self.lang))
+
+    def join_gate(self, gate_id: GateId, call_id: str) -> bool:
+        """Ustaad asked for a gate photo the server already asked for: his call gets that request's answer."""
+        request = self._gate_request(gate_id)
+        if request is None or request.call_id is not None:
+            return False
+        request.call_id = call_id
+        return True
 
     def ready(self, frame: MediaReady) -> bool:
         request = self._open.get(frame.request_id)
         if not request or request.inp.kind != frame.kind or not frame.uri.startswith(self._prefix):
             return False
-        self._spawn(self.on_photo(request, frame.uri))
+        self.spawn(self.on_photo(request, frame.uri))
         return True
 
     def cancel(self, frame: MediaCancel) -> bool:
@@ -83,7 +104,7 @@ class MediaDesk:
         if not request:
             return False
         out = RequestMediaOut(media_uri=None, findings=[], matches_expected=False, confidence=0, follow_up=rules.CANCELLED)
-        self.answer(request, out.model_dump(mode="json"), done=True)
+        self.answer(request, out.model_dump(mode="json"), done=True, notice=f"[He closed the photo request: {out.follow_up}]")
         return True
 
     async def show(self, frame: Frame) -> None:
@@ -91,23 +112,28 @@ class MediaDesk:
         if self._send:
             await self._send(frame)
 
-    def answer(self, request: OpenRequest, response: dict, done: bool) -> None:
-        """Answers the model's call for this request, delivered when Ustaad is idle; held while disconnected."""
+    def answer(self, request: OpenRequest, response: dict, done: bool, notice: str) -> None:
+        """Tells Ustaad about this request when he is idle: the answer to his call, or `notice` when he made none.
+        Held while disconnected."""
         if done:
             del self._open[request.request_id]
-        answer = types.FunctionResponse(
-            id=request.call_id,
-            name="request_media",
-            response=response,
-            scheduling=types.FunctionResponseScheduling.WHEN_IDLE,
-        )
-        if self._queue:
-            self._to_model(answer)
+        if request.call_id:
+            answer = types.FunctionResponse(
+                id=request.call_id,
+                name="request_media",
+                response=response,
+                scheduling=types.FunctionResponseScheduling.WHEN_IDLE,
+            )
+            content = types.Content(role="user", parts=[types.Part(function_response=answer)])
         else:
-            self._held.append(answer)
+            content = types.Content(role="user", parts=[types.Part(text=notice)])
+        if self._queue:
+            self._queue.send_content(content)
+        else:
+            self._held.append(content)
 
-    def _to_model(self, answer: types.FunctionResponse) -> None:
-        self._queue.send_content(types.Content(role="user", parts=[types.Part(function_response=answer)]))
+    def _gate_request(self, gate_id: GateId) -> OpenRequest | None:
+        return next((r for r in self._open.values() if r.inp.gate_id == gate_id), None)
 
     @staticmethod
     def _frame(request: OpenRequest) -> MediaRequest:
@@ -119,7 +145,7 @@ class MediaDesk:
             max_seconds=15 if request.inp.kind == "video" else None,
         )
 
-    def _spawn(self, work: Awaitable[None]) -> None:
+    def spawn(self, work: Awaitable[None]) -> None:
         task = asyncio.ensure_future(work)
         self.tasks.add(task)
         task.add_done_callback(self.tasks.discard)
@@ -136,19 +162,38 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
     ) -> None:
         """Asks him for a photo (or a video, or with kind "document" a photo of a manual page) when seeing it would
         change your next step. `target`: what to capture, in his language. `framing_tip`: how, e.g. "Flash on, 20 cm
-        door". For a SAFETY_GATE pass its `gate_id`: only that photo opens the gate. You can keep talking while he
+        door". A SAFETY_GATE's photo is asked for already; do not ask for it here. You can keep talking while he
         takes it. The result comes later, once per photo: when `retaking` is true, tell him the `follow_up` reason
         briefly; his retake arrives on its own, so do not ask again with this tool. Otherwise use the findings, or
         do what `follow_up` says."""
+        if gate_id and desk.join_gate(gate_id, tool_context.function_call_id):
+            return
         inp = RequestMediaIn(kind=kind, target=target, reason=reason, framing_tip=framing_tip, gate_id=gate_id)
         request_id = f"r_{uuid4().hex[:8]}"
         await desk.open(OpenRequest(request_id, tool_context.function_call_id, inp, tool_context.state["lang"]))
 
     async def on_photo(request: OpenRequest, uri: str) -> None:
-        if request.inp.gate_id:
-            await _gate_photo(request, uri)
+        schema = GateCheck if request.inp.gate_id else MediaCheck
+        question = QUESTIONS[request.inp.gate_id] if request.inp.gate_id else rules.question(request.inp)
+        try:
+            check = await asyncio.wait_for(read_photo(question, uri, schema), VISION_TIMEOUT_S)
+        except Exception:  # quota, network or a hung call: the request stays open and he sends the photo again
+            logger.exception("photo check failed")
+            await desk.show(
+                MediaResult(
+                    request_id=request.request_id,
+                    matches_expected=False,
+                    confidence=0,
+                    retake_reason=rules.NOT_CHECKED[request.lang],
+                )
+            )
             return
-        check = await read_photo(rules.question(request.inp), uri, MediaCheck)
+        if request.inp.gate_id:
+            await _gate_photo(request, uri, check)
+        else:
+            await _photo(request, uri, check)
+
+    async def _photo(request: OpenRequest, uri: str, check: MediaCheck) -> None:
         out, retake = rules.judge(check, uri, request.retakes, request.lang)
         request.retakes += retake
         await desk.show(
@@ -161,12 +206,11 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
         )
         if not retake:
             jobs.update(desk.job_id, lambda job: (None, _record(job, request, uri, out.findings, out.confidence)))
-        desk.answer(request, out.model_dump(mode="json"), done=not retake)
+        desk.answer(request, out.model_dump(mode="json"), done=not retake, notice="")
 
-    async def _gate_photo(request: OpenRequest, uri: str) -> None:
+    async def _gate_photo(request: OpenRequest, uri: str, check: GateCheck) -> None:
         """The gate check alone judges a gate photo, with no retake limit: the gate stays locked until one passes."""
         gate_id = request.inp.gate_id
-        check = await read_photo(QUESTIONS[gate_id], uri, GateCheck)
 
         def change(job):
             out, job = repair.confirm_safety(ConfirmSafetyIn(gate_id=gate_id, media_uri=uri), job, check)
@@ -183,12 +227,20 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             )
         )
         response = out.model_dump(mode="json") | {"media_uri": uri, "retaking": not out.passed}
-        desk.answer(request, response, done=out.passed)
+        if out.passed:
+            notice = f"[Safety check passed: gate {gate_id} is open. Call next_step for the step.]"
+        else:
+            notice = f"[Safety check photo for gate {gate_id} failed: {out.reason} He will send another; tell him why.]"
+        desk.answer(request, response, done=out.passed, notice=notice)
 
     def _record(job, request: OpenRequest, uri: str, findings, confidence: float):
         return rules.record(job, request.request_id, request.inp.kind, uri, findings, confidence)
 
     desk.on_photo = on_photo
+    # After a reconnect, possibly on another instance: a gate before the next step needs its photo request again.
+    gate = open_gate(jobs.load(desk.job_id))
+    if gate:
+        desk.spawn(desk.open_gate(gate))
     tool = FunctionTool(request_media)
     tool.behavior = types.Behavior.NON_BLOCKING
     tool.response_scheduling = types.FunctionResponseScheduling.WHEN_IDLE

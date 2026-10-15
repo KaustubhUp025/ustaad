@@ -128,11 +128,16 @@ def context(call_id="call_1"):
     return SimpleNamespace(state={"job_id": "j_1", "lang": "hi"}, function_call_id=call_id)
 
 
-def ready(request_id, uri=URI, kind="photo"):
-    return MediaReady(request_id=request_id, uri=uri, kind=kind)
+def bound(request_id, name="a1-photo.jpg"):
+    """Where POST /api/media/upload-url puts a photo for this request."""
+    return f"gs://media/jobs/j_1/{request_id}/{name}"
 
 
-async def photo(desk, request_id, uri=URI):
+def ready(request_id, uri=None, kind="photo"):
+    return MediaReady(request_id=request_id, uri=uri or bound(request_id), kind=kind)
+
+
+async def photo(desk, request_id, uri=None):
     assert desk.ready(ready(request_id, uri))
     await asyncio.gather(*desk.tasks)
 
@@ -157,18 +162,31 @@ async def test_media_ready_for_an_unknown_finished_foreign_or_wrong_kind_request
     assert not desk.ready(ready("r_x"))
     await tool.func(context(), **PCB.model_dump())
     rid = phone.of(MediaRequest)[0].request_id
-    assert not desk.ready(ready(rid, uri="gs://media/jobs/j_2/a1-photo.jpg"))
-    assert not desk.ready(ready(rid, uri="gs://other/jobs/j_1/a1-photo.jpg"))
+    assert not desk.ready(ready(rid, uri=f"gs://media/jobs/j_2/{rid}/a1-photo.jpg"))
+    assert not desk.ready(ready(rid, uri=f"gs://other/jobs/j_1/{rid}/a1-photo.jpg"))
     assert not desk.ready(ready(rid, kind="video"))
     await photo(desk, rid)
     assert not desk.ready(ready(rid))
+
+
+async def test_a_photo_uploaded_for_an_earlier_request_cannot_answer_a_new_gate_request():
+    # PR #25 review: an old photo of the switched-off MCB must not pass a later gate.
+    desk, phone, _, _, tool = session(checks=[CLEAR])
+    await tool.func(context(), **PCB.model_dump())
+    earlier = phone.of(MediaRequest)[0].request_id
+    await photo(desk, earlier)
+    await desk.open_gate("G_MAINS_OFF")
+    gate = phone.of(MediaRequest)[-1].request_id
+    assert not desk.ready(ready(gate, uri=bound(earlier)))
+    assert not desk.ready(ready(gate, uri=f"gs://media/jobs/j_1/{gate}-a1-photo.jpg"))
+    assert desk.ready(ready(gate))
 
 
 async def test_blurry_then_clear_answers_the_same_call_twice_and_records_only_the_good_photo():
     desk, phone, queue, jobs, tool = session(checks=[BLURRY, CLEAR])
     await tool.func(context("call_7"), **PCB.model_dump())
     rid = phone.of(MediaRequest)[0].request_id
-    await photo(desk, rid, "gs://media/jobs/j_1/a1-blurry.jpg")
+    await photo(desk, rid, bound(rid, "a1-blurry.jpg"))
     await photo(desk, rid)
 
     assert [(r.request_id, r.retake_reason) for r in phone.of(MediaResult)] == [
@@ -181,7 +199,7 @@ async def test_blurry_then_clear_answers_the_same_call_twice_and_records_only_th
     ] * 2
     assert queue.answers[0].response["retaking"] and queue.answers[0].response["follow_up"] == RETAKE["hi"]["blurry"]
     assert queue.answers[1].response["matches_expected"] and not queue.answers[1].response["retaking"]
-    assert [m.uri for m in jobs.job.media] == [URI]
+    assert [m.uri for m in jobs.job.media] == [bound(rid)]
 
 
 async def test_cancel_answers_the_call_and_closes_the_request():
@@ -390,7 +408,7 @@ async def test_his_own_photo_opens_a_server_request_and_ustaad_gets_the_findings
     assert queue.answers == []
     (notice,) = queue.notices
     assert notice.startswith("[Photo from the worker") and "bulged top" in notice
-    assert [(m.uri, m.reason) for m in jobs.job.media] == [(URI, "side_issue")]
+    assert [(m.uri, m.reason) for m in jobs.job.media] == [(bound(request.request_id), "side_issue")]
 
 
 async def test_his_manual_page_is_recorded_as_manual():

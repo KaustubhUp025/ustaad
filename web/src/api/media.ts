@@ -7,7 +7,13 @@ export async function uploadPhoto(jpeg: Blob, jobId: string, requestId: string):
   const res = await fetch(`${API_URL}/api/media/upload-url`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ kind: 'photo', content_type: 'image/jpeg', job_id: jobId, filename: `${requestId}.jpg` }),
+    body: JSON.stringify({
+      kind: 'photo',
+      content_type: 'image/jpeg',
+      job_id: jobId,
+      request_id: requestId,
+      filename: `${requestId}.jpg`,
+    }),
   })
   if (!res.ok) throw new Error(`upload-url ${res.status}`)
   const signed: { upload_url: string; uri: string; headers: Record<string, string> } = await res.json()

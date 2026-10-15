@@ -73,7 +73,7 @@ class MediaDesk:
 
     def __init__(self, job_id: str, bucket: str) -> None:
         self.job_id = job_id
-        # POST /api/media/upload-url puts a job's photos under jobs/<job_id>/.
+        # POST /api/media/upload-url puts a request's photos under jobs/<job_id>/<request_id>/.
         self._prefix = f"gs://{bucket}/jobs/{job_id}/"
         self._open: dict[str, OpenRequest] = {}
         self._held: list[types.Content] = []
@@ -143,7 +143,8 @@ class MediaDesk:
 
     def ready(self, frame: MediaReady) -> bool:
         request = self._open.get(frame.request_id)
-        if not request or request.inp.kind != frame.kind or not frame.uri.startswith(self._prefix):
+        # Only this request's folder: a photo uploaded for an earlier request cannot answer it (PR #25 review).
+        if not request or request.inp.kind != frame.kind or not frame.uri.startswith(f"{self._prefix}{request.request_id}/"):
             return False
         self.spawn(self.on_photo(request, frame.uri))
         return True

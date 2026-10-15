@@ -93,6 +93,24 @@ async def test_upload_url_allows_each_kind_content_type_pair(
     }
 
 
+async def test_upload_url_puts_a_photo_for_a_request_in_that_requests_folder(fake_storage):
+    payload = {"kind": "photo", "content_type": "image/jpeg", "job_id": "j_1", "request_id": "r_1a2b", "filename": "x.jpg"}
+
+    response = await post_upload(payload)
+
+    assert response.status_code == 200
+    assert re.fullmatch(r"jobs/j_1/r_1a2b/[0-9a-f]{32}-x\.jpg", fake_storage.calls[0][0])
+
+
+async def test_upload_url_rejects_a_malformed_request_id(fake_storage):
+    payload = {"kind": "photo", "content_type": "image/jpeg", "job_id": "j_1", "request_id": "../r_1"}
+
+    response = await post_upload(payload)
+
+    assert response.status_code == 422
+    assert fake_storage.calls == []
+
+
 async def test_upload_url_without_id_stays_in_kind_prefix(fake_storage):
     response = await post_upload({"kind": "photo", "content_type": "image/png"})
 

@@ -35,9 +35,10 @@ async def get_storage_client() -> StorageUploadClient:
 def _object_name(request: MediaUploadRequest) -> str:
     prefix = "imports" if request.kind == "import" else "jobs"
     parent_id = request.import_id if request.kind == "import" else request.job_id
+    request_id = None if request.kind == "import" else request.request_id
     filename = request.filename or "upload"
     leaf = f"{uuid4().hex}-{filename}"
-    return "/".join(part for part in (prefix, parent_id, leaf) if part)
+    return "/".join(part for part in (prefix, parent_id, request_id, leaf) if part)
 
 
 @router.post(

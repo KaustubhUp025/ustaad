@@ -40,10 +40,12 @@ The client connects straight to Cloud Run (Firebase Hosting rewrites don't carry
 | `error` | `{"v":1,"type":"error","code":"live_unavailable","message":"…"}` | codes: `live_unavailable`, `rate_limited`, `auth`, `bad_request` |
 
 A `media_request` comes from Ustaad (`request_media`), from the server when a safety gate stands before the next
-step, or in answer to `media_offer`; every `request_id` is issued by the server, and only a `media_ready` for an
-open request is accepted. After a reconnect with `resume`, the server sends every open request of the job again.
-A connect without `resume` starts a new Ustaad: the requests the old Ustaad opened are dropped, and the safety-gate
-and worker-started requests are sent again.
+step, or in answer to `media_offer`. Every `request_id` is issued by the server, and a `media_ready` is accepted only
+for an open request, with a `uri` in that request's own upload folder (`jobs/{job_id}/{request_id}/`, rest.md).
+Open requests are held in memory on the server instance that holds the job's session (session affinity). A reconnect
+with `resume` to that instance gets every open request again; on another instance or after a restart, only an open
+safety-gate request is rebuilt from the job. A connect without `resume` starts a new Ustaad: the requests the old
+Ustaad opened are dropped, and the safety-gate and worker-started requests are sent again.
 
 Mock: with `MOCK_LIVE=1` (server) or `VITE_MOCK_LIVE=1` (client), `seed/fixtures/live_session.jsonl` is replayed:
 one JSON object per line, `{"t_ms": 1200, "frame": {…server frame…}}`; audio frames are omitted.

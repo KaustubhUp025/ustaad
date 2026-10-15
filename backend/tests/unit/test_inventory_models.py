@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from models.inventory import InventoryDelta, InventoryDeltaRequest, InventoryItem, InventoryListResponse
 
-FIXTURE = Path(__file__).resolve().parents[3] / "seed/fixtures/inventory.json"
+FIXTURE = Path(__file__).resolve().parents[2] / "fixtures/inventory.json"
 
 
 @pytest.fixture

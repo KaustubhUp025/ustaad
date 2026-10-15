@@ -230,6 +230,30 @@ async def test_an_answer_ready_while_disconnected_is_held_until_the_next_connect
     assert [a.id for a in new_queue.answers] == ["call_3"]
 
 
+async def test_a_fresh_session_drops_the_dead_sessions_requests_and_answers_but_keeps_the_gate_request():
+    desk, phone, _, _, tool = session(checks=[CLEAR], gate_checks=[MCB_OFF], job=gated_job())
+    await tool.func(context("call_1"), **PCB.model_dump())
+    await tool.func(context("call_2"), **PCB.model_dump())
+    gate_photo = RequestMediaIn(kind="photo", target="MCB OFF", reason="gate", framing_tip="", gate_id="G_MAINS_OFF")
+    await tool.func(context("call_g"), **gate_photo.model_dump())
+    await asyncio.gather(*desk.tasks)
+    (gate,) = [f for f in phone.of(MediaRequest) if f.target != PCB.target]
+    first, second = [f for f in phone.of(MediaRequest) if f.target == PCB.target]
+    await photo(desk, first.request_id)
+    desk.detach()
+
+    # Phone test 3 (Oct 15): a reconnect without a resume handle starts a new Live session that never made call_2.
+    desk.forget_session()
+    new_phone, new_queue = Phone(), FakeQueue()
+    desk.attach(new_phone.send, new_queue, "hi")
+    await asyncio.gather(*desk.tasks)
+    assert [f.request_id for f in new_phone.of(MediaRequest)] == [gate.request_id]
+    assert not desk.ready(ready(second.request_id))
+    await photo(desk, gate.request_id)
+    assert new_queue.answers == []
+    assert len(new_queue.notices) == 1 and "G_MAINS_OFF" in new_queue.notices[0]
+
+
 # Gate photos: one vision call, judged by the gate rules, no retake limit (docs/SAFETY.md)
 
 

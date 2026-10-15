@@ -50,6 +50,14 @@ know what already works; humans append one block per day.
   English once ("part in question"): the model's language drift, not the app's labels. Rewording the request_media
   description made it worse in 6-run checks (English titles 0/6 as is, 2/6 and 3/5 reworded), so it stays as is;
   the fix belongs with the session language work (T21, T39).
+  Third phone test (Oct 15, 15:02-15:08): the gate flow failed a wall photo and a switchboard without the plug with
+  sensible reasons (a passing photo not tried on the phone). Two bugs found and fixed: after ~10 s offline, Retry or
+  a page refresh opened a new Ustaad with no memory (the client now keeps the resume handle per job for the tab; a
+  handle the Live API rejects is dropped and the next connect starts fresh), and a new session was asked again for
+  photos the dead session had requested (a connect without a handle now drops those; gate requests stay). Checked
+  locally in headless Chromium with the real model: after a refresh the socket carries `resume=` and Ustaad still
+  named the worker and his AC; a bogus stored handle gave one `live_unavailable`, then a fresh session.
+  Flash photo checks were slow that afternoon (5-60 s from the laptop, two 30 s timeouts on dev): T27.
   Found and fixed: `read_photo` (T16) closed its Gemini client mid-call, so no gate photo could pass on dev.
   The local API cannot sign upload URLs with a user login (it needs the runtime service account).
 - Memory Bank: empty Agent Engine `8060748716522340352` in `us-central1` (`AGENT_ENGINE_ID`)

@@ -91,6 +91,17 @@ class MediaDesk:
         for request in self._open.values():
             self.spawn(send(self._frame(request)))
 
+    def forget_session(self) -> None:
+        """A new Live session (no resume handle) never made the old session's calls, so their requests and held
+        answers go (phone test 3, Oct 15: the phone was asked again for a photo the new Ustaad knew nothing of).
+        Gate and worker requests stay; a gate request Ustaad joined is answered with a notice instead."""
+        self._held.clear()
+        for request in list(self._open.values()):
+            if request.inp.gate_id:
+                request.call_id = None
+            elif request.call_id:
+                del self._open[request.request_id]
+
     def detach(self) -> None:
         self._send = self._queue = None
 

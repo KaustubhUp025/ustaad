@@ -180,6 +180,8 @@ async def ws_live(
         queue = LiveRequestQueue()
         # A photo request belongs to the job, not to this socket: a reconnect picks up its open requests.
         desk = DESKS.setdefault(job_id, MediaDesk(job_id, os.getenv("MEDIA_BUCKET", "")))
+        if not resume:
+            desk.forget_session()
         desk.attach(lambda frame: _send(ws, frame), queue, lang)
         down = create_task(_downstream(ws, queue, lang, resume, job_id, desk))
         try:

@@ -57,6 +57,25 @@ const PING_MS = 20_000
 const RETRIES = 5
 const RETRY_MS = 2_000
 
+// The handle is kept per job so a page refresh or Retry resumes the same Ustaad instead of a new one with no memory
+// (phone test 3, Oct 15). Storage can throw in private windows; then only in-page reconnects resume.
+const handleKey = (jobId: string) => `ustaad.resume.${jobId}`
+function storeHandle(jobId: string, handle: string | null) {
+  try {
+    if (handle) sessionStorage.setItem(handleKey(jobId), handle)
+    else sessionStorage.removeItem(handleKey(jobId))
+  } catch {
+    // not stored: a refresh starts a new session
+  }
+}
+function storedHandle(jobId: string): string | null {
+  try {
+    return sessionStorage.getItem(handleKey(jobId))
+  } catch {
+    return null
+  }
+}
+
 interface Audio {
   capture: MessagePort
   playback: MessagePort
@@ -89,7 +108,7 @@ export function openLive(
   let ws: WebSocket | null = null
   let audio: Promise<Audio> | null = null
   let playback: MessagePort | null = null
-  let resume: string | null = null
+  let resume = storedHandle(jobId)
   let lastError: string | null = null
   let failures = 0
   let closed = false
@@ -107,9 +126,17 @@ export function openLive(
       failures = 0
       onStatus('ready')
     }
-    if (frame.type === 'resume_handle') resume = frame.handle
+    if (frame.type === 'resume_handle') {
+      resume = frame.handle
+      storeHandle(jobId, resume)
+    }
     if (frame.type === 'interrupted') playback?.postMessage('clear')
     if (frame.type === 'error') lastError = frame.code
+    // An expired handle would fail every reconnect; the next one starts a new session instead.
+    if (frame.type === 'error' && frame.code === 'live_unavailable') {
+      resume = null
+      storeHandle(jobId, null)
+    }
     onFrame(frame)
   }
 

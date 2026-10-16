@@ -103,8 +103,8 @@ async def prepare_thread_messages(
         try:
             async with limit:
                 return await enrich(message)
-        except Exception as error:
-            logger.error("message enrichment failed", exc_info=error)
+        except Exception:  # noqa: BLE001 — per-media failures are reduced to one fixed safe import error
+            logger.error("message enrichment failed")
             errors.append(ENRICHMENT_FAILED)
             return MessageEnrichment()
 

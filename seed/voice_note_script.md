@@ -211,6 +211,19 @@ Fill the last two columns as you go. The answer key must match what really happe
 
 Recorded so far (export of Oct 16, 15:11), in this order: chats 1, 2, 7, 5, 10, 3, then chat 1 again with a voice answer. 9 voice notes so far (Samyak 4, Somil 1, Kaustubh 4). The text-answered first take of chat 1 stays in the group; the importer should merge it with the re-recorded one.
 
+**Photos in the group (labels shown in the app, deck and video; DECISIONS 2026-10-16).** No faulty units were available to photograph, so none of these is our own photo:
+
+| File in the export | Chat | Shows | Label |
+| --- | --- | --- | --- |
+| IMG-20261014-WA0008.jpg | 1 (first take) | Voltas indoor display, E6 | Image from a public post |
+| IMG-20261014-WA0034.jpg | 2 | Daikin remote showing U4 | AI-generated image |
+| IMG-20261015-WA0013.jpg | 5 | outdoor unit, capacitor and wiring | AI-generated image |
+| IMG-20261016-WA0023.jpg | 3 | indoor unit with water and dirt | AI-generated image |
+| IMG-20261016-WA0026.jpg | 1 (retake) | Voltas indoor display, E6 | Image from a public post |
+| IMG-20261016-WA0027.jpg | 1 (retake) | Voltas BEE star label | Image from a public post |
+
+Add a row for every photo posted later.
+
 **Gaps in the recorded chats:** in chats 2, 5, 10 and the chat 1 retake the answer came 44 min to 4 h after the question, and chat 10's outcome (Oct 16 11:01) is 2 min before chat 3 starts (11:03). A 30-minute gap rule would split those questions from their answers and join chat 10's outcome to chat 3. For the remaining chats, answer within 30 minutes and keep 35–40 minutes before the next thread; how T13 threads the recorded ones is for T13 to decide. Order does not matter; the 35-minute gap between threads does.
 
 **Totals:** 22 cards, chat 25 merges into 19, chats 18 and 26 go to review, chats 4 and 8 give nothing.

@@ -181,16 +181,16 @@ Fill the last two columns as you go. The answer key must match what really happe
 
 | Chat | Expected | Answer by (plan) | Actually answered by | Recorded? |
 |---|---|---|---|---|
-| 1 | card ⭐ G2 E6 card | Samyak | Samyak (question: Kaustubh) | ✅ first take answered as text; re-recorded as a fresh thread with Samyak's answer as a voice note (the one G2 plays) |
-| 2 | card | Samyak |  | ✅ voice |
-| 3 | card | Somil |  | ✅ voice |
+| 1 | card ⭐ G2 E6 card | Samyak | Samyak (question: Kaustubh) | ✅ Oct 14 22:30 answered as text; Oct 16 12:47 again with Samyak's voice answer PTT-20261016-WA0029 at 14:03 (the one G2 plays) |
+| 2 | card | Samyak | Samyak, voice PTT-20261015-WA0000 (question: Kaustubh by voice, not Somil) | ✅ Oct 14 23:57 |
+| 3 | card | Somil | Samyak, voice PTT-20261016-WA0024 (Kaustubh replied by voice WA0025) | ✅ Oct 16 11:03 |
 | 4 | no card | — |  |  |
-| 5 | card | Somil | Somil | ✅ voice |
+| 5 | card | Somil | Somil, voice PTT-20261015-WA0033 (Kaustubh replied by voice WA0035) | ✅ Oct 15 11:12 |
 | 6 | card | Samyak |  |  |
-| 7 | card | Somil | Samyak | ✅ answer sent as text |
+| 7 | card | Somil | Samyak, text | ✅ Oct 15 01:39 |
 | 8 | no card | — |  |  |
 | 9 | card | Somil |  |  |
-| 10 | card (gas STOP) | Samyak |  | ✅ voice |
+| 10 | card (gas STOP) | Samyak | Samyak, voice PTT-20261015-WA0054 (question: Kaustubh by voice WA0053) | ✅ Oct 15 20:41; outcome sent Oct 16 11:00 |
 | 11 | card | Samyak |  |  |
 | 12 | card | Somil |  |  |
 | 13 | card | Samyak |  |  |
@@ -209,6 +209,8 @@ Fill the last two columns as you go. The answer key must match what really happe
 | 26 | needs_review | Kaustubh |  |  |
 | 27 | card | Samyak |  |  |
 
-Recorded so far (Oct 16), in this order: chats 1, 2, 7, 5, 10, 3, then chat 1 again with a voice answer. The text-answered first take of chat 1 stays in the group; the importer should merge it with the re-recorded one. Order does not matter; the 35-minute gap between threads does.
+Recorded so far (export of Oct 16, 15:11), in this order: chats 1, 2, 7, 5, 10, 3, then chat 1 again with a voice answer. 9 voice notes so far (Samyak 4, Somil 1, Kaustubh 4). The text-answered first take of chat 1 stays in the group; the importer should merge it with the re-recorded one.
+
+**Gaps in the recorded chats:** in chats 2, 5, 10 and the chat 1 retake the answer came 44 min to 4 h after the question, and chat 10's outcome (Oct 16 11:01) is 2 min before chat 3 starts (11:03). A 30-minute gap rule would split those questions from their answers and join chat 10's outcome to chat 3. For the remaining chats, answer within 30 minutes and keep 35–40 minutes before the next thread; how T13 threads the recorded ones is for T13 to decide. Order does not matter; the 35-minute gap between threads does.
 
 **Totals:** 22 cards, chat 25 merges into 19, chats 18 and 26 go to review, chats 4 and 8 give nothing.

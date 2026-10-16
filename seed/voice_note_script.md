@@ -181,7 +181,7 @@ Fill the last two columns as you go. The answer key must match what really happe
 
 | Chat | Expected | Answer by (plan) | Actually answered by | Recorded? |
 |---|---|---|---|---|
-| 1 | card ⭐ G2 E6 card | Samyak |  | ✅ answer sent as **text**: re-record as a fresh thread with the answer as a voice note (G2 plays it) |
+| 1 | card ⭐ G2 E6 card | Samyak | Samyak (question: Kaustubh) | ✅ first take answered as text; re-recorded as a fresh thread with Samyak's answer as a voice note (the one G2 plays) |
 | 2 | card | Samyak |  | ✅ voice |
 | 3 | card | Somil |  | ✅ voice |
 | 4 | no card | — |  |  |
@@ -209,6 +209,6 @@ Fill the last two columns as you go. The answer key must match what really happe
 | 26 | needs_review | Kaustubh |  |  |
 | 27 | card | Samyak |  |  |
 
-Recorded so far (Oct 16), in this order: chats 1, 2, 7, 5, 10, 3. Order does not matter; the 35-minute gap between threads does.
+Recorded so far (Oct 16), in this order: chats 1, 2, 7, 5, 10, 3, then chat 1 again with a voice answer. The text-answered first take of chat 1 stays in the group; the importer should merge it with the re-recorded one. Order does not matter; the 35-minute gap between threads does.
 
 **Totals:** 22 cards, chat 25 merges into 19, chats 18 and 26 go to review, chats 4 and 8 give nothing.

@@ -11,7 +11,7 @@ from jobs.ingest.dedupe import LEVELS, match, merge
 from models.fault_card import FaultCard, FaultCardSource
 from models.imports import CardCounts, CardDraft, ThreadMessage
 from tools.hazard_tagger import tag
-from tools.search_fault_cards import Embed
+from tools.search_fault_cards import Embed, canonical_brand
 
 Ask = Callable[[str, type[CardDraft]], Awaitable[CardDraft]]
 
@@ -32,6 +32,8 @@ RULES: 1 A card exists only if a fix or conclusion is stated. Unanswered questio
        5 confidence 0-1: low if the speaker was unsure, the audio unclear, or people disagreed.
        6 error_code verbatim as shown on the unit, or null. Keep Hinglish, codes and part numbers verbatim.
        7 language: BCP-47 of the steps' text, e.g. hi-Latn for romanised Hinglish.
+       8 appliance_type: one of the allowed values, from what is said or shown. If the thread does not make the
+         appliance clear, null; do not assume an AC because most threads are about ACs.
 THREAD:
 """
 
@@ -64,7 +66,8 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
         return None
     by_id = {m.id: m for m in thread}
     fix = by_id.get(draft.fix_message_id or "")
-    review = draft.confidence < REVIEW_CONFIDENCE or fix is None
+    # An unclear appliance type is not guessed: a person sets it (T40).
+    review = draft.confidence < REVIEW_CONFIDENCE or fix is None or draft.appliance_type is None
     hazard = "none"
     for step in draft.steps:
         level, stop = tag(step.summary_en, step.hazard)
@@ -89,7 +92,7 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
         **_set(
             id=card_id,
             created_at=now,
-            brand=draft.brand,
+            brand=canonical_brand(draft.brand),
             model=draft.model,
             appliance_type=draft.appliance_type,
             error_code=draft.error_code or "",

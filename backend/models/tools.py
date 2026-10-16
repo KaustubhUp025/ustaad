@@ -10,6 +10,7 @@ from typing import Annotated, Literal
 from pydantic import AfterValidator, BaseModel, model_validator
 
 from models.repair import (
+    ApplianceType,
     Confidence,
     GateId,
     Hazard,
@@ -157,6 +158,8 @@ class SearchFaultCardsIn(BaseModel):
     model: str | None = None
     error_code: str | None = None
     symptom: str | None = None
+    # Only cards of this type; a card without a type is left out, since it may be any appliance (T41).
+    appliance_type: ApplianceType | None = None
 
 
 class Citation(BaseModel):

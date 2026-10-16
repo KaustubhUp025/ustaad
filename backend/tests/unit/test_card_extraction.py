@@ -111,6 +111,21 @@ def test_a_resolved_draft_without_brand_symptom_or_steps_gives_no_card():
     assert card_from_draft(draft(steps=[]), THREAD, "fc_1", NOW) is None
 
 
+def test_a_non_ac_thread_keeps_its_type():
+    card = card_from_draft(draft(appliance_type="washing_machine"), THREAD, "fc_1", NOW)
+    assert (card.appliance_type, card.review_status) == ("washing_machine", "auto")
+
+
+def test_an_unclear_appliance_type_goes_to_review():
+    card = card_from_draft(draft(appliance_type=None), THREAD, "fc_1", NOW)
+    assert card.appliance_type is None
+    assert card.review_status == "needs_review"
+
+
+def test_the_brand_is_stored_in_one_spelling():
+    assert card_from_draft(draft(brand="VOLTAS"), THREAD, "fc_1", NOW).brand == "Voltas"
+
+
 async def test_import_writes_new_cards_merges_a_repeat_and_counts_review():
     second = [m.model_copy(update={"id": f"n{m.id[1:]}"}) for m in THREAD]
     drafts = {
@@ -145,6 +160,7 @@ async def test_the_prompt_carries_the_thread_and_the_use_only_what_is_said_rule(
     assert "[m2] Samyak (voice" in seen[0]
     assert "Test answer transcript" in seen[0]
     assert "Never add an error-code meaning" in seen[0]
+    assert "appliance_type" in seen[0]
 
 
 async def test_a_failed_extraction_is_listed_and_the_other_threads_still_import():

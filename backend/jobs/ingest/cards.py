@@ -129,9 +129,9 @@ async def import_cards(threads: list[list[ThreadMessage]], ask: Ask, embed: Embe
     # Written one at a time, so a repeat inside the same import merges into the card written before it.
     for thread, draft in zip(threads, drafts, strict=True):
         if isinstance(draft, Exception):
-            # One failed thread is counted in imports.errors[] and does not stop the import; the details stay in
-            # the server log.
-            logger.error("card extraction failed", exc_info=draft)
+            # One failed thread is counted in imports.errors[] and does not stop the import. The log gets only the
+            # error's class: its text or traceback can carry the prompt, i.e. private chat content.
+            logger.error("card extraction failed (%s)", type(draft).__name__)
             counts.errors.append(EXTRACTION_FAILED)
             continue
         card = card_from_draft(draft, thread, f"fc_{uuid4().hex[:16]}", now)

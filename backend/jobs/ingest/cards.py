@@ -32,7 +32,8 @@ RULES: 1 A card exists only if a fix or conclusion is stated. Unanswered questio
        5 confidence 0-1: low if the speaker was unsure, the audio unclear, or people disagreed.
        6 error_code verbatim as shown on the unit, or null. Keep Hinglish, codes and part numbers verbatim.
        7 language: BCP-47 of the steps' text, e.g. hi-Latn for romanised Hinglish.
-       8 appliance_type: one of the allowed values, from what is said or shown. If the thread does not make the
+       8 brand: as said or shown in the thread, else null; never guess the brand from the code or other threads.
+       9 appliance_type: one of the allowed values, from what is said or shown. If the thread does not make the
          appliance clear, null; do not assume an AC because most threads are about ACs.
 THREAD:
 """
@@ -62,7 +63,7 @@ def card_text(card: FaultCard) -> str:
 
 
 def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str, now: datetime) -> FaultCard | None:
-    if not (draft.resolved and draft.brand and draft.symptom and draft.steps):
+    if not (draft.resolved and draft.symptom and draft.steps):
         return None
     by_id = {m.id: m for m in thread}
     fix = by_id.get(draft.fix_message_id or "")
@@ -92,7 +93,8 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
         **_set(
             id=card_id,
             created_at=now,
-            brand=canonical_brand(draft.brand),
+            # A thread that names no brand gives a general card: search offers it for every brand.
+            brand=canonical_brand(draft.brand or ""),
             model=draft.model,
             appliance_type=draft.appliance_type,
             error_code=draft.error_code or "",

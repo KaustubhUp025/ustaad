@@ -33,6 +33,7 @@ def seeded() -> FakeCardStore:
         card("fc_remote", "", "remote not working"),
         card("fc_e1", "E1", "room sensor test symptom"),
         card("fc_e6_daikin", "E6", "outdoor unit not running", brand="Daikin"),
+        card("fc_general_remote", "", "remote cell dead no response", brand=""),
         card("fc_lg_ch05", "CH05", "indoor display shows code", brand="LG"),
         card("fc_lg_tv", "", "no picture on screen", brand="LG", appliance_type="led_tv"),
         card("fc_lg_untyped", "", "no picture on screen display", brand="LG", appliance_type=None),
@@ -104,3 +105,18 @@ def test_an_unrelated_symptom_returns_nothing():
 def test_an_exact_code_match_is_returned_even_below_the_floor():
     inp = SearchFaultCardsIn(brand="Voltas", error_code="E1", symptom="burning smell from fan blade")
     assert [c.card_id for c in search_fault_cards(inp, embed, seeded().nearest).cards] == ["fc_e1"]
+
+
+def test_general_cards_without_a_brand_are_found_for_any_brand():
+    store = seeded()
+    out = search_fault_cards(SearchFaultCardsIn(brand="Daikin", symptom="remote cell dead no response"), embed, store.nearest)
+    assert out.cards[0].card_id == "fc_general_remote"
+    assert {brand for brand, _ in store.queries} == {"Daikin", ""}
+
+
+def test_a_general_cards_code_gets_no_priority_since_codes_differ_by_brand():
+    store = seeded()
+    general = card("fc_general_e1", "E1", "unrelated general test symptom", brand="")
+    store.save(general, embed(["E1 unrelated general test symptom"], "RETRIEVAL_DOCUMENT")[0])
+    inp = SearchFaultCardsIn(brand="Voltas", error_code="E1", symptom="burning smell from fan blade")
+    assert [c.card_id for c in search_fault_cards(inp, embed, store.nearest).cards] == ["fc_e1"]

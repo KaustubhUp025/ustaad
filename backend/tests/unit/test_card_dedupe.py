@@ -62,3 +62,21 @@ def test_merge_keeps_a_human_review_decision():
 
 def test_merge_lists_a_message_once():
     assert merge(card(ids=("m1", "m2")), card(cid="fc_new", ids=("m2", "n1"))).source.message_ids == ["m1", "m2", "n1"]
+
+
+def test_a_voice_source_replaces_a_first_card_without_audio():
+    text = card()
+    text = text.model_copy(update={"source": text.source.model_copy(update={"type": "whatsapp_text"})})
+    voice = card(cid="fc_new", ids=("n1",))
+    voice = voice.model_copy(update={"source": voice.source.model_copy(update={"audio_uri": "gs://b/n.flac"})})
+    source = merge(text, voice).source
+    assert (source.type, source.author, source.audio_uri) == ("whatsapp_voice", "fc_new", "gs://b/n.flac")
+    assert source.message_ids == ["m1", "n1"]
+
+
+def test_a_first_card_with_audio_keeps_its_credit():
+    first = card()
+    first = first.model_copy(update={"source": first.source.model_copy(update={"audio_uri": "gs://b/m.flac"})})
+    second = card(cid="fc_new", ids=("n1",))
+    second = second.model_copy(update={"source": second.source.model_copy(update={"audio_uri": "gs://b/n.flac"})})
+    assert merge(first, second).source.audio_uri == "gs://b/m.flac"

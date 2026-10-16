@@ -17,10 +17,12 @@ def match(card: FaultCard, candidates: list[tuple[FaultCard, float]]) -> FaultCa
 
 
 def merge(old: FaultCard, new: FaultCard) -> FaultCard:
-    """Keeps the first card's id and credited speaker, adds the new thread's messages, takes the surer card's
+    """Keeps the first card's id and credited speaker (unless only the new one has a voice note), adds the new thread's messages, takes the surer card's
     content, and never lowers the hazard or undoes a human review."""
     surer = new if new.confidence > old.confidence else old
-    source = old.source.model_copy(
+    # A voice note is what the source chip plays, so it takes the credit from a first card that has none.
+    credit = new.source if new.source.audio_uri and not old.source.audio_uri else old.source
+    source = credit.model_copy(
         update={"message_ids": list(dict.fromkeys([*(old.source.message_ids or []), *(new.source.message_ids or [])]))}
     )
     human = old.review_status in ("approved", "rejected")

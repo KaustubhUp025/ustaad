@@ -1,6 +1,7 @@
 """search_fault_cards (SPEC §6, BUILD-GUIDE T15, T41): the brand's nearest cards to the query text, optionally only
 one appliance type, cards with the exact error code first, then by similarity. Error codes are exact things, so a
-code match outranks a closer symptom and is kept even below the relevance floor."""
+code match of the asked brand outranks a closer symptom and is kept even below the relevance floor; a code means
+nothing across brands, so a general card's code earns nothing."""
 
 from collections.abc import Callable
 
@@ -53,10 +54,13 @@ def search_fault_cards(inp: SearchFaultCardsIn, embed: Embed, nearest: Nearest) 
     brand = canonical_brand(inp.brand)
     text = " ".join(x for x in (brand, inp.model, inp.error_code, inp.symptom) if x)
     code = _code(inp.error_code)
+    vector = embed([text], "RETRIEVAL_QUERY")[0]
+    # General cards (no brand named in the thread) apply to every brand.
+    candidates = nearest(brand, vector, CANDIDATES) + (nearest("", vector, CANDIDATES) if brand else [])
     ranked = sorted(
         (
-            (bool(code) and _code(card.error_code) == code, sim, card)
-            for card, sim in nearest(brand, embed([text], "RETRIEVAL_QUERY")[0], CANDIDATES)
+            (bool(code) and card.brand == brand and _code(card.error_code) == code, sim, card)
+            for card, sim in candidates
             if inp.appliance_type is None or card.appliance_type == inp.appliance_type
         ),
         key=lambda hit: hit[:2],

@@ -105,8 +105,12 @@ def test_no_code_is_stored_as_an_empty_code():
     assert card_from_draft(draft(error_code=None), THREAD, "fc_1", NOW).error_code == ""
 
 
-def test_a_resolved_draft_without_brand_symptom_or_steps_gives_no_card():
-    assert card_from_draft(draft(brand=None), THREAD, "fc_1", NOW) is None
+def test_a_thread_that_names_no_brand_gives_a_general_card():
+    card = card_from_draft(draft(brand=None), THREAD, "fc_1", NOW)
+    assert (card.brand, card.review_status) == ("", "auto")
+
+
+def test_a_resolved_draft_without_symptom_or_steps_gives_no_card():
     assert card_from_draft(draft(symptom=None), THREAD, "fc_1", NOW) is None
     assert card_from_draft(draft(steps=[]), THREAD, "fc_1", NOW) is None
 
@@ -161,6 +165,7 @@ async def test_the_prompt_carries_the_thread_and_the_use_only_what_is_said_rule(
     assert "Test answer transcript" in seen[0]
     assert "Never add an error-code meaning" in seen[0]
     assert "appliance_type" in seen[0]
+    assert "never guess the brand" in seen[0]
 
 
 async def test_a_failed_extraction_is_listed_and_the_other_threads_still_import():

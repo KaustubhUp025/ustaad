@@ -1,21 +1,69 @@
 """Topic grouping boundary with deterministic time-gap fallback."""
 
+import json
 import logging
+import re
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from datetime import timedelta
 from typing import Protocol
 
+from clients.gemini import ask_json
 from jobs.ingest.models import Threads
+from jobs.ingest.parse import MESSAGE_PHONE_NUMBER
 from models.imports import ThreadMessage
 
 FALLBACK_GAP = timedelta(minutes=30)
 FALLBACK_WARNING = "Flash grouping was unavailable or invalid; using deterministic time-gap grouping."
 logger = logging.getLogger(__name__)
+GCS_URI = re.compile(r"gs://\S+")
+
+THREAD_GROUPING_PROMPT = """ROLE: Group technician chat messages into fault threads.
+RULES:
+1 Group by topic as question, answers and outcome; time gaps are hints only.
+2 A late answer can join its question and a new fault can begin shortly after an outcome.
+3 Put every input id in exactly one group, keep time order inside each group, and add no ids.
+4 Return only the response schema; never rewrite message text.
+MESSAGES:
+"""
+
+AskThreads = Callable[[str, type[Threads]], Awaitable[Threads]]
 
 
 class ThreadGroupingClient(Protocol):
     async def group_threads(self, messages: list[ThreadMessage]) -> object: ...
+
+
+def _safe_prompt_value(value: str) -> str:
+    without_private_values = GCS_URI.sub("", MESSAGE_PHONE_NUMBER.sub("", value))
+    return re.sub(r"[ \t]+", " ", without_private_values).strip()
+
+
+class FlashThreadGroupingClient:
+    """Text-only Flash client for the existing validated topic-grouping boundary."""
+
+    def __init__(self, ask: AskThreads = ask_json) -> None:
+        self._ask = ask
+
+    async def group_threads(self, messages: list[ThreadMessage]) -> object:
+        ordered = _ordered(messages)
+        payload = []
+        previous: ThreadMessage | None = None
+        for message in ordered:
+            minutes = None if previous is None else (message.ts - previous.ts).total_seconds() / 60
+            payload.append(
+                {
+                    "id": message.id,
+                    "speaker": _safe_prompt_value(message.speaker) or "Participant",
+                    "local_time": message.ts.isoformat(),
+                    "minutes_since_previous": minutes,
+                    "kind": message.kind,
+                    "text": _safe_prompt_value(message.text),
+                }
+            )
+            previous = message
+        prompt = THREAD_GROUPING_PROMPT + json.dumps(payload, ensure_ascii=False)
+        return await self._ask(prompt, Threads)
 
 
 def _ordered(messages: Sequence[ThreadMessage]) -> list[ThreadMessage]:

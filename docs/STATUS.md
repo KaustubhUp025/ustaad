@@ -114,6 +114,12 @@ Share-target registration and PWA launch were verified on two phones. Actual fil
 Import processing is not implemented yet and remains dependent on T13. This test does not establish that an
 export was imported successfully. T07 is complete; actual import processing remains pending T13.
 
+## WhatsApp import progress (T13)
+
+PR #33 merged the offline, fully synthetic WhatsApp parser and topic-grouping foundation. Sanitized offline
+tests validate the parser and grouping boundaries. T13 remains doing: real media enrichment, the storage/import
+job, Firestore import persistence, the Cloud Run Job trigger and any private real-export run remain outstanding.
+
 ## Measured quality bar (fill on Thu, T29; the deck uses these numbers)
 | Measure | Target | Actual |
 | --- | --- | --- |

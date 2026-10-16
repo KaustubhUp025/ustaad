@@ -10,6 +10,7 @@ from typing import Annotated, Literal
 from pydantic import AfterValidator, BaseModel, model_validator
 
 from models.repair import (
+    ApplianceType,
     Confidence,
     GateId,
     Hazard,
@@ -150,3 +151,38 @@ class ConfirmSafetyOut(BaseModel):
     gate_id: GateId
     passed: bool
     reason: str | None
+
+
+class SearchFaultCardsIn(BaseModel):
+    brand: str
+    model: str | None = None
+    error_code: str | None = None
+    symptom: str | None = None
+    # Only cards of this type; a card without a type is left out, since it may be any appliance (T41).
+    appliance_type: ApplianceType | None = None
+
+
+class Citation(BaseModel):
+    author: str | None
+    date: str | None
+    audio_uri: str | None
+
+
+class CardHit(BaseModel):
+    """A found card without its step text: steps reach the model only through next_step (BUILD-GUIDE §6.5)."""
+
+    card_id: str
+    brand: str
+    model: str | None
+    error_code: str
+    symptom: str
+    root_cause: str | None
+    hazard: Hazard
+    steps: int
+    confidence: Confidence
+    verified_count: int
+    citation: Citation
+
+
+class SearchFaultCardsOut(BaseModel):
+    cards: list[CardHit]

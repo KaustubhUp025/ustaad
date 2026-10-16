@@ -21,7 +21,7 @@ from pydantic import ValidationError
 from agent.media_tools import MediaDesk
 from agent.ustaad import build_ustaad
 from app.live_events import to_frames
-from clients.firestore import JobStore
+from clients.firestore import CardStore, JobStore
 from models.ws import (
     Error,
     Frame,
@@ -59,9 +59,10 @@ async def live_events(
 ) -> AsyncIterator[Event]:
     """One Live session with the model. Unit tests replace this with a fake."""
     speech_code, language_name = LANGS[lang]
-    jobs = JobStore(firestore.Client(database=os.environ["FIRESTORE_DB"]))
+    db = firestore.Client(database=os.environ["FIRESTORE_DB"])
+    jobs = JobStore(db)
     runner = InMemoryRunner(
-        agent=build_ustaad(os.environ["LIVE_MODEL"], os.environ["LIVE_LOCATION"], jobs, desk), app_name=APP
+        agent=build_ustaad(os.environ["LIVE_MODEL"], os.environ["LIVE_LOCATION"], jobs, CardStore(db), desk), app_name=APP
     )
     # The repair tools and the gate callback read the job from here; the model never chooses it.
     session = await runner.session_service.create_session(

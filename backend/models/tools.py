@@ -150,3 +150,36 @@ class ConfirmSafetyOut(BaseModel):
     gate_id: GateId
     passed: bool
     reason: str | None
+
+
+class SearchFaultCardsIn(BaseModel):
+    brand: str
+    model: str | None = None
+    error_code: str | None = None
+    symptom: str | None = None
+
+
+class Citation(BaseModel):
+    author: str | None
+    date: str | None
+    audio_uri: str | None
+
+
+class CardHit(BaseModel):
+    """A found card without its step text: steps reach the model only through next_step (BUILD-GUIDE §6.5)."""
+
+    card_id: str
+    brand: str
+    model: str | None
+    error_code: str
+    symptom: str
+    root_cause: str | None
+    hazard: Hazard
+    steps: int
+    confidence: Confidence
+    verified_count: int
+    citation: Citation
+
+
+class SearchFaultCardsOut(BaseModel):
+    cards: list[CardHit]

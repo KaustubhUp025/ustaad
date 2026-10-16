@@ -19,3 +19,25 @@ async def read_photo[M: BaseModel](question: str, media_uri: str, schema: type[M
         config=types.GenerateContentConfig(response_mime_type="application/json", response_schema=schema),
     )
     return schema.model_validate_json(response.text)
+
+
+async def ask_json[M: BaseModel](prompt: str, schema: type[M]) -> M:
+    """Asks Flash a text-only question and parses the answer into `schema`."""
+    client = genai.Client()
+    response = await client.aio.models.generate_content(
+        model=os.environ["FLASH_MODEL"],
+        contents=prompt,
+        config=types.GenerateContentConfig(response_mime_type="application/json", response_schema=schema),
+    )
+    return schema.model_validate_json(response.text)
+
+
+def embed(texts: list[str], task_type: str) -> list[list[float]]:
+    """EMBED_DIM must match the Firestore vector index (infra/firestore.sh), or search silently finds nothing."""
+    client = genai.Client()
+    response = client.models.embed_content(
+        model=os.environ["EMBED_MODEL"],
+        contents=texts,
+        config=types.EmbedContentConfig(task_type=task_type, output_dimensionality=int(os.environ["EMBED_DIM"])),
+    )
+    return [e.values for e in response.embeddings]

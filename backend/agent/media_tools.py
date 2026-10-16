@@ -107,6 +107,10 @@ class MediaDesk:
         if self._queue is queue:
             self._send = self._queue = None
 
+    def owns(self, uri: str) -> bool:
+        """A photo uploaded for this job. Vision reads nothing else, so the model cannot point it at another object."""
+        return uri.startswith(self._prefix)
+
     @property
     def idle(self) -> bool:
         return self._queue is None and not self._open and not self._held

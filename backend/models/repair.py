@@ -9,6 +9,12 @@ Hazard = Literal["none", "HV", "capacitor", "refrigerant"]
 ApplianceType = Literal[
     "split_ac", "window_ac", "fridge", "washing_machine", "led_tv", "microwave", "geyser", "fan_cooler", "other"
 ]
+# A worker's profile trades (firestore.md `workers.trades[]`) and the card types each covers (SPEC §6).
+Trade = Literal["ac", "fridge", "washing_machine", "led_tv", "microwave", "geyser", "fan_cooler", "other"]
+TRADE_TYPES: dict[Trade, list[ApplianceType]] = {
+    "ac": ["split_ac", "window_ac"],
+    **{t: [t] for t in ("fridge", "washing_machine", "led_tv", "microwave", "geyser", "fan_cooler", "other")},
+}
 GateId = Literal["G_MAINS_OFF", "G_CAP_DISCHARGE"]
 GateState = Literal["open", "passed", "failed"]
 MediaKind = Literal["photo", "video", "document"]

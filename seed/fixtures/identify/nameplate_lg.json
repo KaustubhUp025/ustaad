@@ -1,0 +1,60 @@
+{
+  "brand": "LG",
+  "model": "HS-09ISS",
+  "series": null,
+  "type": "split_ac",
+  "error_code": null,
+  "confidence": 0.95,
+  "observations": [
+    {
+      "label": "Appliance Type",
+      "value": "SPLIT ROOM AIR CONDITIONER",
+      "confidence": 0.98
+    },
+    {
+      "label": "Serial Number",
+      "value": "811HASPD2990",
+      "confidence": 0.95
+    },
+    {
+      "label": "Voltage",
+      "value": "230 V~",
+      "confidence": 0.98
+    },
+    {
+      "label": "Frequency",
+      "value": "60 Hz",
+      "confidence": 0.98
+    },
+    {
+      "label": "Phase",
+      "value": "1 ø",
+      "confidence": 0.95
+    },
+    {
+      "label": "Cooling Capacity (T1)",
+      "value": "9,706 kJ/h",
+      "confidence": 0.95
+    },
+    {
+      "label": "Refrigerant",
+      "value": "R32 0.50 kg",
+      "confidence": 0.98
+    },
+    {
+      "label": "Normal Input / Current",
+      "value": "770 W / 4.4 A",
+      "confidence": 0.95
+    },
+    {
+      "label": "Max Input / Current",
+      "value": "1,000 W / 6.0 A",
+      "confidence": 0.95
+    },
+    {
+      "label": "Country of Manufacture",
+      "value": "Thailand",
+      "confidence": 0.95
+    }
+  ]
+}

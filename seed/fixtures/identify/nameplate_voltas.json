@@ -1,0 +1,50 @@
+{
+  "brand": "VOLTAS",
+  "model": "4502568",
+  "series": null,
+  "type": "split_ac",
+  "error_code": null,
+  "confidence": 0.95,
+  "observations": [
+    {
+      "label": "Appliance / Type",
+      "value": "RAC / Split",
+      "confidence": 0.95
+    },
+    {
+      "label": "Year",
+      "value": "2019",
+      "confidence": 0.95
+    },
+    {
+      "label": "Energy Efficiency ISEER",
+      "value": "4.51",
+      "confidence": 0.95
+    },
+    {
+      "label": "Cooling Capacity (100%)",
+      "value": "5200 W",
+      "confidence": 0.95
+    },
+    {
+      "label": "Cooling Capacity (50%)",
+      "value": "2600 W",
+      "confidence": 0.95
+    },
+    {
+      "label": "Electricity Consumption",
+      "value": "892.32 Units Per Year",
+      "confidence": 0.95
+    },
+    {
+      "label": "Compressor Type",
+      "value": "Variable Speed",
+      "confidence": 0.95
+    },
+    {
+      "label": "Refrigerant",
+      "value": "R32",
+      "confidence": 0.95
+    }
+  ]
+}

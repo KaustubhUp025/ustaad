@@ -1,0 +1,40 @@
+{
+  "brand": null,
+  "model": null,
+  "series": null,
+  "type": "other",
+  "error_code": null,
+  "confidence": 0.9,
+  "observations": [
+    {
+      "label": "component",
+      "value": "dual run capacitor",
+      "confidence": 0.95
+    },
+    {
+      "label": "damage",
+      "value": "top of capacitor is severely bulged/swollen and rusted (blown/failed capacitor)",
+      "confidence": 0.95
+    },
+    {
+      "label": "terminal_marking_1",
+      "value": "FAN",
+      "confidence": 0.85
+    },
+    {
+      "label": "terminal_marking_2",
+      "value": "C",
+      "confidence": 0.85
+    },
+    {
+      "label": "terminal_marking_3",
+      "value": "HERM",
+      "confidence": 0.75
+    },
+    {
+      "label": "wiring",
+      "value": "yellow wire to HERM, red wire to C, purple wire to FAN",
+      "confidence": 0.9
+    }
+  ]
+}

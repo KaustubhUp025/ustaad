@@ -7,7 +7,7 @@ chatty model reply cannot flood the agent's context."""
 
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, model_validator
+from pydantic import AfterValidator, BaseModel, computed_field, model_validator
 
 from models.repair import (
     ApplianceType,
@@ -37,14 +37,33 @@ class IdentifyIn(BaseModel):
     media_uri: str
 
 
-class IdentifyOut(BaseModel):
+class NameplateRead(BaseModel):
+    """What Flash vision reads from a nameplate or error display; tools/identify.py normalises it."""
+
     brand: str | None
     model: str | None
     series: str | None
     type: str | None
     error_code: str | None
     confidence: Confidence
+    observations: list[Observation]
+
+
+class IdentifyOut(BaseModel):
+    brand: str | None
+    model: str | None
+    series: str | None
+    type: ApplianceType | None
+    error_code: str | None
+    confidence: Confidence
     observations: Observations = []
+
+    @computed_field
+    @property
+    def readable(self) -> bool:
+        """False: the agent asks for a clearer photo, or the nameplate, instead of using the reading (BUILD-GUIDE T12).
+        A sure reading of a photo with no brand, model or code on it is not usable either."""
+        return self.confidence >= MIN_CONFIDENCE and any((self.brand, self.model, self.error_code))
 
 
 class RequestMediaIn(BaseModel):

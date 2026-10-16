@@ -1,0 +1,1192 @@
+[
+  {
+    "source": {
+      "brand": "Voltas",
+      "appliance_type": "split_ac",
+      "doc_title": "Split Type Inverter Air-Conditioner — Owner's Manual for JZ, SZ, MZ, ZZ, IZ, CZ, GZ, AD, DZ Series / 173V WZJ",
+      "doc_number": null,
+      "doc_number_note": "No document number printed. Voltas branding on every page; wiring diagrams titled 'VOLTAS LIMITED'.",
+      "url": "http://5.imimg.com/data5/SELLER/Doc/2024/6/424982813/QT/PN/LE/21403488/voltas-central-air-conditioner-2-star.pdf",
+      "host_note": "IndiaMART seller upload (imimg.com); the filename says 'central air conditioner 2 star', but the content is the inverter split owner's manual above",
+      "sha256": "85bc50320b59bb0adbb55deaf2b51df36c46f01b185418550d596ea7aed6eefb",
+      "accessed": "2026-10-14",
+      "page_offset_note": "printed page N = PDF page N+3",
+      "error_table": "printed p.30 / PDF p.33",
+      "display_note_verbatim": "Fault codes will show on display board once occur. Protection codes will not show on the display board directly. But customer can check these protection codes by pressing the \"WIFI\" / \"ADJ\" button 8 times in 10 seconds constantly. If there no protection is activated, \"00\" exhibits on the display board.",
+      "hv_caution_verbatim": "DUE TO HIGH VOLTAGE, DO NOT TOUCH THE TERMINALS IN THE CONTROL BOARD DURING OPERATION AND 5 MINUTES AFTER SWITCHING OFF. NEXT, CONFIRM THE VOLTAGE RECTIFICATION CIRCUIT BETWEEN DIODE BRIDGE (+) AND (-) HAS DROPPED TO BELOW 42V, BEFORE ACCESSING THE TERMINALS IN THE CONTROL BOARD.",
+      "hv_caution_pages": "printed pp.28-30",
+      "transcribed_by": "Claude, from a 300 dpi render; must be checked by a person against PDF p.33",
+      "verified_by": "Kaustubh, checked by hand against the PDFs, 2026-10-16"
+    },
+    "field_notes": "meaning = verbatim from the table. hazard = minimum level per SAFETY.md (any diagnosis involves the mains or control board, so HV). typical_cause and parts are null unless another page of this manual supports them; the team must not invent them for synthetic cards.",
+    "codes": [
+      {
+        "code": "EE",
+        "kind": "fault",
+        "odu_flash": "25",
+        "meaning": "Indoor machine EE fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "E1",
+        "kind": "fault",
+        "odu_flash": "26",
+        "meaning": "Indoor fan fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "indoor fan motor"
+        ],
+        "page": 30
+      },
+      {
+        "code": "E2",
+        "kind": "fault",
+        "odu_flash": "27",
+        "meaning": "Indoor fan zero-crossing detection abnormal",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "E3",
+        "kind": "fault",
+        "odu_flash": "28",
+        "meaning": "Indoor coil fault and sensor fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "coil sensor"
+        ],
+        "page": 30
+      },
+      {
+        "code": "E4",
+        "kind": "fault",
+        "odu_flash": "29",
+        "meaning": "Indoor ambient temperature sensor fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "room sensor"
+        ],
+        "page": 30,
+        "parts_page_note": "room and coil sensors shown on indoor wiring diagrams, pp.26-27"
+      },
+      {
+        "code": "E0",
+        "kind": "fault",
+        "odu_flash": "1",
+        "meaning": "Outdoor EE fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "E6",
+        "kind": "fault",
+        "odu_flash": "2",
+        "meaning": "Indoor and outdoor machine communication fault",
+        "hazard": "HV",
+        "typical_cause": "loose or wrongly connected indoor-outdoor connecting wire",
+        "typical_cause_source": "p.2: 'After the connecting of the wires between the indoor unit and the outdoor unit, check whether the connecting is loose or not by pulling the wire with a little force.' p.25: 'Do not connect the wires in a wrong way, otherwise electric malfunctions will be caused'; Fig.14 labels terminals NEUTRAL, LINE, COMMUNICATION, EARTH",
+        "parts": [
+          "indoor-outdoor connecting wire",
+          "terminal board (communication terminal)"
+        ],
+        "page": 30
+      },
+      {
+        "code": "F1",
+        "kind": "fault",
+        "odu_flash": "4",
+        "meaning": "Compressor starting abnormal (phase failure, reverse)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "F2",
+        "kind": "fault",
+        "odu_flash": "5",
+        "meaning": "Compressor out-of-step fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "F3",
+        "kind": "fault",
+        "odu_flash": "6",
+        "meaning": "IPM module fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "IPM module"
+        ],
+        "page": 30
+      },
+      {
+        "code": "F4",
+        "kind": "fault",
+        "odu_flash": "7",
+        "meaning": "Compressor shell roof fault/protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "F5",
+        "kind": "fault",
+        "odu_flash": "8",
+        "meaning": "Discharge temperature sensor fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "discharge temperature sensor"
+        ],
+        "page": 30
+      },
+      {
+        "code": "F6",
+        "kind": "fault",
+        "odu_flash": "9",
+        "meaning": "Suction temperature sensor fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "suction temperature sensor"
+        ],
+        "page": 30
+      },
+      {
+        "code": "F7",
+        "kind": "fault",
+        "odu_flash": "10",
+        "meaning": "Outdoor coil temperature sensor fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "outdoor coil sensor"
+        ],
+        "page": 30
+      },
+      {
+        "code": "F8",
+        "kind": "fault",
+        "odu_flash": "11",
+        "meaning": "Outdoor ambient temperature sensor fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "outdoor ambient sensor"
+        ],
+        "page": 30
+      },
+      {
+        "code": "F9",
+        "kind": "fault",
+        "odu_flash": "12",
+        "meaning": "Outdoor DC fan fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "outdoor DC fan motor"
+        ],
+        "page": 30
+      },
+      {
+        "code": "E8",
+        "kind": "fault",
+        "odu_flash": "/",
+        "meaning": "Outdoor communication fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "P1",
+        "kind": "protection",
+        "odu_flash": "13",
+        "meaning": "Outdoor machine AC current protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "P2",
+        "kind": "protection",
+        "odu_flash": "14",
+        "meaning": "Compressor phase current protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "P3",
+        "kind": "protection",
+        "odu_flash": "15",
+        "meaning": "Outdoor unit over-high/over-low AC voltage protection",
+        "hazard": "HV",
+        "typical_cause": "supply voltage fluctuation",
+        "typical_cause_source": "p.18 caution: 'Check power condition of the house, it should have proper earthing, no power fluctuation and use of proper rated circuit breaker'; back cover recommends the Voltas V-Service Stabiliser",
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "P4",
+        "kind": "protection",
+        "odu_flash": "16",
+        "meaning": "DC voltage over-high or over-low voltage protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "P5",
+        "kind": "protection",
+        "odu_flash": "17",
+        "meaning": "IPM over-high temperature protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "P6",
+        "kind": "protection",
+        "odu_flash": "18",
+        "meaning": "Discharge temperature overheat protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "P7",
+        "kind": "protection",
+        "odu_flash": "19",
+        "meaning": "Cooling indoor coil anti-freezing protection",
+        "hazard": "HV",
+        "typical_cause": "dirty air filter / obstructed airflow",
+        "typical_cause_source": "p.14 'Cooling efficiency is not good': 'Is filter dirty?', 'Were inlet and outlet vents obstructed?'; p.16 filter cleaning procedure. The link between this code and these causes is the team's, not stated on p.30",
+        "parts": [
+          "air filter"
+        ],
+        "page": 30
+      },
+      {
+        "code": "P8",
+        "kind": "protection",
+        "odu_flash": "20",
+        "meaning": "Cooling outdoor coil overheat protection",
+        "hazard": "HV",
+        "typical_cause": "dirty or obstructed outdoor unit",
+        "typical_cause_source": "p.17 'Maintain after use': 'Clear dust and obstructions from the outdoor unit'; p.19 outdoor clearances. The link between this code and these causes is the team's, not stated on p.30",
+        "parts": [
+          "outdoor coil"
+        ],
+        "page": 30
+      },
+      {
+        "code": "P9",
+        "kind": "protection",
+        "odu_flash": "21",
+        "meaning": "Heating indoor coil overheat protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "PC",
+        "kind": "protection",
+        "odu_flash": "22",
+        "meaning": "Cooling outdoor ambient temperature over-low protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "PH",
+        "kind": "protection",
+        "odu_flash": "23",
+        "meaning": "Heating outdoor ambient temperature over-high protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "L1",
+        "kind": "protection",
+        "odu_flash": "31",
+        "meaning": "Drive bus voltage over-high protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "L2",
+        "kind": "protection",
+        "odu_flash": "32",
+        "meaning": "Drive bus voltage over-low protection",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "L3",
+        "kind": "protection",
+        "odu_flash": "33",
+        "meaning": "Drive phase current overload fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "L4",
+        "kind": "protection",
+        "odu_flash": "34",
+        "meaning": "Phase current sampling abnormal",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page": 30
+      },
+      {
+        "code": "E9",
+        "kind": "fault",
+        "odu_flash": null,
+        "meaning": "Wi-Fi Module Fault (Wi-Fi models; seen while pressing the Emergency switch & power ON the IDU, Test Mode)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": [
+          "Wi-Fi module"
+        ],
+        "page": 30
+      }
+    ]
+  },
+  {
+    "source": {
+      "brand": "Daikin",
+      "appliance_type": "split_ac",
+      "doc_title": "Service Manual — Inverter Pair — FTXS-L Series — FDXS-L Series",
+      "doc_number": "SiUS091133",
+      "models": "FTXS09-36LVJU, FDXS09/12LVJU indoor; RXS09-36LVJU, RKS30/36LVJU outdoor",
+      "refrigerant": "R-410A",
+      "region_note": "US-market models (LVJU). Indian Daikin models are not in this manual's model list, so it's applied here as the Daikin service reference. Swap in an India model manual if one is found.",
+      "error_table": "PDF p.104 / printed p.94",
+      "page_offset_note": "printed page N = PDF page N+10",
+      "safety_quotes": {
+        "p9_pdf": "Discharge the capacitor completely before conducting repair work.",
+        "p167_pdf": "Be sure to wait for 10 minutes or more after turning off all power supplies before disassembling work.",
+        "p163_pdf": "Check to make sure that the voltage between (+) and (–) of the power module is approx. 0 V before checking.",
+        "p120_pdf": "Be sure to turn off the power switch before connecting or disconnecting connectors, or parts may be damaged."
+      },
+      "extracted_by": "ChatGPT (from the user's PDF), structured by Claude",
+      "verified_by": "Kaustubh, checked by hand against the PDFs, 2026-10-16",
+      "verify_pages_pdf": [
+        1,
+        2,
+        9,
+        104,
+        107,
+        108,
+        119,
+        120,
+        150,
+        151,
+        163,
+        167
+      ]
+    },
+    "codes": [
+      {
+        "code": "U0",
+        "meaning": "Refrigerant shortage",
+        "shown_only_on_system_down": true,
+        "hazard": "refrigerant",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "U2",
+        "meaning": "Low-voltage detection or over-voltage detection",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "U4",
+        "meaning": "Signal transmission error (between indoor unit and outdoor unit)",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": [
+          "Wiring error",
+          "Breaking of the connection wires between the indoor and outdoor units (wire No. 3)",
+          "Defective outdoor unit PCB",
+          "Defective indoor unit PCB",
+          "Disturbed power supply waveform"
+        ],
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94,
+        "first_checks": [
+          "Check the indoor unit - outdoor unit connection wires.",
+          "Check the voltage of the connection wires on the indoor terminal board between No. 1 and No. 3, and between No. 2 and No. 3.",
+          "Check the LED A on the outdoor unit PCB."
+        ],
+        "detail_pages_pdf": [
+          119,
+          120
+        ],
+        "detail_pages_printed": [
+          109,
+          110
+        ]
+      },
+      {
+        "code": "UA",
+        "meaning": "Unspecified voltage (between indoor unit and outdoor unit)",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "A1",
+        "meaning": "Indoor unit PCB abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "A5",
+        "meaning": "Freeze-up protection control or heating peak-cut control",
+        "shown_only_on_system_down": false,
+        "hazard": "none",
+        "typical_cause": [
+          "Short-circuited air",
+          "Clogged air filter of the indoor unit",
+          "Dust accumulation on the indoor heat exchanger",
+          "Defective indoor heat exchanger thermistor",
+          "Defective indoor unit PCB"
+        ],
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94,
+        "first_checks": [
+          "Check the air passage.",
+          "Check the air filter.",
+          "Check the dust accumulation on the indoor heat exchanger."
+        ],
+        "detail_pages_pdf": [
+          107,
+          108
+        ],
+        "detail_pages_printed": [
+          97,
+          98
+        ]
+      },
+      {
+        "code": "A6",
+        "meaning": "Fan motor or related abnormality — DC motor (FTXS series) / AC motor (FDXS series)",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "C4",
+        "meaning": "Indoor heat exchanger thermistor or related abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "C9",
+        "meaning": "Room temperature thermistor or related abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "E1",
+        "meaning": "Outdoor unit PCB abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "E5",
+        "meaning": "OL activation (compressor overload)",
+        "shown_only_on_system_down": true,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "E6",
+        "meaning": "Compressor lock",
+        "shown_only_on_system_down": true,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "E7",
+        "meaning": "DC fan lock",
+        "shown_only_on_system_down": true,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "E8",
+        "meaning": "Input overcurrent detection",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "EA",
+        "meaning": "Four way valve abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "F3",
+        "meaning": "Discharge pipe temperature control",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "F6",
+        "meaning": "High pressure control in cooling",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "H0",
+        "meaning": "Compressor system sensor abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "H6",
+        "meaning": "Position sensor abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "H8",
+        "meaning": "DC voltage / current sensor abnormality (09/12 class only); CT or related abnormality (24/30/36 class only)",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "H9",
+        "meaning": "Outdoor temperature thermistor or related abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "J3",
+        "meaning": "Discharge pipe thermistor or related abnormality",
+        "shown_only_on_system_down": true,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "J6",
+        "meaning": "Outdoor heat exchanger thermistor or related abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "L3",
+        "meaning": "Electrical box temperature rise",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "L4",
+        "meaning": "Radiation fin temperature rise",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "L5",
+        "meaning": "Output overcurrent detection",
+        "shown_only_on_system_down": true,
+        "hazard": "HV",
+        "typical_cause": [
+          "Poor installation condition",
+          "Closed stop valve",
+          "Defective power module",
+          "Wrong internal wiring",
+          "Abnormal power supply voltage",
+          "Defective outdoor unit PCB",
+          "Defective compressor"
+        ],
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94,
+        "first_checks": [
+          "Check the installation condition.",
+          "Stop valve fully open?",
+          "Turn off the power and turn it on again to start the system. See if the same error occurs."
+        ],
+        "detail_pages_pdf": [
+          150,
+          151
+        ],
+        "detail_pages_printed": [
+          140,
+          141
+        ],
+        "note": "Stop-valve operation is refrigerant-side; not used in the scenario (SAFETY.md)."
+      },
+      {
+        "code": "P4",
+        "meaning": "Radiation fin thermistor or related abnormality",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      },
+      {
+        "code": "U7",
+        "meaning": "Signal transmission error on outdoor unit PCB (24/30/36 class only)",
+        "shown_only_on_system_down": false,
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 104,
+        "page_printed": 94
+      }
+    ]
+  },
+  {
+    "source": {
+      "brand": "LG",
+      "appliance_type": "split_ac",
+      "doc_title": "Room Air Conditioner SVC MANUAL(General) — MODEL: General Wall Mounted-Inverter Type",
+      "doc_number": "MFL41161601",
+      "models": "General wall-mounted inverter series, 9–30 kBtu/h (no retail model list on the cover)",
+      "page_offset_note": "printed page N = PDF page N+1",
+      "error_tables": "9/12 kBtu/h: PDF p.47; 18/24/30 kBtu/h: PDF pp.48–49",
+      "display_note": "Codes shown on the indoor display as CH + number (e.g. CH05). Troubleshooting p.57: 'CH05 is displayed at indoor unit, CH53 is displayed at outdoor unit.'",
+      "safety_quotes": {
+        "p4_printed": "Be sure to disconnect the power cable from the plug socket before disassembling the equipment for a repair",
+        "p4_printed_hv": "This high voltage is extremely dangerous and may cause death or severe injury if come in contact with it.",
+        "p5_printed": "Be sure to turn off power switch before connecting or disconnecting connector, or parts damage may be occur.",
+        "p41_printed": "Turn off the main power and wait until LED on outdoor PCB is off."
+      },
+      "extracted_by": "ChatGPT from the user's PDF (scanned, low resolution), structured by Claude",
+      "verified_by": "Kaustubh, checked by hand against the PDFs, 2026-10-16",
+      "verify_pages_pdf": [
+        1,
+        5,
+        47,
+        48,
+        49,
+        57,
+        58,
+        67
+      ]
+    },
+    "codes": [
+      {
+        "code": "CH01",
+        "printed_as": "01",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Indoor Room thermistor error",
+        "hazard": "HV",
+        "typical_cause": [
+          "Open / Short",
+          "Soldered poorly",
+          "Internal circuit error"
+        ],
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47,
+        "note": "Troubleshooting p.56: normal resistance 10kΩ at 25°C unplugged; 2.5VDC plugged",
+        "detail_page_pdf": 57,
+        "detail_page_printed": 56
+      },
+      {
+        "code": "CH02",
+        "printed_as": "02",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Indoor in-piping sensor error",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH05",
+        "printed_as": "05",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Indoor Out-Piping sensor error (error table p.47); on the troubleshooting page p.57, '05 / 53' = Communication",
+        "hazard": "HV",
+        "typical_cause": [
+          "Power input AC 208~230V. (Outdoor, Indoor)",
+          "The connector for transmission is disconnected.",
+          "The connecting wires are misconnected.",
+          "The GND1,3 is not connected at main GND.",
+          "The communication line is shorted or open.",
+          "Transmission circuit of indoor PCB is abnormal.",
+          "Transmission circuit of outdoor PCB is abnormal."
+        ],
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47,
+        "note": "Conflict inside the manual: the 18/24/30 error table lists 05 as the out-piping sensor, but troubleshooting p.57 is titled 'Troubleshooting CH05, CH53' (Communication) and says 'CH05 is displayed at indoor unit, CH53 is displayed at outdoor unit.' Communication is used for the script; check both pages.",
+        "first_checks": [
+          "Check the input power AC 208~230V. (Outdoor, Indoor unit)",
+          "Check the communication wires are correctly connected.",
+          "Check the resistance between communication line and GND. (Normal : Over 2MΩ)",
+          "Check the connector for communication is correctly connected."
+        ],
+        "detail_page_pdf": 58,
+        "detail_page_printed": 57
+      },
+      {
+        "code": "CH21",
+        "printed_as": "21",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "IPM Fault (Compressor Over current)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH22",
+        "printed_as": "22",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "CT 2(Max. Current)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH23",
+        "printed_as": "23",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "DC Link Low Volt.",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH24",
+        "printed_as": "24",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Low / High press",
+        "hazard": "refrigerant",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH25",
+        "printed_as": "25",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "AC Low / AC High Volt.",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH26",
+        "printed_as": "26",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "DC Compressor Position",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH27",
+        "printed_as": "27",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "PSC Fault",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH28",
+        "printed_as": "28",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "DC Link High Volt.",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH32",
+        "printed_as": "32",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Discharge Pipe Temp. High (INV)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH33",
+        "printed_as": "33",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Discharge Pipe Temp. High (Cons.)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 48,
+        "page_printed": 47
+      },
+      {
+        "code": "CH40",
+        "printed_as": "40",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "CT Circuit (open / short)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH41",
+        "printed_as": "41",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "D-pipe sensor (INV. open/short)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH44",
+        "printed_as": "44",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Air sensor (open/short)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH45",
+        "printed_as": "45",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Cond. Pipe sensor (open/short)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH46",
+        "printed_as": "46",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Suction pipe sensor (open/short)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH47",
+        "printed_as": "47",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "D-pipe sensor Cons. (open/short)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH53",
+        "printed_as": "53",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Communication (Indoor ↔ Outdoor)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH60",
+        "printed_as": "60",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "EEPROM check sum",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH61",
+        "printed_as": "61",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Cond. Pipe sensor temp. high",
+        "hazard": "HV",
+        "typical_cause": [
+          "Condenser pipe sensor detected high temp.(65°C(149°F))"
+        ],
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48,
+        "first_checks": [
+          "Check the load condition. (Refrigerant, Pipe length, Blocked, ...)",
+          "Check the sensor of Condenser pipe sensor."
+        ],
+        "detail_page_pdf": 67,
+        "detail_page_printed": 66,
+        "note": "'Refrigerant' check is gas-side and not used in the script (SAFETY.md); 'Blocked' is used."
+      },
+      {
+        "code": "CH62",
+        "printed_as": "62",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Heat sink sensor temp. high",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH65",
+        "printed_as": "65",
+        "model_group": "18/24/30 kBtu/h",
+        "meaning": "Heat sink sensor (open/short)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 49,
+        "page_printed": 48
+      },
+      {
+        "code": "CH01",
+        "printed_as": "1",
+        "model_group": "9/12 kBtu/h",
+        "meaning": "Indoor Temp. sensor error",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 47,
+        "page_printed": 46
+      },
+      {
+        "code": "CH02",
+        "printed_as": "2",
+        "model_group": "9/12 kBtu/h",
+        "meaning": "Outdoor Temp. sensor error",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 47,
+        "page_printed": 46
+      },
+      {
+        "code": "CH04",
+        "printed_as": "4",
+        "model_group": "9/12 kBtu/h",
+        "meaning": "Heat Sink sensor error",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 47,
+        "page_printed": 46
+      },
+      {
+        "code": "CH05",
+        "printed_as": "5",
+        "model_group": "9/12 kBtu/h",
+        "meaning": "Communication error",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 47,
+        "page_printed": 46
+      },
+      {
+        "code": "CH06",
+        "printed_as": "6",
+        "model_group": "9/12 kBtu/h",
+        "meaning": "DC Peak error",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 47,
+        "page_printed": 46
+      },
+      {
+        "code": "CH07",
+        "printed_as": "7",
+        "model_group": "9/12 kBtu/h",
+        "meaning": "Over current error (CT2)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 47,
+        "page_printed": 46
+      },
+      {
+        "code": "CH08",
+        "printed_as": "8",
+        "model_group": "9/12 kBtu/h",
+        "meaning": "Indoor fan lock error (BLDC fan model only)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 47,
+        "page_printed": 46
+      },
+      {
+        "code": "CH09",
+        "printed_as": "9",
+        "model_group": "9/12 kBtu/h",
+        "meaning": "Outdoor fan lock error (BLDC fan model only)",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 47,
+        "page_printed": 46
+      },
+      {
+        "code": "CH10",
+        "printed_as": "10",
+        "model_group": "9/12 kBtu/h",
+        "meaning": "D-Pipe TH. is short or open",
+        "hazard": "HV",
+        "typical_cause": null,
+        "parts": null,
+        "page_pdf": 47,
+        "page_printed": 46
+      }
+    ]
+  }
+]

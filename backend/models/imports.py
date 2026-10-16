@@ -3,7 +3,7 @@ Flash returns, and the counts written to `imports/{id}`."""
 
 from typing import Literal
 
-from pydantic import AwareDatetime, BaseModel
+from pydantic import AwareDatetime, BaseModel, model_validator
 
 from models.fault_card import FaultCardPart
 from models.repair import ApplianceType, Confidence, Hazard
@@ -18,7 +18,14 @@ class ThreadMessage(BaseModel):
     kind: Literal["text", "voice", "photo"]
     # The message text, the voice note's transcript, or the photo's description.
     text: str
+    # Voice only; None until the note's FLAC is stored.
     audio_uri: str | None = None
+
+    @model_validator(mode="after")
+    def audio_only_on_voice(self) -> "ThreadMessage":
+        if self.audio_uri is not None and self.kind != "voice":
+            raise ValueError("only a voice message has audio_uri")
+        return self
 
 
 class DraftStep(BaseModel):

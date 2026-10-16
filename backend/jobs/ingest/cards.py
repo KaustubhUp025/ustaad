@@ -2,6 +2,7 @@
 review), embedded, deduped against the brand's cards and written."""
 
 import asyncio
+import logging
 from collections.abc import Awaitable, Callable
 from datetime import datetime
 from uuid import uuid4
@@ -14,12 +15,15 @@ from tools.hazard_tagger import tag
 from tools.search_fault_cards import Embed, canonical_brand
 
 Ask = Callable[[str, type[CardDraft]], Awaitable[CardDraft]]
+logger = logging.getLogger(__name__)
 
 REVIEW_CONFIDENCE = 0.6
 EXTRACT_PARALLEL = 8
 MATCH_CANDIDATES = 5
 # WhatsApp exports carry no timezone; the group is in India (BUILD-GUIDE §12 risk 14).
 EXPORT_TZ = ZoneInfo("Asia/Kolkata")
+# Goes to imports.errors[] and the dashboard, so it is fixed text: never exception text, ids, URIs or chat content.
+EXTRACTION_FAILED = "One chat thread could not be read, so it was skipped."
 
 PROMPT = """ROLE: You turn a technician chat thread into one fault card draft.
 RULES: 1 A card exists only if a fix or conclusion is stated. Unanswered questions -> resolved false.
@@ -124,8 +128,10 @@ async def import_cards(threads: list[list[ThreadMessage]], ask: Ask, embed: Embe
     # Written one at a time, so a repeat inside the same import merges into the card written before it.
     for thread, draft in zip(threads, drafts, strict=True):
         if isinstance(draft, Exception):
-            # One failed thread is listed in imports.errors[] and does not stop the import.
-            counts.errors.append(f"thread {thread[0].id}: {draft}")
+            # One failed thread is counted in imports.errors[] and does not stop the import; the details stay in
+            # the server log.
+            logger.error("card extraction failed", exc_info=draft)
+            counts.errors.append(EXTRACTION_FAILED)
             continue
         card = card_from_draft(draft, thread, f"fc_{uuid4().hex[:16]}", now)
         if card is None:

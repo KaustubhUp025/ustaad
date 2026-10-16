@@ -3,7 +3,10 @@ states the fix, hazard raised by the tagger, low confidence sent to review; then
 
 from datetime import UTC, datetime
 
-from jobs.ingest.cards import card_from_draft, import_cards
+import pytest
+from pydantic import ValidationError
+
+from jobs.ingest.cards import EXTRACTION_FAILED, card_from_draft, import_cards
 from models.imports import CardDraft, ThreadMessage
 from tests.unit.fake_cards import FakeCardStore, embed
 
@@ -177,4 +180,24 @@ async def test_a_failed_extraction_is_listed_and_the_other_threads_still_import(
     store = FakeCardStore()
     counts = await import_cards([[THREAD[0].model_copy(update={"id": "x1"})], THREAD], ask, embed, store, NOW)
     assert counts.cards_created == 1
-    assert counts.errors == ["thread x1: Test failure"]
+    assert counts.errors == [EXTRACTION_FAILED]
+
+
+async def test_an_extraction_error_never_carries_the_exception_text():
+    secret = "gs://b/imports/i_1/PTT-1.flac token=abc123 +919876543210 Traceback (most recent call last)"
+
+    async def ask(prompt: str, schema: type) -> CardDraft:
+        raise RuntimeError(secret)
+
+    counts = await import_cards([THREAD], ask, embed, FakeCardStore(), NOW)
+    assert counts.errors == [EXTRACTION_FAILED]
+    assert not any(part in counts.model_dump_json() for part in ("gs://", "token", "+91", "Traceback", "m1"))
+
+
+def test_only_a_voice_message_carries_audio():
+    for kind in ("text", "photo"):
+        with pytest.raises(ValidationError):
+            ThreadMessage(id="m9", speaker="Samyak Jain", ts="2026-10-16T10:00:00+05:30", kind=kind, text="Test",
+                          audio_uri="gs://b/a.flac")
+    voice = ThreadMessage(id="m9", speaker="Samyak Jain", ts="2026-10-16T10:00:00+05:30", kind="voice", text="Test")
+    assert voice.audio_uri is None

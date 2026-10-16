@@ -7,11 +7,6 @@
   "confidence": 0.95,
   "observations": [
     {
-      "label": "Serial Number",
-      "value": "E000611",
-      "confidence": 0.95
-    },
-    {
       "label": "Date",
       "value": "18. 5",
       "confidence": 0.9

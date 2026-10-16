@@ -21,3 +21,15 @@ export async function uploadPhoto(jpeg: Blob, jobId: string, requestId: string):
   if (!put.ok) throw new Error(`upload ${put.status}`)
   return signed.uri
 }
+
+// The source chip's voice note (POST /api/media/audio-url): a signed GET URL for the import job's FLAC, valid 900 s.
+export async function voiceNoteUrl(uri: string, token: string): Promise<string> {
+  const res = await fetch(`${API_URL}/api/media/audio-url`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ uri }),
+  })
+  if (!res.ok) throw new Error(`audio-url ${res.status}`)
+  const signed: { url: string } = await res.json()
+  return signed.url
+}

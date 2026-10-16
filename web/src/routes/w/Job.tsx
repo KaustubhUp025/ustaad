@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 import { CameraSheet } from './CameraSheet'
+import { SourceChip } from './SourceChip'
 
 // The job screen: live captions, the current step card, the safety gate and stop screens, the camera sheet, and the
 // push-to-talk mic.
@@ -127,9 +128,10 @@ function JobScreen() {
             // A service tag: 4px radius and one punched-hole notch at the left (DESIGN.md).
             <article className="relative mx-4 rounded-sm border border-border bg-card px-5 py-3">
               <span aria-hidden className="absolute top-1/2 -left-1.5 size-3 -translate-y-1/2 rounded-full border border-border bg-background" />
-              <p className="text-[length:var(--text-sm)] text-muted-foreground">
-                {t('repair.step', { n: step.n, of: step.of })} · {step.source.label}
-              </p>
+              <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('repair.step', { n: step.n, of: step.of })}</p>
+              <div className="text-[length:var(--text-sm)] text-muted-foreground">
+                <SourceChip label={step.source.label} audioUri={step.source.audio_uri} />
+              </div>
               <p className="text-[length:var(--text-caption)]">{step.instruction}</p>
             </article>
           )}

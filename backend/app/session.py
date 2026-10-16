@@ -6,7 +6,11 @@ import hashlib
 import hmac
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
+from typing import Annotated
+
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 TOKEN_TTL = timedelta(hours=24)
 
@@ -35,3 +39,15 @@ def verify(token: str, now: datetime) -> str | None:
         return None
     claims = json.loads(_unb64(payload))
     return claims["wid"] if now.timestamp() < claims["exp"] else None
+
+
+# Declares the bearer scheme in OpenAPI; auto_error is off so a missing token gets the contract's 401, not 403.
+BEARER = HTTPBearer(auto_error=False)
+
+
+def require_session(credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(BEARER)]) -> str:
+    """FastAPI dependency: the worker id of a valid `Authorization: Bearer <token>`, else 401 (rest.md)."""
+    worker_id = verify(credentials.credentials, datetime.now(UTC)) if credentials else None
+    if worker_id is None:
+        raise HTTPException(401)
+    return worker_id

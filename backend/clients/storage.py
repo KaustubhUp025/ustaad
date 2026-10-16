@@ -26,14 +26,14 @@ class StorageUploadClient:
         project = None
         if credentials is None:
             credentials, project = google.auth.default()
-        self._bucket_name = bucket_name
+        self.bucket_name = bucket_name
         self._credentials = credentials
         self._auth_request = auth_request or Request()
         self._client = client or storage.Client(project=project, credentials=credentials)
 
     def sign_put(self, object_name: str, headers: dict[str, str], expires_in: int) -> SignedUpload:
         self._credentials.refresh(self._auth_request)
-        blob = self._client.bucket(self._bucket_name).blob(object_name)
+        blob = self._client.bucket(self.bucket_name).blob(object_name)
         signed_headers = dict(headers)
         upload_url = blob.generate_signed_url(
             version="v4",
@@ -45,8 +45,19 @@ class StorageUploadClient:
         )
         return SignedUpload(
             upload_url=upload_url,
-            uri=f"gs://{self._bucket_name}/{object_name}",
+            uri=f"gs://{self.bucket_name}/{object_name}",
             headers=dict(headers),
+        )
+
+
+    def sign_get(self, object_name: str, expires_in: int) -> str:
+        self._credentials.refresh(self._auth_request)
+        return self._client.bucket(self.bucket_name).blob(object_name).generate_signed_url(
+            version="v4",
+            expiration=timedelta(seconds=expires_in),
+            method="GET",
+            service_account_email=self._credentials.service_account_email,
+            access_token=self._credentials.token,
         )
 
 

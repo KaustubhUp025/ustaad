@@ -15,6 +15,7 @@ numbers, exception text, request-validation details, tracebacks, credentials, se
 | `POST /api/demo/session` | `{"worker_id": "w_hi_demo"}` (optional; default Hindi demo worker) | `{"token": "…", "worker": Worker, "ws_url": "wss://…/ws/live"}` — token is a signed, 24 h demo token |
 | `POST /api/chat` | `{"job_id": "j_1", "text": "…"}` or `{"job_id", "audio_uri": "gs://…"}` | `{"text": "…", "events": [WsServerFrame], "tts_url": "https://… signed" or null}` — same events as the WebSocket |
 | `POST /api/media/upload-url` | `{"kind": "photo"\|"video"\|"import", "content_type": "image/jpeg", "job_id"?: "j_1", "import_id"?: "i_1", "request_id"?: "r_1", "filename"?: "x.zip"}` | `{"upload_url": "https://… signed PUT", "uri": "gs://…", "expires_in": 900, "headers": {"Content-Type": "image/jpeg", "x-goog-content-length-range": "0,15728640"}}` |
+| `POST /api/media/audio-url` | `{"uri": "gs://<media bucket>/imports/{import_id}/derived/{message_id}.flac"}` | `{"url": "https://… signed GET", "expires_in": 900}` — a fault card source's voice note, so the source chip can play it |
 | `GET /api/jobs` | — | `{"items": [Job]}` (this worker, newest first) |
 | `POST /api/jobs` | `{"appliance"?: {...}, "symptom"?: "…"}` | `Job` |
 | `GET /api/jobs/{id}` | — | `Job` |
@@ -55,6 +56,11 @@ An unsupported content type, or a listed type used with the wrong kind, returns 
 A photo or video that answers a `media_request` passes that request's `request_id` (`r_` + letters and digits). The
 object is stored under `jobs/{job_id}/{request_id}/`, and the server accepts a `media_ready` only for a `uri` in that
 request's own folder, so a photo uploaded for one request cannot answer another (ws-events.md).
+
+`POST /api/media/audio-url` signs only a source voice note: a `uri` in the media bucket matching
+`imports/{import_id}/derived/{name}.flac`, the FLAC the import job stores and puts in `FaultCard.source.audio_uri` and
+`step_card.source.audio_uri`. Any other URI gets `not_found` (404), so the endpoint cannot sign photos, uploads or other
+objects. It needs the session token (`unauthorized`, 401, without a valid one). The URL is a GET valid for 900 s.
 
 ## Inventory validation (T10 approved slice)
 

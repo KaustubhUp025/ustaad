@@ -685,7 +685,7 @@ Storage imports/{id}/*  ->  1 unzip + locate chat .txt
 1. `backend/jobs/ingest/parse.py` (inferred): `parse_chat(text) -> list[Message]`; two regexes, one per platform; detect the platform per file.
 2. `media.py`: map attachment file names to files in the export; handle missing media.
 3. `transcribe.py`: wrapper around Flash with a Pydantic `Transcript`; 8 parallel via `asyncio.Semaphore(8)` or Job tasks.
-4. `threads.py`: send the messages in time order (id, speaker, time, minutes since the previous message, text or transcript or photo description) to Flash with a response schema: a list of threads, each a list of message ids (§7.3). Validate in code: every message in exactly one thread, ids in time order inside a thread; on an invalid answer or a failed call, fall back to splitting on gaps over 30 min. Unit tests use a fake Flash client: the validation, the fallback, and the two cases from the real demo export of Oct 16: an answer 1–4 h after its question joins it, and a new fault 2 min after the previous outcome starts a new thread.
+4. `threads.py`: threads are built from **eligible messages** only: every line with an author, including an empty authored message and an attachment. System lines (the encryption notice, group created, members added or left) and "This message was deleted" lines are skipped: they are not sent to Flash and belong to no thread. Send the eligible messages in time order (id, speaker, time, minutes since the previous eligible message, text or transcript or photo description) to Flash with a response schema: a list of threads, each a list of message ids (§7.3). Validate in code: every eligible message in exactly one thread, no other ids, ids in time order inside a thread; on an invalid answer or a failed call, fall back to splitting on gaps over 30 min. Unit tests use a fake Flash client: the validation, the fallback, and the two cases from the real demo export of Oct 16: an answer 1–4 h after its question joins it, and a new fault 2 min after the previous outcome starts a new thread.
 5. Progress: update `imports/{id}` counters (`audio_done`, `threads`, `status` transitions `queued -> parsing -> transcribing -> extracting -> done|failed`).
 
 **Design rules.** Parsing is pure and tested on both formats. Per-file failures are appended to `errors[]` and do not abort the import. Transcribe calls go through an injected client. Write progress at most every second or so to avoid hot-document contention in Firestore.
@@ -1021,7 +1021,7 @@ Don't touch: shared/contracts/, backend/agent/
 #### T24 Dashboard: knowledge base, import progress, review queue (B, P1)
 **Goal.** `/d/knowledge` list of fault "tags" in rows; `/d/import` waveform list turning into tags with live counts; review queue for low-confidence cards (approve/reject via `PATCH /api/fault-cards/{id}`). **Steps.** Poll `GET /api/imports/{id}` every 2 s; audio playback from the card's audio link (signed GET URL); show speaker, date, confidence. **Tests.** Fixture-driven component tests; G5 on laptop. **Pitfall.** Autoplay of audio; signed URL expiry (refresh on 403).
 
-**From T08 (Oct 16).** The demo group's photos are AI-generated (PRODUCT.md, honest demo). Wherever `/d/import` or `/d/knowledge` shows a photo from that import, show the label "AI-generated image" on it (an i18n string), and say once on the import screen that the voice notes are real and the photos are AI-generated.
+**From T08 (Oct 16).** The demo group's photos are AI-generated or taken from public posts (PRODUCT.md, honest demo). Wherever `/d/import` or `/d/knowledge` shows a photo from that import, show a label on it (i18n strings): "AI-generated image" or "Image from a public post", per the list in `seed/voice_note_script.md`; and say once on the import screen that the voice notes are real and the photos are not.
 ```
 ID: T24 / M6   Owner: B   Branch: b/M6-dashboard
 Goal: /d/knowledge, /d/import live progress, review queue
@@ -1150,7 +1150,7 @@ Out of scope: a new Firestore index; manual metadata in Agent Search
 
 **From T17 (Oct 15).** Photo checks (Flash) take 5–6 s, but about 1 in 4 took ~30 s and hit `VISION_TIMEOUT_S` (30 s), so the phone asked for the photo again. While a check runs, show "still checking" on the camera sheet after ~10 s (i18n string), and let the demo cache answer the shipped sample photos so a judge never waits on a slow check.
 
-**From T08 (Oct 16).** "Try the demo" ships AI-generated sample photos (the team had no faulty units to photograph); each shows the label "AI-generated image" (i18n). The G2 safety-gate photo in the video is a real photo of our own MCB switched off.
+**From T08 (Oct 16).** "Try the demo" ships sample photos that are AI-generated or taken from public posts (the team had no faulty units to photograph); each shows its label, "AI-generated image" or "Image from a public post" (i18n). The G2 safety-gate photo in the video is a real photo of our own MCB switched off.
 
 **Design rules.** The cache sits behind one wrapper used by `/api/chat` and the tool-response path; it never changes the *safety* behaviour: a cached response for a hazardous step still goes through gate logic (cache before the model, not before the safety layer).
 
@@ -1344,7 +1344,7 @@ OUTPUT: {text, language, confidence}
 Ask for a one-sentence factual description, any readable text (model numbers, code on display) and objects. Rule: describe only what is visible. **Evaluate.** 10 photos: is the visible text copied correctly.
 
 ### 7.3 Thread grouping
-Input: all messages in time order, each with its id, speaker, time and minutes since the previous message. Task: group them into threads, one per fault: question → answers → outcome. A reply hours later still belongs to its question; a new question starts a new thread even minutes after the last; system lines ("This message was deleted", joins) belong to no thread. Rule: output only message ids; never rewrite messages. **Evaluate.** Gold set of threads (§8.8); count correct groupings.
+Input: all messages in time order, each with its id, speaker, time and minutes since the previous message. Task: group them into threads, one per fault: question → answers → outcome. A reply hours later still belongs to its question; a new question starts a new thread even minutes after the last. The input holds only eligible messages (T13 step 4: system and "This message was deleted" lines are already removed), and every input id must appear in exactly one thread. Rule: output only message ids; never rewrite messages. **Evaluate.** Gold set of threads (§8.8); count correct groupings.
 
 ### 7.4 Card extraction (the central prompt)
 ```

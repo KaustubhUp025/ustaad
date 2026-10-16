@@ -54,6 +54,7 @@ groups directly. Don't build towards them; don't add hooks "for later".
   on the step card, and never includes an error-code meaning.
 - **The worker's language, his words.** Hinglish is normal; never correct him.
 - **Honest demo.** Seeded or synthetic data is always labelled. Error-code meanings come from real manuals. The
-  voice notes are real; the demo group's photos are AI-generated, because no faulty units were available to
-  photograph in the build window, and every place they appear (import screen, cards, deck, video) says so.
+  voice notes are real; the demo group's photos are AI-generated or taken from public posts, because no faulty
+  units were available to photograph in the build window, and every place they appear (import screen, cards, deck,
+  video) says so.
 - **Prototype, not platform.** The smallest thing that makes the demo real and robust.

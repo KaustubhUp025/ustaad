@@ -38,3 +38,14 @@ class MediaUploadResponse(BaseModel):
     uri: str
     expires_in: Literal[900]
     headers: MediaUploadHeaders
+
+
+class AudioUrlRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    uri: str
+
+
+class AudioUrlResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    url: str
+    expires_in: Literal[900]

@@ -36,6 +36,11 @@
     "stop": {
       "refrigerant": "Gas work is only for a certified gas technician. I can help with the other checks.",
       "other": "This work isn't safe to guide. Only a trained technician should do it. I can help with the other checks."
+    },
+    "source": {
+      "play": "Play the voice note: {{label}}",
+      "stop": "Stop the voice note: {{label}}",
+      "failed": "The voice note didn't play. Check the network, then tap it again."
     }
   },
   "camera": {

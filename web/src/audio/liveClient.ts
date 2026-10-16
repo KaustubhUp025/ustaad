@@ -38,7 +38,7 @@ export type ServerFrame =
     }
   | { v: 1; type: 'media_result'; request_id: string; matches_expected: boolean; confidence: number; retake_reason: string | null }
 
-export type LiveStatus = 'connecting' | 'ready' | 'reconnecting' | 'failed'
+export type LiveStatus = 'connecting' | 'ready' | 'reconnecting' | 'failed' | 'busy'
 
 export interface LiveConnection {
   startTalking(): Promise<void>
@@ -151,9 +151,9 @@ export function openLive(
     }
     ws.onclose = () => {
       if (closed) return
-      // A bad token or a full server won't get better by retrying.
-      const hopeless = lastError === 'auth' || lastError === 'rate_limited'
-      if (hopeless || ++failures > RETRIES) return onStatus('failed')
+      // A bad token or a full server won't get better by retrying; a full server is not his network's fault.
+      if (lastError === 'rate_limited') return onStatus('busy')
+      if (lastError === 'auth' || ++failures > RETRIES) return onStatus('failed')
       onStatus('reconnecting')
       timers.push(window.setTimeout(connect, RETRY_MS))
     }

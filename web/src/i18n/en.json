@@ -15,6 +15,7 @@
     "connecting": "Connecting to Ustaad…",
     "reconnecting": "Network dropped. Reconnecting…",
     "failed": "Can't reach Ustaad. Check your network, then try again.",
+    "busy": "Ustaad is busy with other technicians right now. Try again in a minute.",
     "retry": "Try again",
     "micBlocked": "Ustaad can't hear you. Allow the microphone in your browser settings.",
     "you": "You",

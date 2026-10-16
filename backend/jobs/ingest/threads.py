@@ -1,5 +1,6 @@
 """Topic grouping boundary with deterministic time-gap fallback."""
 
+import logging
 from collections import Counter
 from collections.abc import Sequence
 from datetime import timedelta
@@ -9,6 +10,8 @@ from jobs.ingest.models import Threads
 from models.imports import ThreadMessage
 
 FALLBACK_GAP = timedelta(minutes=30)
+FALLBACK_WARNING = "Flash grouping was unavailable or invalid; using deterministic time-gap grouping."
+logger = logging.getLogger(__name__)
 
 
 class ThreadGroupingClient(Protocol):
@@ -31,6 +34,11 @@ def fallback_threads(messages: Sequence[ThreadMessage]) -> Threads:
         previous = message
 
     return Threads(groups=groups)
+
+
+def _warn_and_fallback(messages: Sequence[ThreadMessage]) -> Threads:
+    logger.warning(FALLBACK_WARNING)
+    return fallback_threads(messages)
 
 
 def _valid_groups(groups: Threads, ordered: list[ThreadMessage]) -> bool:
@@ -57,8 +65,8 @@ async def topic_threads(messages: Sequence[ThreadMessage], client: ThreadGroupin
         if _valid_groups(response, ordered):
             return response
     except Exception:  # noqa: BLE001 — every client or schema failure must use the deterministic fallback
-        return fallback_threads(ordered)
-    return fallback_threads(ordered)
+        return _warn_and_fallback(ordered)
+    return _warn_and_fallback(ordered)
 
 
 async def group_thread_messages(
@@ -69,4 +77,6 @@ async def group_thread_messages(
     ordered = _ordered(messages)
     grouping = await topic_threads(ordered, client)
     messages_by_id = {message.id: message for message in ordered}
-    return [[messages_by_id[message_id] for message_id in group] for group in grouping.groups]
+    position = {message.id: index for index, message in enumerate(ordered)}
+    chronological_groups = sorted(grouping.groups, key=lambda group: position[group[0]])
+    return [[messages_by_id[message_id] for message_id in group] for group in chronological_groups]

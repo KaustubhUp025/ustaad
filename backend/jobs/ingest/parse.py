@@ -12,16 +12,20 @@ from jobs.ingest.models import Attachment, ExportMessage, ParsedChat
 
 ANDROID_LINE = re.compile(
     r"^(?P<date>\d{1,2}/\d{1,2}/\d{2,4}), "
-    r"(?P<time>\d{1,2}:\d{2})[ \u00a0\u202f](?P<ampm>[AaPp][Mm]) - (?P<body>.*)$"
+    r"(?P<time>\d{1,2}:\d{2})(?:[ \u00a0\u202f](?P<ampm>[AaPp][Mm]))? - (?P<body>.*)$"
 )
 IOS_LINE = re.compile(
     r"^\[(?P<date>\d{1,2}/\d{1,2}/\d{2,4}), "
-    r"(?P<time>\d{1,2}:\d{2}(?::\d{2})?)[ \u00a0\u202f](?P<ampm>[AaPp][Mm])\] (?P<body>.*)$"
+    r"(?P<time>\d{1,2}:\d{2}(?::\d{2})?)(?:[ \u00a0\u202f](?P<ampm>[AaPp][Mm]))?\] (?P<body>.*)$"
 )
 AUTHORED_BODY = re.compile(r"^(?P<author>[^:]+):(?P<content>.*)$")
 ATTACHMENT_TEXT = re.compile(r"^(?P<filename>.+) \(file attached\)$", re.IGNORECASE)
+IOS_ATTACHMENT_TEXT = re.compile(r"^<attached: (?P<filename>.+)>$", re.IGNORECASE)
 ISOLATED_MENTION = re.compile(r"\u2068(?P<text>.*?)\u2069")
-PHONE_NUMBER = re.compile(r"\+?\d[\d\s().-]{4,}\d")
+PHONE_NUMBER = re.compile(r"(?<![\w])(?:\+?91[\s().-]*)?[6-9](?:[\s().-]*\d){9}(?!\w)")
+MESSAGE_PHONE_NUMBER = re.compile(
+    r"(?<![\w+])(?:\+?91[\s-]?|0)?[6-9]\d{4}[\s-]?\d{5}(?!\w)|\+\d[\d\s-]{8,}\d"
+)
 STRUCTURAL_CONTROLS = str.maketrans("", "", "\u200e\u200f\u2066\u2067\u2068\u2069")
 LINE_CONTROLS = str.maketrans("", "", "\u200e\u200f\u2066\u2067")
 DELETED_MESSAGES = frozenset({"this message was deleted", "you deleted this message"})
@@ -40,7 +44,7 @@ class AmbiguousDateOrderError(ValueError):
 class _Record:
     date: str
     time: str
-    ampm: str
+    ampm: str | None
     body: str
     export_index: int
     author: str | None = None
@@ -121,7 +125,8 @@ def _timestamp(record: _Record, order: DateOrder) -> datetime:
     if year < 100:
         year += 2000
     hour, minute, *seconds = (int(part) for part in record.time.split(":"))
-    hour = hour % 12 + (12 if record.ampm.lower() == "pm" else 0)
+    if record.ampm is not None:
+        hour = hour % 12 + (12 if record.ampm.lower() == "pm" else 0)
     return datetime(year, month, day, hour, minute, seconds[0] if seconds else 0)
 
 
@@ -147,7 +152,10 @@ def _normalized_content(content: str, aliases: dict[str, str]) -> str:
         text = match.group("text").translate(STRUCTURAL_CONTROLS).strip()
         return aliases.get(text, text)
 
-    return ISOLATED_MENTION.sub(mention_text, content).translate(STRUCTURAL_CONTROLS)
+    normalized = ISOLATED_MENTION.sub(mention_text, content).translate(STRUCTURAL_CONTROLS)
+    without_phones = MESSAGE_PHONE_NUMBER.sub("", normalized)
+    lines = [re.sub(r"[ \t]+", " ", line).strip() for line in without_phones.split("\n")]
+    return "\n".join(lines)
 
 
 def _safe_archive_basenames(filenames: Iterable[str]) -> set[str]:
@@ -162,7 +170,7 @@ def _safe_archive_basenames(filenames: Iterable[str]) -> set[str]:
 
 
 def _attachment(content: str, available_names: set[str]) -> Attachment | None:
-    match = ATTACHMENT_TEXT.fullmatch(content)
+    match = ATTACHMENT_TEXT.fullmatch(content) or IOS_ATTACHMENT_TEXT.fullmatch(content)
     if not match:
         return None
     filename = match.group("filename")

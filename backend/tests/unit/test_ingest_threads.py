@@ -5,7 +5,8 @@ import pytest
 
 from jobs.ingest.adapter import to_thread_messages
 from jobs.ingest.models import Attachment, ExportMessage, MessageEnrichment
-from jobs.ingest.threads import fallback_threads, group_thread_messages, topic_threads
+from jobs.ingest.parse import parse_chat
+from jobs.ingest.threads import FALLBACK_WARNING, fallback_threads, group_thread_messages, topic_threads
 from models.imports import ThreadMessage
 
 INDIA = ZoneInfo("Asia/Kolkata")
@@ -74,6 +75,19 @@ async def test_flash_failure_falls_back_and_exactly_thirty_minutes_stays_togethe
     assert result.groups == [["i_test:m1", "i_test:m2"], ["i_test:m3"]]
 
 
+async def test_fallback_logs_only_a_fixed_safe_warning(caplog):
+    messages = [message("i_test:m1", 9, 0), message("i_test:m2", 9, 10)]
+    caplog.set_level("WARNING", logger="jobs.ingest.threads")
+
+    await topic_threads(
+        messages,
+        FakeThreadClient(error=RuntimeError("token=SYNTHETIC_TOKEN url=https://invalid.example/private")),
+    )
+    await topic_threads(messages, FakeThreadClient({"groups": [["i_test:m1"]]}))
+
+    assert [record.getMessage() for record in caplog.records] == [FALLBACK_WARNING, FALLBACK_WARNING]
+
+
 async def test_valid_topic_grouping_can_join_a_late_answer_to_its_question():
     messages = [message("i_test:m1", 9, 0), message("i_test:m2", 13, 0)]
 
@@ -88,6 +102,18 @@ async def test_valid_topic_grouping_can_start_a_new_fault_two_minutes_after_an_o
     result = await topic_threads(messages, FakeThreadClient({"groups": [["i_test:m1"], ["i_test:m2"]]}))
 
     assert result.groups == [["i_test:m1"], ["i_test:m2"]]
+
+
+async def test_t15_handoff_orders_valid_flash_groups_by_first_message_time():
+    messages = [message("i_test:m1", 9, 0), message("i_test:m2", 9, 5), message("i_test:m3", 9, 10)]
+    client = FakeThreadClient({"groups": [["i_test:m3"], ["i_test:m1", "i_test:m2"]]})
+
+    grouped = await group_thread_messages(messages, client)
+
+    assert [[item.id for item in group] for group in grouped] == [
+        ["i_test:m1", "i_test:m2"],
+        ["i_test:m3"],
+    ]
 
 
 async def test_topic_grouping_receives_enriched_voice_and_photo_text():
@@ -127,3 +153,27 @@ async def test_topic_grouping_receives_enriched_voice_and_photo_text():
         ("photo", "synthetic photo description"),
     ]
     assert grouped == [enriched]
+
+
+async def test_mixed_chat_keeps_video_and_sticker_eligible_through_grouping():
+    parsed = parse_chat(
+        (
+            b"16/10/26, 9:00 am - Asha Sharma: Synthetic text\n"
+            b"16/10/26, 9:01 am - Dev Kumar: clip.mp4 (file attached)\n"
+            b"16/10/26, 9:02 am - Asha Sharma: sticker.webp (file attached)\n"
+            b"16/10/26, 9:03 am - Dev Kumar: notes.pdf (file attached)\n"
+        ),
+        archive_filenames={"clip.mp4", "sticker.webp", "notes.pdf"},
+    )
+    adapted = to_thread_messages(parsed.messages, import_id="i_mixed", timezone=INDIA)
+    client = FakeThreadClient({"groups": [["i_mixed:m1", "i_mixed:m2", "i_mixed:m3", "i_mixed:m4"]]})
+
+    grouped = await group_thread_messages(adapted, client)
+
+    assert [(message.kind, message.text) for message in client.received] == [
+        ("text", "Synthetic text"),
+        ("text", "(video)"),
+        ("text", "(sticker)"),
+        ("text", "(attachment)"),
+    ]
+    assert grouped == [adapted]

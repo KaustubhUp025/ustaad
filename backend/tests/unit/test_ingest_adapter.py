@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -148,6 +149,42 @@ async def test_enrichment_failures_return_only_fixed_safe_import_errors():
         "RuntimeError",
     ):
         assert sensitive not in exposed
+
+
+async def test_enrichment_runs_at_most_eight_at_once_and_keeps_chronological_order():
+    active = 0
+    maximum_active = 0
+    completed: list[str] = []
+    messages = [
+        raw_message(
+            f"m{index}",
+            timestamp=datetime(2026, 10, 16, 9, index),
+            text="",
+            attachment=Attachment(filename=f"synthetic-{index}.opus", kind="audio", available=True),
+        )
+        for index in range(1, 13)
+    ]
+
+    async def enrich_out_of_order(message: ExportMessage) -> MessageEnrichment:
+        nonlocal active, maximum_active
+        active += 1
+        maximum_active = max(maximum_active, active)
+        await asyncio.sleep((13 - int(message.id[1:])) / 1000)
+        completed.append(message.id)
+        active -= 1
+        return MessageEnrichment(text=f"transcript-{message.id}")
+
+    result = await prepare_thread_messages(
+        list(reversed(messages)),
+        import_id="i_parallel",
+        timezone=INDIA,
+        enrich=enrich_out_of_order,
+    )
+
+    assert maximum_active == 8
+    assert completed != [message.id for message in messages]
+    assert [message.id for message in result.messages] == [f"i_parallel:m{index}" for index in range(1, 13)]
+    assert [message.text for message in result.messages] == [f"transcript-m{index}" for index in range(1, 13)]
 
 
 @pytest.mark.parametrize("kind", ["text", "photo"])

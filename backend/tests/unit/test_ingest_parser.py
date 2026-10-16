@@ -67,8 +67,53 @@ def test_ios_utf8_bom_and_month_first_syntax():
     assert parsed.date_order == "month_first"
     assert len(parsed.messages) == 2
     assert parsed.messages[0].timestamp == datetime(2026, 10, 13, 9, 0)
-    assert parsed.messages[1].attachment is not None
-    assert parsed.messages[1].attachment.available is True
+    assert parsed.messages[1].attachment.model_dump() == {
+        "filename": "IMG-20261013-WA0003.jpg",
+        "kind": "photo",
+        "available": True,
+    }
+
+
+def test_message_text_removes_phone_like_content_and_resolves_wrapped_mentions():
+    chat = (
+        "13/10/26, 9:00 am - +91 90000 00000: Synthetic authored text\n"
+        "13/10/26, 9:01 am - Asha Sharma: Ask \u2068+91 90000 00000\u2069; "
+        "model AC-12345 shows E6, quantity 2. Remove +91 90000 00000\n"
+    ).encode()
+
+    parsed = parse_chat(chat)
+
+    assert parsed.messages[0].speaker == "Participant 1"
+    assert parsed.messages[1].text == "Ask Participant 1; model AC-12345 shows E6, quantity 2. Remove"
+    assert "90000" not in parsed.messages[1].text
+
+
+def test_message_phone_filter_preserves_codes_models_voltage_quantities_and_price():
+    chat = (
+        "13/10/26, 9:00 am - Asha Sharma: Call +91 90000-00000, 09000000000, or +44 7000 000000; "
+        "part EBR41956415; input 220-230 V; batch 4502568/2019; model AC-12345; price ₹12,500"
+    ).encode()
+
+    text = parse_chat(chat).messages[0].text
+
+    assert text == (
+        "Call , , or ; part EBR41956415; input 220-230 V; batch 4502568/2019; "
+        "model AC-12345; price ₹12,500"
+    )
+
+
+@pytest.mark.parametrize(
+    ("chat", "platform", "expected"),
+    [
+        (b"16/10/26, 14:03 - Asha Sharma: Android 24 hour", "android", datetime(2026, 10, 16, 14, 3)),
+        (b"[10/16/26, 23:40:05] Dev Kumar: iOS 24 hour", "ios", datetime(2026, 10, 16, 23, 40, 5)),
+    ],
+)
+def test_24_hour_timestamps_preserve_platform_and_proven_date_order(chat, platform, expected):
+    parsed = parse_chat(chat)
+
+    assert parsed.platform == platform
+    assert parsed.messages[0].timestamp == expected
 
 
 def test_ambiguous_date_requires_explicit_order():

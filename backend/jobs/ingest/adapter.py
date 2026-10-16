@@ -1,8 +1,10 @@
 """Adapt raw export messages to the shared T15 thread input model."""
 
+import asyncio
 import logging
 from collections.abc import Awaitable, Callable, Mapping
 from datetime import tzinfo
+from pathlib import PurePath
 from typing import Literal
 
 from pydantic import TypeAdapter
@@ -16,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Goes to imports.errors[] and the dashboard, so it is fixed text: never exception text, ids, URIs or chat content.
 ENRICHMENT_FAILED = "One chat attachment could not be read, so it was kept without enrichment."
+ENRICH_PARALLEL = 8
 EnrichMessage = Callable[[ExportMessage], Awaitable[MessageEnrichment]]
 
 
@@ -26,7 +29,23 @@ def _kind(message: ExportMessage) -> Literal["text", "voice", "photo"]:
         return "voice"
     if message.attachment.kind == "photo":
         return "photo"
-    raise ValueError("T15 accepts only text, voice and photo messages")
+    return "text"
+
+
+def _text(message: ExportMessage, kind: Literal["text", "voice", "photo"], enrichment: MessageEnrichment | None) -> str:
+    if kind != "text" and enrichment is not None and enrichment.text is not None:
+        return enrichment.text
+    if message.text:
+        return message.text
+    if message.attachment is None:
+        return ""
+    if message.attachment.kind == "video":
+        return "(video)"
+    if PurePath(message.attachment.filename).suffix.lower() == ".webp":
+        return "(sticker)"
+    if message.attachment.kind == "file":
+        return "(attachment)"
+    return ""
 
 
 def to_thread_messages(
@@ -49,17 +68,13 @@ def to_thread_messages(
         if enrichment is not None and enrichment.audio_uri is not None and kind != "voice":
             raise ValueError("audio_uri enrichment is valid only for voice messages")
 
-        enriched_text = message.text
-        if kind != "text" and enrichment is not None and enrichment.text is not None:
-            enriched_text = enrichment.text
-
         adapted.append(
             ThreadMessage(
                 id=f"{validated_import_id}:{message.id}",
                 speaker=message.speaker,
                 ts=message.timestamp.replace(tzinfo=timezone),
                 kind=kind,
-                text=enriched_text,
+                text=_text(message, kind, enrichment),
                 audio_uri=enrichment.audio_uri if kind == "voice" and enrichment is not None else None,
             )
         )
@@ -77,15 +92,26 @@ async def prepare_thread_messages(
 
     enrichments: dict[str, MessageEnrichment] = {}
     errors: list[str] = []
-    for message in messages:
-        if message.attachment is None or message.attachment.kind not in {"audio", "photo"}:
-            continue
+    media_messages = [
+        message
+        for message in messages
+        if message.attachment is not None and message.attachment.kind in {"audio", "photo"}
+    ]
+    limit = asyncio.Semaphore(ENRICH_PARALLEL)
+
+    async def enrich_one(message: ExportMessage) -> MessageEnrichment:
         try:
-            enrichments[message.id] = await enrich(message)
+            async with limit:
+                return await enrich(message)
         except Exception as error:
             logger.error("message enrichment failed", exc_info=error)
-            enrichments[message.id] = MessageEnrichment()
             errors.append(ENRICHMENT_FAILED)
+            return MessageEnrichment()
+
+    results = await asyncio.gather(*(enrich_one(message) for message in media_messages))
+    enrichments.update(
+        (message.id, enrichment) for message, enrichment in zip(media_messages, results, strict=True)
+    )
 
     return PreparationResult(
         messages=to_thread_messages(

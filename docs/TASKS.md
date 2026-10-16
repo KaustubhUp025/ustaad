@@ -25,7 +25,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | T10 | P0 | B | Pydantic models for REST + Firestore entities; stub routers returning fixtures; fixtures JSON; `make types` | contracts/rest.md, firestore.md, fault_card.schema.json | `openapi.json` + `types.ts` committed; stubs serve fixtures | T04 | doing |
 | T11 | P0 | A | Live bridge (ADK `run_live`), PCM worklets, push-to-talk, captions, barge-in — Hindi end to end (M3) | SPEC §6 Live, contracts/ws-events.md | phone ↔ Ustaad in Hindi with captions on dev | T05, T09 | done |
 | T12 | P1 | A | `identify_appliance` + 6 golden photos (M2); `type` normalised to the `appliance_type` values, and the one mapping constant from a `trades` value to card types (T38) | SPEC §6, GOLDEN_PATHS | 6/6 golden photos correct in unit test with recorded responses; normalisation and mapping tests | T09 | done (PR #30): 6/6 on recorded answers from the provisional photos; re-record when our own photos exist |
-| T13 | P0 | B | Ingest job: parse Android/iOS, ffmpeg, transcribe, threads (M6) | SPEC §4, contracts/firestore.md (imports) | small export fixture → messages + transcripts in test | T08, T10 | todo |
+| T13 | P0 | B | Ingest job: parse Android/iOS, ffmpeg, transcribe, threads (M6) | SPEC §4, contracts/firestore.md (imports) | small export fixture → messages + transcripts in test | T08, T10 | doing |
 | T14 | P2 | B | Agent Search store with 3 brands' manuals (S1) | SPEC §5 | query returns a page-cited snippet | T03 | todo |
 
 ## Tue Oct 13 — features

@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -6,7 +7,13 @@ import pytest
 from jobs.ingest.adapter import to_thread_messages
 from jobs.ingest.models import Attachment, ExportMessage, MessageEnrichment
 from jobs.ingest.parse import parse_chat
-from jobs.ingest.threads import FALLBACK_WARNING, fallback_threads, group_thread_messages, topic_threads
+from jobs.ingest.threads import (
+    FALLBACK_WARNING,
+    FlashThreadGroupingClient,
+    fallback_threads,
+    group_thread_messages,
+    topic_threads,
+)
 from models.imports import ThreadMessage
 
 INDIA = ZoneInfo("Asia/Kolkata")
@@ -45,6 +52,73 @@ async def test_valid_topic_grouping_receives_eligible_messages_in_time_order():
 
     assert [item.id for item in client.received] == ["i_test:m1", "i_test:m2", "i_test:m3"]
     assert result.groups == [["i_test:m1", "i_test:m2"], ["i_test:m3"]]
+
+
+async def test_flash_client_sends_only_safe_enriched_fields_in_chronological_order():
+    calls = []
+
+    async def ask(prompt: str, schema: type):
+        calls.append((prompt, schema))
+        return {"groups": [["i_test:m1", "i_test:m2"]]}
+
+    messages = [
+        ThreadMessage(
+            id="i_test:m2",
+            speaker="TechB",
+            ts=datetime(2026, 10, 16, 9, 10, 31, tzinfo=INDIA),
+            kind="voice",
+            text="Synthetic transcript; remove +91 90000-00000 but keep AC-12345",
+            audio_uri="gs://synthetic-private/imports/i_test/private-note.opus",
+        ),
+        ThreadMessage(
+            id="i_test:m1",
+            speaker="TechA",
+            ts=datetime(2026, 10, 16, 9, 0, tzinfo=INDIA),
+            kind="photo",
+            text="Synthetic photo description E6",
+        ),
+    ]
+
+    result = await topic_threads(messages, FlashThreadGroupingClient(ask))
+
+    assert result.groups == [["i_test:m1", "i_test:m2"]]
+    prompt, schema = calls[0]
+    assert schema.__name__ == "Threads"
+    payload = json.loads(prompt.split("MESSAGES:\n", 1)[1])
+    assert payload == [
+        {
+            "id": "i_test:m1",
+            "speaker": "TechA",
+            "local_time": "2026-10-16T09:00:00+05:30",
+            "minutes_since_previous": None,
+            "kind": "photo",
+            "text": "Synthetic photo description E6",
+        },
+        {
+            "id": "i_test:m2",
+            "speaker": "TechB",
+            "local_time": "2026-10-16T09:10:31+05:30",
+            "minutes_since_previous": 11,
+            "kind": "voice",
+            "text": "Synthetic transcript; remove but keep AC-12345",
+        },
+    ]
+    assert "gs://" not in prompt
+    assert "private-note.opus" not in prompt
+    assert "90000" not in prompt
+
+
+async def test_flash_client_failure_uses_safe_existing_fallback(caplog):
+    async def fail(prompt: str, schema: type):
+        raise RuntimeError("token=SYNTHETIC_TOKEN gs://synthetic-private/private-note.opus")
+
+    messages = [message("i_test:m1", 9, 0), message("i_test:m2", 9, 31)]
+    caplog.set_level("WARNING", logger="jobs.ingest.threads")
+
+    result = await topic_threads(messages, FlashThreadGroupingClient(fail))
+
+    assert result.groups == [["i_test:m1"], ["i_test:m2"]]
+    assert [record.getMessage() for record in caplog.records] == [FALLBACK_WARNING]
 
 
 @pytest.mark.parametrize(

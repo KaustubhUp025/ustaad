@@ -6,6 +6,7 @@ from google.adk.agents import Agent
 from google.adk.models import Gemini
 
 from agent.callbacks import gate_guard
+from agent.identify_tools import identify_tools
 from agent.media_tools import MediaDesk, media_tools
 from agent.repair_tools import repair_tools
 from agent.search_tools import search_tools
@@ -21,6 +22,9 @@ def build_ustaad(model: str, location: str, jobs: JobStore, cards: CardStore, de
         name="ustaad",
         model=Gemini(model=model, client_kwargs={"location": location}),
         instruction=INSTRUCTION,
-        tools=search_tools(cards, embed) + repair_tools(jobs) + media_tools(desk, jobs, read_photo),
+        tools=identify_tools(desk, read_photo)
+        + search_tools(cards, embed)
+        + repair_tools(jobs)
+        + media_tools(desk, jobs, read_photo),
         before_tool_callback=gate_guard(jobs.load),
     )

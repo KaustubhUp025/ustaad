@@ -1,0 +1,15 @@
+{
+  "brand": "VOLTAS",
+  "model": null,
+  "series": null,
+  "type": "split_ac",
+  "error_code": "E6",
+  "confidence": 0.95,
+  "observations": [
+    {
+      "label": "Technology",
+      "value": "Inverter",
+      "confidence": 0.95
+    }
+  ]
+}

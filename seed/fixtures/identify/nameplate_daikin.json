@@ -1,0 +1,55 @@
+{
+  "brand": "DAIKIN",
+  "model": "RXMQ5TVE6",
+  "series": null,
+  "type": "split_ac",
+  "error_code": null,
+  "confidence": 0.95,
+  "observations": [
+    {
+      "label": "Date",
+      "value": "18. 5",
+      "confidence": 0.9
+    },
+    {
+      "label": "Power Supply",
+      "value": "220-230 V ~ 50 Hz",
+      "confidence": 0.95
+    },
+    {
+      "label": "Mode",
+      "value": "COOLING",
+      "confidence": 0.95
+    },
+    {
+      "label": "Power Input",
+      "value": "3.97 kW",
+      "confidence": 0.95
+    },
+    {
+      "label": "Refrigerant",
+      "value": "R410A / 4.0 kg",
+      "confidence": 0.95
+    },
+    {
+      "label": "Mass",
+      "value": "125 kg",
+      "confidence": 0.95
+    },
+    {
+      "label": "Max Current",
+      "value": "27 A",
+      "confidence": 0.95
+    },
+    {
+      "label": "Fuse Amp",
+      "value": "30 A",
+      "confidence": 0.95
+    },
+    {
+      "label": "Protection",
+      "value": "IP24",
+      "confidence": 0.95
+    }
+  ]
+}

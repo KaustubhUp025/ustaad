@@ -1,0 +1,25 @@
+{
+  "brand": null,
+  "model": null,
+  "series": null,
+  "type": "washing_machine",
+  "error_code": "IE",
+  "confidence": 0.9,
+  "observations": [
+    {
+      "label": "condition",
+      "value": "Top panel removed, internal wiring and water inlet valves exposed",
+      "confidence": 0.95
+    },
+    {
+      "label": "programs_visible",
+      "value": "Delicates, Hand/Wool, Sportswear, Speed 14, Duvet, Tub Clean, Download Cycle",
+      "confidence": 0.9
+    },
+    {
+      "label": "warranty_badge",
+      "value": "10 Year Warranty sticker visible",
+      "confidence": 0.9
+    }
+  ]
+}

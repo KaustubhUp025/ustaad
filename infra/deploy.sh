@@ -29,4 +29,4 @@ gcloud run deploy "$SERVICE" \
   --max-instances 4 \
   --allow-unauthenticated \
   --set-env-vars "$ENVVARS" \
-  --set-secrets "WA_TOKEN=wa-token:latest,WA_VERIFY_TOKEN=wa-verify-token:latest,WA_APP_SECRET=wa-app-secret:latest,PLACES_API_KEY=places-api-key:latest"
+  --set-secrets "WA_TOKEN=wa-token:latest,WA_VERIFY_TOKEN=wa-verify-token:latest,WA_APP_SECRET=wa-app-secret:latest,PLACES_API_KEY=places-api-key:latest,SESSION_SECRET=session-secret:latest"

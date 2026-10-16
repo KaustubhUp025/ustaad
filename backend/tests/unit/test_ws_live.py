@@ -1,4 +1,5 @@
 import json
+from datetime import UTC, datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -7,10 +8,12 @@ from google.genai import types
 
 from app import ws_live
 from app.main import app
+from app.session import issue
 from models.ws import server_frame
 
 FRAMES = [json.loads(line) for line in ws_live.FIXTURE.read_text(encoding="utf-8").splitlines()]
-URL = "/ws/live?token=t&lang=hi&job_id=j_1"
+TOKEN = issue("w_hi_demo", datetime.now(UTC))
+URL = f"/ws/live?token={TOKEN}&lang=hi&job_id=j_1"
 
 
 @pytest.fixture(autouse=True)
@@ -18,7 +21,7 @@ def fake_live(monkeypatch):
     """Stands in for the Live model: echoes audio, and answers the end of a spoken turn or a typed line."""
     opened = []
 
-    async def live_events(queue, lang, resume, job_id, desk):
+    async def live_events(queue, lang, resume, job_id, desk, worker_id):
         opened.append((lang, resume))
         if lang == "xx":
             raise RuntimeError("model not found")
@@ -127,7 +130,7 @@ def test_fixture_shows_no_hazardous_step_before_its_gate_passes():
 
 def test_spoken_turn_reaches_the_model_and_its_reply_reaches_the_phone(monkeypatch, fake_live):
     monkeypatch.delenv("MOCK_LIVE", raising=False)
-    with TestClient(app).websocket_connect("/ws/live?token=t&lang=te&resume=h0") as ws:
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=te&resume=h0") as ws:
         assert ws.receive_json()["resumable"] is True
         ws.send_bytes(b"dropped: not inside ptt")
         ws.send_json({"v": 1, "type": "ptt", "state": "start"})
@@ -150,7 +153,7 @@ def test_typed_text_is_a_turn(monkeypatch):
 
 def test_live_failure_is_reported_as_live_unavailable(monkeypatch):
     monkeypatch.delenv("MOCK_LIVE", raising=False)
-    with TestClient(app).websocket_connect("/ws/live?token=t&lang=xx") as ws:
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=xx") as ws:
         assert ws.receive_json()["type"] == "session_ready"
         assert ws.receive_json()["code"] == "live_unavailable"
 
@@ -174,14 +177,14 @@ def test_a_safety_gate_from_the_model_opens_its_photo_request(monkeypatch):
     monkeypatch.delenv("MOCK_LIVE", raising=False)
     gate = {"status": "SAFETY_GATE", "gate_id": "G_MAINS_OFF", "required_evidence": "MCB OFF photo"}
 
-    async def live_events(queue, lang, resume, job_id, desk):
+    async def live_events(queue, lang, resume, job_id, desk, worker_id):
         response = types.FunctionResponse(name="next_step", response=gate)
         yield Event(author="ustaad", content=types.Content(parts=[types.Part(function_response=response)]))
         while not (await queue.get()).close:
             pass
 
     monkeypatch.setattr(ws_live, "live_events", live_events)
-    with TestClient(app).websocket_connect("/ws/live?token=t&lang=hi&job_id=j_gate") as ws:
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate") as ws:
         ws.receive_json()
         assert ws.receive_json()["type"] == "safety_gate"
         request = ws.receive_json()
@@ -190,7 +193,7 @@ def test_a_safety_gate_from_the_model_opens_its_photo_request(monkeypatch):
 
 def test_media_offer_gets_a_media_request_from_the_server(monkeypatch):
     monkeypatch.delenv("MOCK_LIVE", raising=False)
-    with TestClient(app).websocket_connect("/ws/live?token=t&lang=hi&job_id=j_offer") as ws:
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_offer") as ws:
         ws.receive_json()
         ws.send_json({"v": 1, "type": "media_offer", "kind": "photo"})
         request = ws.receive_json()

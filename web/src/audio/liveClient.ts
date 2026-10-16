@@ -3,6 +3,10 @@
 import captureUrl from './capture.worklet.ts?worker&url'
 import playbackUrl from './playback.worklet.ts?worker&url'
 
+import { demoSession } from '@/api/session'
+
+import { TurnBuffer } from './turnBuffer'
+
 export type GateId = 'G_MAINS_OFF' | 'G_CAP_DISCHARGE'
 export type MediaKind = 'photo' | 'video' | 'document'
 export type Hazard = 'none' | 'HV' | 'capacitor' | 'refrigerant'
@@ -51,8 +55,6 @@ export interface LiveConnection {
 
 const WS_URL = import.meta.env.VITE_API_WS_URL ?? ''
 const MOCK = import.meta.env.VITE_MOCK_LIVE === '1'
-// Any non-empty token passes today; T27's POST /api/demo/session hands out the signed one.
-const TOKEN = 'demo'
 const PING_MS = 20_000
 const RETRIES = 5
 const RETRY_MS = 2_000
@@ -114,16 +116,23 @@ export function openLive(
   let closed = false
   let held = false // the button is down
   let talking = false // ptt start was sent
+  let sessionReady = false
+  const turn = new TurnBuffer()
   const timers: number[] = []
 
   const send = (data: string | ArrayBuffer) => {
     if (ws?.readyState === WebSocket.OPEN) ws.send(data)
   }
   const sendFrame = (frame: object) => send(JSON.stringify({ v: 1, ...frame }))
+  // A turn spoken while reconnecting waits for the new session instead of being lost.
+  const sendTurn = (data: string | ArrayBuffer) => (sessionReady ? send(data) : turn.push(data))
+  const sendTurnFrame = (frame: object) => sendTurn(JSON.stringify({ v: 1, ...frame }))
 
   const handle = (frame: ServerFrame) => {
     if (frame.type === 'session_ready') {
       failures = 0
+      sessionReady = true
+      turn.flush(send)
       onStatus('ready')
     }
     if (frame.type === 'resume_handle') {
@@ -141,7 +150,7 @@ export function openLive(
   }
 
   const connect = () => {
-    const params = new URLSearchParams({ token: TOKEN, lang, job_id: jobId })
+    const params = new URLSearchParams({ token: demoSession()?.token ?? '', lang, job_id: jobId })
     if (resume) params.set('resume', resume)
     ws = new WebSocket(`${WS_URL}?${params}`)
     ws.binaryType = 'arraybuffer'
@@ -150,10 +159,14 @@ export function openLive(
       else playback?.postMessage(e.data, [e.data])
     }
     ws.onclose = () => {
+      sessionReady = false
       if (closed) return
       // A bad token or a full server won't get better by retrying; a full server is not his network's fault.
-      if (lastError === 'rate_limited') return onStatus('busy')
-      if (lastError === 'auth' || ++failures > RETRIES) return onStatus('failed')
+      if (lastError === 'rate_limited' || lastError === 'auth' || ++failures > RETRIES) {
+        // Nothing will carry a held turn now; it is dropped rather than sent much later.
+        turn.clear()
+        return onStatus(lastError === 'rate_limited' ? 'busy' : 'failed')
+      }
       onStatus('reconnecting')
       timers.push(window.setTimeout(connect, RETRY_MS))
     }
@@ -189,19 +202,19 @@ export function openLive(
       })
       playback = out
       capture.onmessage = (e: MessageEvent<ArrayBuffer>) => {
-        if (talking) send(e.data)
+        if (talking) sendTurn(e.data)
       }
       // The first press waits for the permission prompt; he may have let go already.
       if (held && !talking) {
         talking = true
-        sendFrame({ type: 'ptt', state: 'start' })
+        sendTurnFrame({ type: 'ptt', state: 'start' })
       }
     },
     stopTalking() {
       held = false
       if (!talking) return
       talking = false
-      sendFrame({ type: 'ptt', state: 'end' })
+      sendTurnFrame({ type: 'ptt', state: 'end' })
     },
     mediaOffer(kind) {
       sendFrame({ type: 'media_offer', kind })

@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/demo/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Demo Session */
+        post: operations["demo_session_api_demo_session_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/healthz": {
         parameters: {
             query?: never;
@@ -77,6 +94,22 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** DemoSessionRequest */
+        DemoSessionRequest: {
+            /**
+             * Worker Id
+             * @default w_hi_demo
+             */
+            worker_id: string;
+        };
+        /** DemoSessionResponse */
+        DemoSessionResponse: {
+            /** Token */
+            token: string;
+            worker: components["schemas"]["Worker"];
+            /** Ws Url */
+            ws_url: string;
+        };
         /** ErrorDetail */
         ErrorDetail: {
             /**
@@ -90,6 +123,13 @@ export interface components {
         /** ErrorResponse */
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
+        };
+        /** Geo */
+        Geo: {
+            /** Lat */
+            lat: number;
+            /** Lng */
+            lng: number;
         };
         /** InventoryDelta */
         InventoryDelta: {
@@ -173,6 +213,38 @@ export interface components {
             /** Uri */
             uri: string;
         };
+        /** Worker */
+        Worker: {
+            /** Brands */
+            brands: string[];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Demo */
+            demo: boolean;
+            /** Experience Yrs */
+            experience_yrs: number | null;
+            geo: components["schemas"]["Geo"] | null;
+            /** Id */
+            id: string;
+            /**
+             * Lang
+             * @enum {string}
+             */
+            lang: "hi" | "te" | "ta" | "bn" | "en";
+            /** Name */
+            name: string;
+            /** Onboarding Done */
+            onboarding_done: boolean;
+            /** Pincode */
+            pincode: string | null;
+            /** Skill Gaps */
+            skill_gaps: string[];
+            /** Trades */
+            trades: ("ac" | "fridge" | "washing_machine" | "led_tv" | "microwave" | "geyser" | "fan_cooler" | "other")[];
+        };
     };
     responses: never;
     parameters: never;
@@ -182,6 +254,102 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    demo_session_api_demo_session_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["DemoSessionRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemoSessionResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     healthz_api_healthz_get: {
         parameters: {
             query?: never;

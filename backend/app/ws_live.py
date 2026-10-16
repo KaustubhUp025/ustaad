@@ -7,6 +7,7 @@ import os
 import uuid
 from asyncio import create_task, sleep, wait_for
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -22,8 +23,8 @@ from agent.media_tools import MediaDesk, ReadPhoto
 from agent.ustaad import build_ustaad
 from app import admission
 from app.demo_safe import demo_safe
-from app.inventory import DEMO_WORKER_ID
 from app.live_events import to_frames
+from app.session import verify
 from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore
 from clients.gemini import read_photo
 from clients.storage import object_md5
@@ -62,7 +63,7 @@ LANGS = {
 
 
 async def live_events(
-    queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str, desk: MediaDesk
+    queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str, desk: MediaDesk, worker_id: str
 ) -> AsyncIterator[Event]:
     """One Live session with the model. Unit tests replace this with a fake."""
     speech_code, language_name = LANGS[lang]
@@ -84,7 +85,7 @@ async def live_events(
     session = await runner.session_service.create_session(
         app_name=APP,
         user_id="demo",
-        state={"language_name": language_name, "lang": lang, "job_id": job_id, "worker_id": DEMO_WORKER_ID},
+        state={"language_name": language_name, "lang": lang, "job_id": job_id, "worker_id": worker_id},
     )
     config = RunConfig(
         streaming_mode=StreamingMode.BIDI,
@@ -137,11 +138,17 @@ async def _replay(ws: WebSocket) -> None:
 
 
 async def _downstream(
-    ws: WebSocket, queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str, desk: MediaDesk
+    ws: WebSocket,
+    queue: LiveRequestQueue,
+    lang: str,
+    resume: str | None,
+    job_id: str,
+    desk: MediaDesk,
+    worker_id: str,
 ) -> None:
     partials: dict[str, str] = {}
     try:
-        async for event in live_events(queue, lang, resume, job_id, desk):
+        async for event in live_events(queue, lang, resume, job_id, desk, worker_id):
             for item in to_frames(event, partials):
                 if isinstance(item, bytes):
                     await ws.send_bytes(item)
@@ -207,8 +214,10 @@ async def ws_live(
     await ws.accept()
     origin = ws.headers.get("origin")
     allowed = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
-    # Browsers always send Origin; clients without one (tests, native) are held to the token alone.
-    if not token or (origin and origin not in allowed):
+    # Browsers always send Origin; clients without one (tests, native) are held to the token alone. The worker comes
+    # from the signed token (POST /api/demo/session), never from the client.
+    worker_id = verify(token, datetime.now(UTC))
+    if worker_id is None or (origin and origin not in allowed):
         await _send(ws, Error(code="auth", message="missing token or origin not allowed"))
         await ws.close(code=1008)
         return
@@ -224,14 +233,14 @@ async def ws_live(
             await _refuse(ws, "too many sessions")
             return
         try:
-            await _live(ws, lang, resume, job_id)
+            await _live(ws, lang, resume, job_id, worker_id)
         finally:
             admission.ADMISSION.release()
     except WebSocketDisconnect:
         pass
 
 
-async def _live(ws: WebSocket, lang: str, resume: str | None, job_id: str) -> None:
+async def _live(ws: WebSocket, lang: str, resume: str | None, job_id: str, worker_id: str) -> None:
     """One Live session for this socket, holding one of the instance's Live slots."""
     session_id = f"s_{uuid.uuid4().hex[:8]}"
     job_id = job_id or f"j_{uuid.uuid4().hex[:8]}"
@@ -242,7 +251,7 @@ async def _live(ws: WebSocket, lang: str, resume: str | None, job_id: str) -> No
     if not resume:
         desk.forget_session()
     desk.attach(lambda frame: _send(ws, frame), queue, lang)
-    down = create_task(_downstream(ws, queue, lang, resume, job_id, desk))
+    down = create_task(_downstream(ws, queue, lang, resume, job_id, desk, worker_id))
     try:
         await _upstream(ws, queue, desk)
     finally:

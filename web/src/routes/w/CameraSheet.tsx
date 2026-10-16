@@ -1,10 +1,11 @@
 import { Camera, Flashlight, X } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { uploadPhoto } from '@/api/media'
 import type { MediaView } from '@/audio/media'
 import { prepare } from '@/camera/photo'
+import { SAMPLES } from '@/camera/samples'
 import { useCamera } from '@/camera/useCamera'
 import { Button } from '@/components/ui/button'
 
@@ -17,6 +18,9 @@ type Props = {
 }
 
 type Phase = 'ready' | 'dark' | 'blurry' | 'sending' | 'checking' | 'failed'
+
+// Checks usually take 5-6 s, but about 1 in 4 took ~30 s (Oct 15); past this he is told it is still going.
+const STILL_CHECKING_MS = 10_000
 
 // The camera sheet (DESIGN.md): Ustaad's request as the title and a framing outline over the live viewfinder.
 // It takes the job's middle area and leaves the mic below it, so he can still talk to Ustaad. A very dark or blurry
@@ -34,12 +38,31 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, j
     setPhase('ready')
   }
   const held = useRef<Blob | null>(null) // the photo the phone-side check rejected, for "send anyway"
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    if (phase !== 'checking') return
+    const timer = window.setTimeout(() => setSlow(true), STILL_CHECKING_MS)
+    return () => {
+      window.clearTimeout(timer)
+      setSlow(false)
+    }
+  }, [phase])
 
   const upload = async (jpeg: Blob) => {
     setPhase('sending')
     try {
       onSent(await uploadPhoto(jpeg, jobId, request.request_id))
       setPhase('checking')
+    } catch {
+      setPhase('failed')
+    }
+  }
+
+  // A sample goes as it is: the phone-side check is skipped, so the server judges it exactly as recorded.
+  const sendSample = async (src: string) => {
+    setPhase('sending')
+    try {
+      await upload(await (await fetch(src)).blob())
     } catch {
       setPhase('failed')
     }
@@ -62,7 +85,7 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, j
     dark: t('camera.dark'),
     blurry: t('camera.blurry'),
     sending: t('camera.sending'),
-    checking: t('camera.checking'),
+    checking: t(slow ? 'camera.stillChecking' : 'camera.checking'),
     failed: t('camera.failed'),
   }[phase]
   const warn = phase === 'dark' || phase === 'blurry' || phase === 'failed' || (phase === 'ready' && retakeReason)
@@ -132,6 +155,29 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, j
         >
           {message}
         </p>
+      )}
+
+      {!busy && (
+        <div className="flex flex-col gap-1">
+          <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('samples.title')}</p>
+          <ul className="flex gap-3 overflow-x-auto pb-1">
+            {SAMPLES.map((sample) => (
+              <li key={sample.src} className="flex w-24 shrink-0 flex-col gap-1">
+                <button
+                  type="button"
+                  className="size-24 overflow-hidden rounded-sm border border-border outline-none focus-visible:ring-4 focus-visible:ring-ring"
+                  aria-label={t('samples.send', { name: t(sample.name) })}
+                  onClick={() => void sendSample(sample.src)}
+                >
+                  <img src={sample.src} alt="" className="size-full object-cover" />
+                </button>
+                <span className="text-[length:var(--text-sm)] leading-tight text-muted-foreground">
+                  {t(`samples.${sample.provenance}`)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <input

@@ -8,17 +8,23 @@ from google.adk.models import Gemini
 from agent.callbacks import gate_guard
 from agent.identify_tools import identify_tools
 from agent.inventory_tools import inventory_tools
-from agent.media_tools import MediaDesk, media_tools
+from agent.media_tools import MediaDesk, ReadPhoto, media_tools
 from agent.repair_tools import repair_tools
 from agent.search_tools import search_tools
 from clients.firestore import CardStore, InventoryStore, JobStore
-from clients.gemini import embed, read_photo
+from clients.gemini import embed
 
 INSTRUCTION = (Path(__file__).parent / "instruction.md").read_text(encoding="utf-8")
 
 
 def build_ustaad(
-    model: str, location: str, jobs: JobStore, cards: CardStore, inventory: InventoryStore, desk: MediaDesk
+    model: str,
+    location: str,
+    jobs: JobStore,
+    cards: CardStore,
+    inventory: InventoryStore,
+    desk: MediaDesk,
+    read_photo: ReadPhoto,
 ) -> Agent:
     # The Live model is served from a different region than the rest of the app (DECISIONS, Oct 13).
     return Agent(

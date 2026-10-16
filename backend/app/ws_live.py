@@ -18,12 +18,15 @@ from google.cloud import firestore
 from google.genai import types
 from pydantic import ValidationError
 
-from agent.media_tools import MediaDesk
+from agent.media_tools import MediaDesk, ReadPhoto
 from agent.ustaad import build_ustaad
 from app import admission
+from app.demo_safe import demo_safe
 from app.inventory import DEMO_WORKER_ID
 from app.live_events import to_frames
-from clients.firestore import CardStore, InventoryStore, JobStore
+from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore
+from clients.gemini import read_photo
+from clients.storage import object_md5
 from models.ws import (
     Error,
     Frame,
@@ -67,7 +70,13 @@ async def live_events(
     jobs = JobStore(db)
     runner = InMemoryRunner(
         agent=build_ustaad(
-            os.environ["LIVE_MODEL"], os.environ["LIVE_LOCATION"], jobs, CardStore(db), InventoryStore(db), desk
+            os.environ["LIVE_MODEL"],
+            os.environ["LIVE_LOCATION"],
+            jobs,
+            CardStore(db),
+            InventoryStore(db),
+            desk,
+            _photo_reader(db),
         ),
         app_name=APP,
     )
@@ -96,6 +105,14 @@ async def live_events(
 
 async def _send(ws: WebSocket, frame: Frame) -> None:
     await ws.send_text(frame.model_dump_json())
+
+
+def _photo_reader(db: firestore.Client) -> ReadPhoto:
+    """With DEMO_SAFE=1, photo checks fall back to recorded answers when Flash is slow (T27); DEMO_MODEL_DELAY_S
+    slows Flash on purpose to test that."""
+    if os.getenv("DEMO_SAFE") != "1":
+        return read_photo
+    return demo_safe(read_photo, DemoCacheStore(db), object_md5, float(os.getenv("DEMO_MODEL_DELAY_S", "0")))
 
 
 def _client_ip(ws: WebSocket) -> str:

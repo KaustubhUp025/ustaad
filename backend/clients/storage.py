@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta
+from functools import cache
 
 import google.auth
 from google.auth.credentials import Credentials
@@ -47,3 +48,14 @@ class StorageUploadClient:
             uri=f"gs://{self._bucket_name}/{object_name}",
             headers=dict(headers),
         )
+
+
+@cache
+def _client() -> storage.Client:
+    return storage.Client()
+
+
+def object_md5(uri: str) -> str:
+    """The stored object's content hash (from its metadata; nothing is downloaded)."""
+    bucket, _, name = uri.removeprefix("gs://").partition("/")
+    return _client().bucket(bucket).get_blob(name).md5_hash

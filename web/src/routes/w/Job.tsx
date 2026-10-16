@@ -1,8 +1,9 @@
 import { Camera, Mic } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { Navigate, useParams, useSearchParams } from 'react-router-dom'
 
+import { demoSession } from '@/api/session'
 import { useLive } from '@/audio/useLive'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -11,7 +12,13 @@ import { CameraSheet } from './CameraSheet'
 
 // The job screen: live captions, the current step card, the safety gate and stop screens, the camera sheet, and the
 // push-to-talk mic.
+// Without a demo session there is no token for the voice line, so he starts one from Home (mock replays need none).
 export default function Job() {
+  if (import.meta.env.VITE_MOCK_LIVE !== '1' && !demoSession()) return <Navigate to="/w" replace />
+  return <JobScreen />
+}
+
+function JobScreen() {
   const { t, i18n } = useTranslation()
   // ?lang= picks the language until onboarding (T21) saves it on the profile.
   const lang = useSearchParams()[0].get('lang') ?? i18n.language
@@ -150,7 +157,8 @@ export default function Job() {
           type="button"
           aria-pressed={live.talking}
           aria-label={t('live.hold')}
-          disabled={live.status !== 'ready'}
+          // While reconnecting he can already talk: the turn is held and sent once the new session is ready (T27).
+          disabled={live.status !== 'ready' && live.status !== 'reconnecting'}
           className={cn(
             'flex size-(--mic) touch-none items-center justify-center rounded-full bg-primary text-primary-foreground select-none',
             'outline-none focus-visible:ring-4 focus-visible:ring-ring disabled:opacity-50',

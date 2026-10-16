@@ -57,6 +57,12 @@ for s in wa-token wa-verify-token wa-app-secret places-api-key; do
   fi
 done
 
+# Signs demo session tokens (POST /api/demo/session, T27): a random value, never a placeholder.
+if ! gcloud secrets describe session-secret >/dev/null 2>&1; then
+  gcloud secrets create session-secret --replication-policy=automatic
+  openssl rand -base64 32 | tr -d '\n' | gcloud secrets versions add session-secret --data-file=-
+fi
+
 # Firebase on the same project (Hosting)
 firebase projects:addfirebase "$PROJECT_ID" || echo "Firebase already enabled on ${PROJECT_ID}"
 

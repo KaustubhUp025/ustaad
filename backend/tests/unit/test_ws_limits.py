@@ -2,6 +2,7 @@
 that goes silent is closed so its Live slot frees (T11 follow-up)."""
 
 import time
+from datetime import UTC, datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,22 +10,26 @@ from starlette.websockets import WebSocketDisconnect
 
 from app import admission, ws_live
 from app.main import app
+from app.session import issue
 
-URL = "/ws/live?token=t&lang=hi&job_id=j_1"
+URL = f"/ws/live?token={issue('w_hi_demo', datetime.now(UTC))}&lang=hi&job_id=j_1"
 
 
 @pytest.fixture(autouse=True)
 def live(monkeypatch):
-    """A Live model that says nothing until the socket closes."""
+    """A Live model that says nothing until the socket closes; it notes the worker each session is for."""
     monkeypatch.delenv("MOCK_LIVE", raising=False)
+    workers = []
 
-    async def live_events(queue, lang, resume, job_id, desk):
+    async def live_events(queue, lang, resume, job_id, desk, worker_id):
+        workers.append(worker_id)
         while not (await queue.get()).close:
             pass
         return
         yield
 
     monkeypatch.setattr(ws_live, "live_events", live_events)
+    return workers
 
 
 def test_the_fourth_live_session_gets_rate_limited():
@@ -65,3 +70,16 @@ def test_a_pinging_socket_stays_open(monkeypatch):
             time.sleep(0.15)
             ws.send_json({"v": 1, "type": "ping"})
             assert ws.receive_json() == {"v": 1, "type": "pong"}
+
+
+def test_an_unsigned_token_gets_an_auth_error():
+    with TestClient(app).websocket_connect("/ws/live?token=demo&lang=hi&job_id=j_1") as ws:
+        assert ws.receive_json()["code"] == "auth"
+
+
+def test_the_session_is_for_the_worker_the_token_names(live):
+    with TestClient(app).websocket_connect(f"/ws/live?token={issue('w_te_demo', datetime.now(UTC))}&lang=te") as ws:
+        ws.receive_json()
+        ws.send_json({"v": 1, "type": "ping"})
+        ws.receive_json()
+    assert live == ["w_te_demo"]

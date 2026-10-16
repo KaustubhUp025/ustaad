@@ -200,6 +200,19 @@ async def test_an_extraction_error_never_carries_the_exception_text():
     assert not any(part in counts.model_dump_json() for part in ("gs://", "token", "+91", "Traceback", "m1"))
 
 
+async def test_a_failed_extraction_logs_only_a_fixed_message(caplog):
+    secret = "gs://b/imports/i_1/PTT-1.flac token=abc123 +919876543210 Samyak bhai E6 aa raha"
+
+    async def ask(prompt: str, schema: type) -> CardDraft:
+        raise RuntimeError(secret)
+
+    with caplog.at_level("DEBUG"):
+        await import_cards([THREAD], ask, embed, FakeCardStore(), NOW)
+    logged = "\n".join(r.getMessage() + (r.exc_text or "") + str(r.exc_info or "") for r in caplog.records)
+    assert "card extraction failed" in logged
+    assert not any(part in logged for part in ("gs://", "token", "+91", "Samyak", "E6", "RuntimeError(", "m1"))
+
+
 def test_only_a_voice_message_carries_audio():
     for kind in ("text", "photo"):
         with pytest.raises(ValidationError):

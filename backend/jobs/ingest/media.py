@@ -6,6 +6,7 @@ from pathlib import Path
 
 from pydantic import TypeAdapter, ValidationError
 
+from jobs.ingest.adapter import EnrichmentFailed
 from jobs.ingest.models import ExportMessage, MessageEnrichment
 from models.media import ImportId, SafeFilename
 
@@ -66,9 +67,12 @@ def create_media_enricher(
         destination_uri = f"gs://{media_bucket}/imports/{validated_import_id}/derived/{message.id}.flac"
         await converter(source, flac)
         transcript = await transcriber(flac)
-        uploaded_uri = await uploader(flac, destination_uri)
-        if uploaded_uri != destination_uri:
-            raise ValueError("uploader returned an unexpected destination")
+        try:
+            uploaded_uri = await uploader(flac, destination_uri)
+            if uploaded_uri != destination_uri:
+                raise ValueError("uploader returned an unexpected destination")
+        except Exception:  # noqa: BLE001 — preserve the transcript; adapter emits the fixed safe error
+            raise EnrichmentFailed(MessageEnrichment(text=transcript)) from None
         return MessageEnrichment(text=transcript, audio_uri=uploaded_uri)
 
     return enrich

@@ -227,6 +227,54 @@ async def test_dependency_failure_and_wrong_upload_uri_return_only_safe_errors(t
     assert wrong_upload_result.messages[0].audio_uri is None
 
 
+async def test_upload_failure_preserves_transcript_and_returns_only_safe_error(tmp_path, caplog):
+    voice = tmp_path / "voice.opus"
+    voice.touch()
+    fake = FakeMediaDependencies()
+
+    async def fail_upload(source: Path, destination_uri: str) -> str:
+        fake.upload_calls.append((source, destination_uri))
+        raise RuntimeError(
+            f"path={source} uri={destination_uri} filename=voice.opus "
+            "token=SYNTHETIC_TOKEN Traceback=SYNTHETIC_STACK"
+        )
+
+    enrich = create_media_enricher(
+        import_id="i_upload_failure",
+        media_bucket=MEDIA_BUCKET,
+        archive_files=[voice],
+        derived_directory=tmp_path / "derived",
+        converter=fake.convert,
+        uploader=fail_upload,
+        transcriber=fake.transcribe,
+        describer=fake.describe,
+    )
+
+    result = await prepare_thread_messages(
+        [media_message("m1", filename="voice.opus", kind="audio")],
+        import_id="i_upload_failure",
+        timezone=INDIA,
+        enrich=enrich,
+    )
+
+    assert fake.convert_calls
+    assert fake.transcribe_calls
+    assert fake.upload_calls
+    assert result.messages[0].text == "synthetic transcript"
+    assert result.messages[0].audio_uri is None
+    assert result.errors == [ENRICHMENT_FAILED]
+    exposed = " ".join(result.errors) + caplog.text
+    for secret in (
+        "voice.opus",
+        "gs://",
+        "SYNTHETIC_TOKEN",
+        "SYNTHETIC_STACK",
+        "RuntimeError",
+        str(tmp_path),
+    ):
+        assert secret not in exposed
+
+
 async def test_enrichment_caps_concurrency_at_eight_and_preserves_output_order(tmp_path):
     active = 0
     maximum_active = 0

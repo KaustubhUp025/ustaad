@@ -65,7 +65,7 @@ async def test_flash_client_sends_only_safe_enriched_fields_in_chronological_ord
         ThreadMessage(
             id="i_test:m2",
             speaker="TechB",
-            ts=datetime(2026, 10, 16, 9, 10, tzinfo=INDIA),
+            ts=datetime(2026, 10, 16, 9, 10, 31, tzinfo=INDIA),
             kind="voice",
             text="Synthetic transcript; remove +91 90000-00000 but keep AC-12345",
             audio_uri="gs://synthetic-private/imports/i_test/private-note.opus",
@@ -97,8 +97,8 @@ async def test_flash_client_sends_only_safe_enriched_fields_in_chronological_ord
         {
             "id": "i_test:m2",
             "speaker": "TechB",
-            "local_time": "2026-10-16T09:10:00+05:30",
-            "minutes_since_previous": 10.0,
+            "local_time": "2026-10-16T09:10:31+05:30",
+            "minutes_since_previous": 11,
             "kind": "voice",
             "text": "Synthetic transcript; remove but keep AC-12345",
         },

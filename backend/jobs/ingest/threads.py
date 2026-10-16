@@ -50,7 +50,7 @@ class FlashThreadGroupingClient:
         payload = []
         previous: ThreadMessage | None = None
         for message in ordered:
-            minutes = None if previous is None else (message.ts - previous.ts).total_seconds() / 60
+            minutes = None if previous is None else round((message.ts - previous.ts).total_seconds() / 60)
             payload.append(
                 {
                     "id": message.id,

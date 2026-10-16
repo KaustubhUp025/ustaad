@@ -1,4 +1,4 @@
-# AC Mistri Noida — the simple script (3 people)
+# AC Technician Noida — the simple script (3 people)
 
 | In the group (saved as) | Plays | Character |
 |---|---|---|

@@ -22,6 +22,14 @@ ENRICH_PARALLEL = 8
 EnrichMessage = Callable[[ExportMessage], Awaitable[MessageEnrichment]]
 
 
+class EnrichmentFailed(Exception):
+    """Carry safe partial enrichment through the fixed-error boundary."""
+
+    def __init__(self, enrichment: MessageEnrichment) -> None:
+        super().__init__()
+        self.enrichment = enrichment
+
+
 def _kind(message: ExportMessage) -> Literal["text", "voice", "photo"]:
     if message.attachment is None:
         return "text"
@@ -103,8 +111,12 @@ async def prepare_thread_messages(
         try:
             async with limit:
                 return await enrich(message)
-        except Exception as error:
-            logger.error("message enrichment failed", exc_info=error)
+        except EnrichmentFailed as failure:
+            logger.error("message enrichment failed")
+            errors.append(ENRICHMENT_FAILED)
+            return failure.enrichment
+        except Exception:  # noqa: BLE001 — per-media failures are reduced to one fixed safe import error
+            logger.error("message enrichment failed")
             errors.append(ENRICHMENT_FAILED)
             return MessageEnrichment()
 

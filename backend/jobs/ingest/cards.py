@@ -83,7 +83,8 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
             level = max(level, "HV", key=LEVELS.index)
             review = True
         hazard = max(hazard, level, key=LEVELS.index)
-    voice = fix is not None and fix.kind == "voice"
+    # Credited as voice only with its stored audio: the source chip must have something to play.
+    voice = fix is not None and fix.kind == "voice" and fix.audio_uri is not None
     source = FaultCardSource(
         **_set(
             type="whatsapp_voice" if voice else "whatsapp_text",

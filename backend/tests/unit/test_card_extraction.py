@@ -64,6 +64,12 @@ def test_a_text_fix_has_no_audio():
     assert (card.source.type, card.source.audio_uri, card.source.author) == ("whatsapp_text", None, "Kaustubh")
 
 
+def test_a_voice_note_whose_audio_was_not_stored_is_not_credited_as_voice():
+    thread = [*THREAD[:1], THREAD[1].model_copy(update={"audio_uri": None}), *THREAD[2:]]
+    card = card_from_draft(draft(), thread, "fc_1", NOW)
+    assert (card.source.type, card.source.audio_uri, card.source.author) == ("whatsapp_text", None, "Samyak")
+
+
 def test_message_ids_not_in_the_thread_are_dropped():
     card = card_from_draft(draft(message_ids=["m2", "m9"]), THREAD, "fc_1", NOW)
     assert card.source.message_ids == ["m2"]

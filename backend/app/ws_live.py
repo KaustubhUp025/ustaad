@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import uuid
-from asyncio import create_task, sleep
+from asyncio import create_task, sleep, wait_for
 from collections.abc import AsyncIterator
 from pathlib import Path
 
@@ -20,6 +20,7 @@ from pydantic import ValidationError
 
 from agent.media_tools import MediaDesk
 from agent.ustaad import build_ustaad
+from app import admission
 from app.inventory import DEMO_WORKER_ID
 from app.live_events import to_frames
 from clients.firestore import CardStore, InventoryStore, JobStore
@@ -45,6 +46,8 @@ FIXTURE = Path(__file__).parents[2] / "seed/fixtures/live_session.jsonl"
 # Each job's open photo requests, kept across reconnects to this instance (session affinity routes them here).
 DESKS: dict[str, MediaDesk] = {}
 APP = "ustaad"
+# The phone pings every 20 s; a socket silent this long lost its network, and closing it frees its Live slot (T11).
+SILENT_CLOSE_S = 45
 # Speech code, and the wording the instruction uses: naming the script keeps captions out of Latin letters.
 LANGS = {
     "hi": ("hi-IN", "Hindi, written in Devanagari script"),
@@ -95,6 +98,18 @@ async def _send(ws: WebSocket, frame: Frame) -> None:
     await ws.send_text(frame.model_dump_json())
 
 
+def _client_ip(ws: WebSocket) -> str:
+    # Cloud Run's front end appends the caller's address to X-Forwarded-For, so the last entry is the real one; the
+    # earlier ones are whatever the client sent.
+    forwarded = ws.headers.get("x-forwarded-for")
+    return forwarded.split(",")[-1].strip() if forwarded else ws.client.host if ws.client else ""
+
+
+async def _refuse(ws: WebSocket, message: str) -> None:
+    await _send(ws, Error(code="rate_limited", message=message))
+    await ws.close(code=1013)
+
+
 async def _replay(ws: WebSocket) -> None:
     at_ms = 0
     for line in FIXTURE.read_text(encoding="utf-8").splitlines():
@@ -131,7 +146,11 @@ async def _upstream(ws: WebSocket, queue: LiveRequestQueue | None, desk: MediaDe
     answered."""
     talking = False
     while True:
-        message = await ws.receive()
+        try:
+            message = await wait_for(ws.receive(), SILENT_CLOSE_S)
+        except TimeoutError:
+            await ws.close(code=1001)
+            return
         if message["type"] == "websocket.disconnect":
             return
         audio = message.get("bytes")
@@ -176,28 +195,42 @@ async def ws_live(
         await _send(ws, Error(code="auth", message="missing token or origin not allowed"))
         await ws.close(code=1008)
         return
+    if not admission.ADMISSION.allow(_client_ip(ws)):
+        await _refuse(ws, "too many connections")
+        return
     try:
         if os.getenv("MOCK_LIVE") == "1":
             await _replay(ws)
             await _upstream(ws, None, None)
             return
-        session_id = f"s_{uuid.uuid4().hex[:8]}"
-        job_id = job_id or f"j_{uuid.uuid4().hex[:8]}"
-        await _send(ws, SessionReady(session_id=session_id, live_model=os.getenv("LIVE_MODEL", "unset"), resumable=True))
-        queue = LiveRequestQueue()
-        # A photo request belongs to the job, not to this socket: a reconnect picks up its open requests.
-        desk = DESKS.setdefault(job_id, MediaDesk(job_id, os.getenv("MEDIA_BUCKET", "")))
-        if not resume:
-            desk.forget_session()
-        desk.attach(lambda frame: _send(ws, frame), queue, lang)
-        down = create_task(_downstream(ws, queue, lang, resume, job_id, desk))
+        if not admission.ADMISSION.acquire():
+            await _refuse(ws, "too many sessions")
+            return
         try:
-            await _upstream(ws, queue, desk)
+            await _live(ws, lang, resume, job_id)
         finally:
-            desk.detach(queue)
-            if desk.idle:
-                DESKS.pop(job_id, None)
-            queue.close()
-            down.cancel()
+            admission.ADMISSION.release()
     except WebSocketDisconnect:
         pass
+
+
+async def _live(ws: WebSocket, lang: str, resume: str | None, job_id: str) -> None:
+    """One Live session for this socket, holding one of the instance's Live slots."""
+    session_id = f"s_{uuid.uuid4().hex[:8]}"
+    job_id = job_id or f"j_{uuid.uuid4().hex[:8]}"
+    await _send(ws, SessionReady(session_id=session_id, live_model=os.getenv("LIVE_MODEL", "unset"), resumable=True))
+    queue = LiveRequestQueue()
+    # A photo request belongs to the job, not to this socket: a reconnect picks up its open requests.
+    desk = DESKS.setdefault(job_id, MediaDesk(job_id, os.getenv("MEDIA_BUCKET", "")))
+    if not resume:
+        desk.forget_session()
+    desk.attach(lambda frame: _send(ws, frame), queue, lang)
+    down = create_task(_downstream(ws, queue, lang, resume, job_id, desk))
+    try:
+        await _upstream(ws, queue, desk)
+    finally:
+        desk.detach(queue)
+        if desk.idle:
+            DESKS.pop(job_id, None)
+        queue.close()
+        down.cancel()

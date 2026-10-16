@@ -33,9 +33,13 @@ export default function Job() {
     document.documentElement.lang = lang
   }, [i18n, lang])
 
-  const notice = { connecting: 'live.connecting', reconnecting: 'live.reconnecting', failed: 'live.failed', ready: null }[
-    live.status
-  ]
+  const notice = {
+    connecting: 'live.connecting',
+    reconnecting: 'live.reconnecting',
+    failed: 'live.failed',
+    busy: 'live.busy',
+    ready: null,
+  }[live.status]
 
   return (
     <main className={cn('mx-auto flex min-h-dvh max-w-md flex-col', stop && 'bg-destructive text-housing')}>
@@ -48,7 +52,7 @@ export default function Job() {
       {notice && (
         <div role="status" className="flex flex-col items-start gap-3 border-b border-border px-4 py-3">
           <p>{t(notice)}</p>
-          {live.status === 'failed' && (
+          {(live.status === 'failed' || live.status === 'busy') && (
             <Button variant="outline" className="h-(--touch) px-6 text-[length:var(--text-body)]" onClick={live.retry}>
               {t('live.retry')}
             </Button>

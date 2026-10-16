@@ -510,6 +510,12 @@
         "title": "Worker",
         "type": "object"
       }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
     }
   },
   "info": {
@@ -940,18 +946,6 @@
     "/api/media/audio-url": {
       "post": {
         "operationId": "create_audio_url_api_media_audio_url_post",
-        "parameters": [
-          {
-            "in": "header",
-            "name": "authorization",
-            "required": false,
-            "schema": {
-              "default": "",
-              "title": "Authorization",
-              "type": "string"
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1054,6 +1048,11 @@
             "description": "Internal Server Error"
           }
         },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "summary": "Create Audio Url"
       }
     },

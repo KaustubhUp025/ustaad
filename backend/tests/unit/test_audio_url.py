@@ -81,3 +81,11 @@ async def test_anything_but_a_source_voice_note_is_not_found(signer, uri):
     response = await post(uri, token())
     assert (response.status_code, response.json()["error"]["code"]) == (404, "not_found")
     assert len(signer.signed) == 1
+
+
+def test_openapi_requires_the_bearer_token_on_audio_url():
+    spec = app.openapi()
+    operation = spec["paths"]["/api/media/audio-url"]["post"]
+    assert operation["security"] == [{"HTTPBearer": []}]
+    assert spec["components"]["securitySchemes"]["HTTPBearer"] == {"type": "http", "scheme": "bearer"}
+    assert all(p["name"].lower() != "authorization" for p in operation.get("parameters", []))

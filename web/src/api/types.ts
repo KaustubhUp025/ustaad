@@ -667,9 +667,7 @@ export interface operations {
     create_audio_url_api_media_audio_url_post: {
         parameters: {
             query?: never;
-            header?: {
-                authorization?: string;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };

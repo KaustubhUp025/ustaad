@@ -16,7 +16,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | T05 | P0 | A | `make smoke-live` in hi/te/ta/bn (text turn + a recorded Hindi clip); choose `LIVE_MODEL` + `LIVE_LOCATION` | infra/smoke_live.py | both checks PASS; result in STATUS.md + DECISIONS.md | T03 | done |
 | T06 | P0 | B | Meta app, test number, 5 recipients, webhook verified on dev; real secret values | SETUP §5 | Meta shows webhook verified | T04 | todo |
 | T07 | P2 | B | Test sharing a WhatsApp export to the installed PWA on both phones | SPEC §4 | result in STATUS.md | T04 | done |
-| T08 | P0 | B (A helps) | Fill `seed/voice_note_script.md` from manuals; start recording | seed/voice_note_script.md | ≥15 notes recorded | — | todo |
+| T08 | P0 | B (A helps) | Fill `seed/voice_note_script.md` from manuals; start recording | seed/voice_note_script.md | ≥15 notes recorded | — | doing |
 
 ## Mon Oct 12 — contracts (freeze 12:00), then core
 | ID | P | Owner | Task | Read | Done when | Needs | Status |

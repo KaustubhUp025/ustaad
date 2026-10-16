@@ -68,7 +68,9 @@ No API reads groups. Use WhatsApp "Export chat → Include media".
 - iOS: `.zip` with `_chat.txt`; lines `[12/05/25, 10:41:22 AM] Ramesh: …`. Date order varies by locale.
 - Pipeline (Cloud Run Job `ingest-whatsapp`): upload to `gs://<bucket>/imports/{id}/` → parse messages → audio:
   `ffmpeg -i x.opus -ac 1 -ar 16000 x.flac` → Flash transcript `{text, language, confidence}` (keep Hinglish,
-  codes and part numbers verbatim) → photos described → threads (30-min gaps + Flash grouping) → one card per
+  codes and part numbers verbatim) → photos described → threads (Flash groups the messages, in time order, into question → answers → outcome; a
+  reply can come hours later and a new fault can start minutes after the last, so time gaps are hints, not
+  boundaries; splitting on 30-min gaps is only the fallback if the Flash call fails) → one card per
   resolved thread with sources → dedupe (same brand+code and cosine > 0.9 → merge, `verified_count++`) → embed →
   write; confidence < 0.6 → review queue. The extraction prompt sets `appliance_type`; an unclear type → review queue. Progress in `imports/{id}`. Target: 30 notes < 2 min, 8 parallel.
 - Consent: only groups whose members agree. Strip phone numbers.

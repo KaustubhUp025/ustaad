@@ -470,7 +470,7 @@ Covered in depth in §8. **Done when:** at least 15 notes recorded.
 **From T09.** `seed/fixtures/live_session.jsonl` (the G2 mock) has two placeholder step texts and an audio link that does not exist, because this script was still blank. Once the real E6 note is recorded, replace both `step_card` instructions, the `source.label` date and `source.audio_uri` with the real ones.
 ```
 ID: T08   Owner: B (A helps)   Branch: b/T08-voice-script
-Goal: fill seed/voice_note_script.md from real manuals; record into group "AC Mistri Noida"
+Goal: fill seed/voice_note_script.md from real manuals; record into group "AC Technician Noida"
 Read: seed/voice_note_script.md
 Done when: >=15 notes recorded; every code meaning traced to a manual page
 Don't touch: code
@@ -668,7 +668,7 @@ Storage imports/{id}/*  ->  1 unzip + locate chat .txt
  3 audio: ffmpeg -i x.opus -ac 1 -ar 16000 x.flac               (subprocess)
  4 transcribe via Flash -> {text, language, confidence}          (Hinglish/codes/part numbers verbatim)
  5 photos described via Flash vision
- 6 group into threads: 30-min gaps + Flash grouping
+ 6 group into threads: Flash grouping by topic (time gaps are hints); 30-min split only as fallback
  7 (T15) card per resolved thread -> dedupe -> embed -> write
 ```
 
@@ -685,7 +685,7 @@ Storage imports/{id}/*  ->  1 unzip + locate chat .txt
 1. `backend/jobs/ingest/parse.py` (inferred): `parse_chat(text) -> list[Message]`; two regexes, one per platform; detect the platform per file.
 2. `media.py`: map attachment file names to files in the export; handle missing media.
 3. `transcribe.py`: wrapper around Flash with a Pydantic `Transcript`; 8 parallel via `asyncio.Semaphore(8)` or Job tasks.
-4. `threads.py`: split on gaps over 30 min, then an optional Flash pass to merge/split. Keep the 30-minute rule deterministic and testable; the LLM pass can only refine.
+4. `threads.py`: send the messages in time order (id, speaker, time, minutes since the previous message, text or transcript or photo description) to Flash with a response schema: a list of threads, each a list of message ids (§7.3). Validate in code: every message in exactly one thread, ids in time order inside a thread; on an invalid answer or a failed call, fall back to splitting on gaps over 30 min. Unit tests use a fake Flash client: the validation, the fallback, and the two cases from the real demo export of Oct 16: an answer 1–4 h after its question joins it, and a new fault 2 min after the previous outcome starts a new thread.
 5. Progress: update `imports/{id}` counters (`audio_done`, `threads`, `status` transitions `queued -> parsing -> transcribing -> extracting -> done|failed`).
 
 **Design rules.** Parsing is pure and tested on both formats. Per-file failures are appended to `errors[]` and do not abort the import. Transcribe calls go through an injected client. Write progress at most every second or so to avoid hot-document contention in Firestore.
@@ -696,7 +696,7 @@ Storage imports/{id}/*  ->  1 unzip + locate chat .txt
 
 ```
 ID: T13 / M6   Owner: B   Branch: b/M6-ingest-parse
-Goal: ingest-whatsapp Job: parse Android+iOS, ffmpeg to FLAC, Flash transcripts, 30-min threads, progress in imports/{id}
+Goal: ingest-whatsapp Job: parse Android+iOS, ffmpeg to FLAC, Flash transcripts, Flash threads (30-min fallback), progress in imports/{id}
 Read: SPEC §4, shared/contracts/firestore.md (imports), seed/whatsapp_export_small/
 Done when:
 - make test: small export fixture -> messages + (fake) transcripts + threads equal expected.json
@@ -1020,6 +1020,8 @@ Don't touch: shared/contracts/, backend/agent/
 
 #### T24 Dashboard: knowledge base, import progress, review queue (B, P1)
 **Goal.** `/d/knowledge` list of fault "tags" in rows; `/d/import` waveform list turning into tags with live counts; review queue for low-confidence cards (approve/reject via `PATCH /api/fault-cards/{id}`). **Steps.** Poll `GET /api/imports/{id}` every 2 s; audio playback from the card's audio link (signed GET URL); show speaker, date, confidence. **Tests.** Fixture-driven component tests; G5 on laptop. **Pitfall.** Autoplay of audio; signed URL expiry (refresh on 403).
+
+**From T08 (Oct 16).** The demo group's photos are AI-generated (PRODUCT.md, honest demo). Wherever `/d/import` or `/d/knowledge` shows a photo from that import, show the label "AI-generated image" on it (an i18n string), and say once on the import screen that the voice notes are real and the photos are AI-generated.
 ```
 ID: T24 / M6   Owner: B   Branch: b/M6-dashboard
 Goal: /d/knowledge, /d/import live progress, review queue
@@ -1147,6 +1149,8 @@ Out of scope: a new Firestore index; manual metadata in Agent Search
 2. *Faster first turn after a reconnect.* The mic stays disabled until the new session's `session_ready`, and opening a Live session takes 2 to 4 s, so after a network change the worker waits. Let the mic be pressed while `reconnecting`: buffer up to about 5 s of PCM in `liveClient.ts` and send it, inside `ptt start`/`end`, once the socket is open (drop it if the reconnect fails). Recheck on 4G only: in the Wi-Fi test the phone reconnected 4 times in 3 minutes, most likely from switching networks.
 
 **From T17 (Oct 15).** Photo checks (Flash) take 5–6 s, but about 1 in 4 took ~30 s and hit `VISION_TIMEOUT_S` (30 s), so the phone asked for the photo again. While a check runs, show "still checking" on the camera sheet after ~10 s (i18n string), and let the demo cache answer the shipped sample photos so a judge never waits on a slow check.
+
+**From T08 (Oct 16).** "Try the demo" ships AI-generated sample photos (the team had no faulty units to photograph); each shows the label "AI-generated image" (i18n). The G2 safety-gate photo in the video is a real photo of our own MCB switched off.
 
 **Design rules.** The cache sits behind one wrapper used by `/api/chat` and the tool-response path; it never changes the *safety* behaviour: a cached response for a hazardous step still goes through gate logic (cache before the model, not before the safety layer).
 
@@ -1340,7 +1344,7 @@ OUTPUT: {text, language, confidence}
 Ask for a one-sentence factual description, any readable text (model numbers, code on display) and objects. Rule: describe only what is visible. **Evaluate.** 10 photos: is the visible text copied correctly.
 
 ### 7.3 Thread grouping
-Input: messages after the deterministic 30-minute split. Task: merge adjacent chunks that continue the same fault, split chunks mixing two faults. Rule: output only message ids; never rewrite messages. **Evaluate.** Gold set of threads (§8.8); count correct groupings.
+Input: all messages in time order, each with its id, speaker, time and minutes since the previous message. Task: group them into threads, one per fault: question → answers → outcome. A reply hours later still belongs to its question; a new question starts a new thread even minutes after the last; system lines ("This message was deleted", joins) belong to no thread. Rule: output only message ids; never rewrite messages. **Evaluate.** Gold set of threads (§8.8); count correct groupings.
 
 ### 7.4 Card extraction (the central prompt)
 ```
@@ -1381,7 +1385,7 @@ Part of the Live instruction (§6.3). Six questions in order. Each answer trigge
 
 | Dataset | What it is | Size | Real or synthetic | Used for | Where |
 | --- | --- | --- | --- | --- | --- |
-| **Demo export** | A real WhatsApp group "AC Mistri Noida" that you and consenting friends record, then export | ~30 voice notes, ~40 texts, ~10 photos | **Real data in the real export format**; the faults are staged, content from real manuals | The import demo (G5, M6), the cards that G2 retrieves | `seed/whatsapp_export/` (see §8.5 decision) |
+| **Demo export** | A real WhatsApp group "AC Technician Noida" that you and consenting friends record, then export | ~30 voice notes, ~40 texts, ~10 photos | **Real data in the real export format**; the faults are staged, content from real manuals | The import demo (G5, M6), the cards that G2 retrieves | `seed/whatsapp_export/` (see §8.5 decision) |
 | **Synthetic cards and jobs** | Generated by a script | ~50 cards (to make ~80 total), 200 jobs, 3 workers, 15 Noida/Ghaziabad pincodes | **Synthetic**, labelled "Synthetic"/"Demo data" (`seeded: true`) | Dashboard fullness, cluster map (S2) | generated in T25 |
 | **Unit-test fixture** | Tiny hand-built export | 3 to 5 messages, 1 to 2 tiny opus files or stubbed transcripts | Hand-made | `make test` for the parser and pipeline | `seed/whatsapp_export_small/` |
 
@@ -1395,7 +1399,7 @@ Do not let synthetic data pose as real. Do not use the large demo export in unit
 4. **Natural Hinglish**, 20 to 60 seconds, phone held normally, real background noise. Don't read from a script word for word; read the *facts*, say them your way. This tests the system honestly.
 5. **Honest labelling.** The deck says the group is staged by the team from manuals. The dashboard labels seeded data.
 6. **Keep media small.** Voice notes are small; send photos at normal quality but avoid video. The export "Include media" zip should stay in the tens of MB.
-7. **Same group name as the demo** ("AC Mistri Noida") so the import page and video match.
+7. **Same group name as the demo** ("AC Technician Noida") so the import page and video match.
 8. **Record the 6 golden photos** (real nameplates and boards) used by G2 and "Try the demo": e.g. `nameplate_voltas.jpg`, `display_e6.jpg`.
 
 ### 8.3 Step by step
@@ -1411,9 +1415,9 @@ Do not let synthetic data pose as real. Do not use the large demo export in unit
 4. Occasionally a disagreement or alternative from someone else (feeds dedupe).
 Write only bullet beats, not scripts. (Use the example codes only if the manual confirms them: the "E6" in demos is a placeholder until you confirm.)
 
-**Step 4: create the group.** WhatsApp group "AC Mistri Noida" with the team and consenting friends, 4 to 5 people so there are distinct speakers (a "senior" voice, a "junior" voice, one more).
+**Step 4: create the group.** WhatsApp group "AC Technician Noida" with the team and consenting friends, 4 to 5 people so there are distinct speakers (a "senior" voice, a "junior" voice, one more).
 
-**Step 5: schedule a recording session (60 to 90 min).** Everyone in the same session, so timestamps cluster. To create threads, **space the messages so each fault's beats are within 30 minutes of each other and different faults are separated by more than 30 minutes** (SPEC threads on 30-minute gaps). In practice: do one fault (4 messages over ~5 min), then wait or do other things, then the next. A shortcut: send faults in blocks, with a 31-minute pause every few faults, or record all and later accept that Flash grouping handles adjacent topics (don't rely on it).
+**Step 5: schedule a recording session (60 to 90 min).** Everyone in the same session, so timestamps cluster. Answer the way a real group does: replies can come minutes or hours later (Flash groups threads by topic, SPEC §4). Still keep one fault's beats together and don't interleave two faults, so the gold set (§8.8) stays unambiguous.
 *Alternative:* the timestamps on the export are real message times. Don't edit the export text to fake gaps unless you accept it is staged (editing breaks authenticity of the format; prefer real spacing).
 
 **Step 6: include deliberate messy cases.**
@@ -1801,7 +1805,7 @@ Secret Manager holds `WA_TOKEN`, `WA_APP_SECRET`, `WA_VERIFY_TOKEN`, and the Pla
 | State machine | Fixed set of states and allowed transitions (quotes, gates) |
 | STOP_REFRIGERANT / STOP_REFER | Refusal state for refrigerant work and the other stop reasons; red screen with fixed text, no audio |
 | Template (WhatsApp) | Pre-approved message format usable outside the 24-hour window |
-| Thread | A group of messages about one fault (split on 30-minute gaps plus Flash grouping) |
+| Thread | A group of messages about one fault (Flash grouping by topic; 30-minute gaps only as fallback) |
 | Vector search | Finding nearest embeddings (Firestore `find_nearest`) |
 | 24-hour window | WhatsApp rule: free-form messages only within 24 h of the user's last message to you |
 | Worktree | A separate checkout of the same repo for a parallel branch (`git worktree add`) |

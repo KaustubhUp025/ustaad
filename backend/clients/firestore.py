@@ -112,3 +112,19 @@ class InventoryStore:
             return out
 
         return run(self._db.transaction())
+
+
+class DemoCacheStore:
+    """`demo_cache/{hash}`: real model answers recorded for the demo-safe fallback (app/demo_safe.py)."""
+
+    def __init__(self, db: firestore.Client) -> None:
+        self._db = db
+
+    def get(self, key: str) -> dict | None:
+        doc = self._db.collection("demo_cache").document(key).get()
+        return doc.to_dict()["response"] if doc.exists else None
+
+    def put(self, key: str, response: dict, model: str) -> None:
+        self._db.collection("demo_cache").document(key).set(
+            {"request_hash": key, "response": response, "model": model, "created_at": firestore.SERVER_TIMESTAMP}
+        )

@@ -8,6 +8,7 @@ import './index.css'
 import './i18n'
 import Home from './routes/w/Home'
 import Job from './routes/w/Job'
+import Stock from './routes/w/Stock'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route path="/w" element={<Home />} />
           <Route path="/w/job/:id" element={<Job />} />
+          <Route path="/w/stock" element={<Stock />} />
           <Route path="*" element={<Navigate to="/w" replace />} />
         </Routes>
       </BrowserRouter>

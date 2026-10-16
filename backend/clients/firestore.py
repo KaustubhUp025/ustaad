@@ -8,6 +8,7 @@ from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
 from google.cloud.firestore_v1.vector import Vector
 
 from models.fault_card import FaultCard
+from models.inventory import InventoryItem
 from models.repair import RepairJob
 
 REPAIR_FIELDS = {"steps", "gates", "current_step", "media"}
@@ -74,3 +75,40 @@ class CardStore:
     def save(self, card: FaultCard, vector: list[float]) -> None:
         data = {k: v for k, v in card.to_public_dict().items() if k != "id"}
         self._db.collection("fault_cards").document(card.id).set(data | {"embedding": Vector(vector)})
+
+
+def _inventory_item(snapshot: firestore.DocumentSnapshot) -> InventoryItem:
+    data = snapshot.to_dict() or {}
+    # firestore.md: the entity's id is the document ID; a stored id that disagrees is a broken document.
+    if data.get("id", snapshot.id) != snapshot.id:
+        raise ValueError(f"inventory document {snapshot.id} holds another id")
+    return InventoryItem.model_validate(data | {"id": snapshot.id})
+
+
+class InventoryStore:
+    """`workers/{wid}/inventory/{part_id}`."""
+
+    def __init__(self, db: firestore.Client) -> None:
+        self._db = db
+
+    def _parts(self, worker_id: str) -> firestore.CollectionReference:
+        return self._db.collection("workers").document(worker_id).collection("inventory")
+
+    def items(self, worker_id: str) -> list[InventoryItem]:
+        return [_inventory_item(doc) for doc in self._parts(worker_id).stream()]
+
+    def update[T](
+        self, worker_id: str, change: Callable[[list[InventoryItem]], tuple[T, list[InventoryItem]]]
+    ) -> T:
+        """Runs `change` on his stock in a transaction, so two quick updates cannot both start from the same qty;
+        `change` returns its result and the parts it changed."""
+        parts = self._parts(worker_id)
+
+        @firestore.transactional
+        def run(tx: firestore.Transaction) -> T:
+            out, changed = change([_inventory_item(doc) for doc in parts.stream(transaction=tx)])
+            for item in changed:
+                tx.set(parts.document(item.id), item.model_dump(mode="json", exclude={"id"}))
+            return out
+
+        return run(self._db.transaction())

@@ -1,23 +1,23 @@
-import json
+"""GET / PATCH /api/inventory (rest.md, BUILD-GUIDE T18) against an in-memory store: still offline. Replaces the T10
+fixture-only tests (GET replayed inventory.json; PATCH was not registered), as T18 adds the store and PATCH."""
+
 import socket
-from pathlib import Path
 
 import google.auth
 import httpx
 import pytest
 from google.cloud import firestore, storage
 
-from app.inventory import FIXTURE_PATH
+from app.inventory import inventory_store
 from app.main import app
 from models.inventory import InventoryListResponse
-
-BACKEND_ROOT = Path(__file__).parents[2]
+from tests.unit.fake_inventory import FakeInventoryStore, stock
 
 
 @pytest.fixture(autouse=True)
 def forbid_external_services(monkeypatch):
     def forbidden(*args, **kwargs):
-        raise AssertionError("inventory fixture route must stay offline")
+        raise AssertionError("inventory route tests must stay offline")
 
     monkeypatch.setattr(socket.socket, "connect", forbidden)
     monkeypatch.setattr(socket.socket, "connect_ex", forbidden)
@@ -28,28 +28,48 @@ def forbid_external_services(monkeypatch):
     monkeypatch.setattr(storage, "Client", forbidden)
 
 
-async def test_inventory_replays_fixture_through_response_model():
-    assert FIXTURE_PATH.is_relative_to(BACKEND_ROOT)
-    assert FIXTURE_PATH.is_file()
-    fixture = json.loads(FIXTURE_PATH.read_text())
-    transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.get("/api/inventory")
+@pytest.fixture
+def store():
+    fake = FakeInventoryStore(stock())
+    app.dependency_overrides[inventory_store] = lambda: fake
+    yield fake
+    app.dependency_overrides.clear()
 
+
+async def call(method, json=None):
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+        return await client.request(method, "/api/inventory", json=json)
+
+
+async def test_get_lists_the_workers_stock_through_the_response_model(store):
+    response = await call("GET")
     assert response.status_code == 200
-    assert response.json() == fixture
-    validated = InventoryListResponse.model_validate(response.json())
-    assert validated.model_dump(mode="json") == fixture
-    assert [item["qty"] for item in response.json()["items"]] == [5, 0]
-    assert response.json()["items"][1]["category"] is None
-    assert response.json()["items"][1]["unit_cost_inr"] is None
-    assert all(item["updated_at"] == "2026-10-13T12:00:00Z" for item in response.json()["items"])
+    items = InventoryListResponse.model_validate(response.json()).items
+    assert [(i.id, i.qty) for i in items] == [("part_cap25", 5), ("part_pcb", 0), ("part_tape", 10)]
 
 
-async def test_inventory_does_not_register_patch_and_preserves_error_envelope():
-    transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.patch("/api/inventory", json={"deltas": []})
+async def test_patch_applies_the_deltas_and_returns_the_list(store):
+    response = await call("PATCH", {"deltas": [{"part": "capacitor 2.5uF", "delta": -2}]})
+    assert response.status_code == 200
+    cap = next(i for i in response.json()["items"] if i["id"] == "part_cap25")
+    assert (cap["qty"], cap["source"]) == (3, "manual")
 
-    assert response.status_code == 405
-    assert response.json() == {"error": {"code": "http_error", "message": "Request failed"}}
+
+@pytest.mark.parametrize(
+    ("deltas", "status", "code"),
+    [
+        ([{"part": "compressor", "delta": 1}], 404, "not_found"),
+        ([{"part": "Outdoor PCB", "delta": -1}], 409, "conflict"),
+        ([{"part": "capacitor", "delta": -1}, {"part": "compressor", "delta": 1}], 404, "not_found"),
+    ],
+)
+async def test_a_failed_patch_changes_nothing_and_keeps_the_error_envelope(store, deltas, status, code):
+    response = await call("PATCH", {"deltas": deltas})
+    assert response.status_code == status
+    assert response.json()["error"]["code"] == code
+    assert store.by_worker["w_hi_demo"]["part_cap25"].qty == 5
+
+
+async def test_an_empty_patch_is_a_validation_error(store):
+    response = await call("PATCH", {"deltas": []})
+    assert (response.status_code, response.json()["error"]["code"]) == (422, "validation_error")

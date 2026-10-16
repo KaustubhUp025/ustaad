@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 import { useHealth } from '@/api/health'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,9 @@ export default function Home() {
             {t('health.retry')}
           </Button>
         )}
+        <Button asChild variant="outline" className="h-(--touch) px-6 text-[length:var(--text-body)]">
+          <Link to="/w/stock">{t('stock.open')}</Link>
+        </Button>
       </section>
     </main>
   )

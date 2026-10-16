@@ -20,8 +20,9 @@ from pydantic import ValidationError
 
 from agent.media_tools import MediaDesk
 from agent.ustaad import build_ustaad
+from app.inventory import DEMO_WORKER_ID
 from app.live_events import to_frames
-from clients.firestore import CardStore, JobStore
+from clients.firestore import CardStore, InventoryStore, JobStore
 from models.ws import (
     Error,
     Frame,
@@ -62,11 +63,16 @@ async def live_events(
     db = firestore.Client(database=os.environ["FIRESTORE_DB"])
     jobs = JobStore(db)
     runner = InMemoryRunner(
-        agent=build_ustaad(os.environ["LIVE_MODEL"], os.environ["LIVE_LOCATION"], jobs, CardStore(db), desk), app_name=APP
+        agent=build_ustaad(
+            os.environ["LIVE_MODEL"], os.environ["LIVE_LOCATION"], jobs, CardStore(db), InventoryStore(db), desk
+        ),
+        app_name=APP,
     )
     # The repair tools and the gate callback read the job from here; the model never chooses it.
     session = await runner.session_service.create_session(
-        app_name=APP, user_id="demo", state={"language_name": language_name, "lang": lang, "job_id": job_id}
+        app_name=APP,
+        user_id="demo",
+        state={"language_name": language_name, "lang": lang, "job_id": job_id, "worker_id": DEMO_WORKER_ID},
     )
     config = RunConfig(
         streaming_mode=StreamingMode.BIDI,

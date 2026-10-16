@@ -51,5 +51,20 @@
     "blurry": "Photo is blurry. Hold the phone still and move a little closer.",
     "ownTitle": "Take a photo of what you want to show",
     "zoom": "Zoom {{n}} times"
+  },
+  "stock": {
+    "title": "Stock",
+    "open": "See stock",
+    "demo": "Demo data",
+    "loading": "Loading your stock…",
+    "error": "Stock didn't load. Check your network, then try again.",
+    "retry": "Try again",
+    "empty": "No parts yet. Tell Ustaad what you bought, like \"bought two capacitors\".",
+    "low": "Running low",
+    "out": "Out of stock",
+    "less": "One less {{name}}",
+    "more": "One more {{name}}",
+    "inStock": "{{qty}} in stock",
+    "saveFailed": "The count didn't change. Check your network, then try again."
   }
 }

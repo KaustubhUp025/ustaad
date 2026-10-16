@@ -205,3 +205,31 @@ class CardHit(BaseModel):
 
 class SearchFaultCardsOut(BaseModel):
     cards: list[CardHit]
+
+
+StockErrorReason = Literal["unknown_part", "ambiguous_part", "below_zero"]
+
+
+class StockLine(BaseModel):
+    """One part's stock as the agent and the `stock` frame see it."""
+
+    part: str
+    qty: int
+    min_qty: int
+    low: bool
+
+
+class CheckInventoryOut(BaseModel):
+    # Empty: he doesn't stock it. More than one: ask which he means.
+    items: list[StockLine]
+
+
+class InventoryUpdated(BaseModel):
+    status: Literal["UPDATED"] = "UPDATED"
+    items: list[StockLine]
+
+
+class InventoryNotUpdated(BaseModel):
+    status: Literal["NOT_UPDATED"] = "NOT_UPDATED"
+    reason: StockErrorReason | Literal["bad_delta"]
+    part: str

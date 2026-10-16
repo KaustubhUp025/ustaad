@@ -44,6 +44,44 @@
         "title": "ErrorResponse",
         "type": "object"
       },
+      "InventoryDelta": {
+        "additionalProperties": false,
+        "properties": {
+          "delta": {
+            "title": "Delta",
+            "type": "integer"
+          },
+          "part": {
+            "pattern": "\\S",
+            "title": "Part",
+            "type": "string"
+          }
+        },
+        "required": [
+          "part",
+          "delta"
+        ],
+        "title": "InventoryDelta",
+        "type": "object"
+      },
+      "InventoryDeltaRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "deltas": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryDelta"
+            },
+            "minItems": 1,
+            "title": "Deltas",
+            "type": "array"
+          }
+        },
+        "required": [
+          "deltas"
+        ],
+        "title": "InventoryDeltaRequest",
+        "type": "object"
+      },
       "InventoryItem": {
         "additionalProperties": false,
         "properties": {
@@ -470,6 +508,112 @@
           }
         },
         "summary": "List Inventory"
+      },
+      "patch": {
+        "operationId": "update_inventory_api_inventory_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryDeltaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Update Inventory"
       }
     },
     "/api/media/upload-url": {

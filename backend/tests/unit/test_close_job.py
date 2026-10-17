@@ -37,6 +37,12 @@ def test_closing_drafts_a_job_card_for_review_with_the_jobs_photo():
     assert card.review_status == "needs_review"
 
 
+def test_a_job_with_only_a_gate_photo_and_no_type_still_closes():
+    # Phone test (Oct 17): photo_uri=None reached the strict card model and the crash ended the Live session.
+    _, _, card = close_job(answers(appliance_type=None, brand=None), job(media=FIXTURE["job"]["media"][:1]), "fc_1", NOW)
+    assert (card.photo_uri, card.appliance_type, card.brand) == (None, None, "")
+
+
 def test_the_card_hazard_is_never_below_the_jobs_steps():
     _, _, card = close_job(answers(), job(), "fc_job1", NOW)
     assert card.hazard == "capacitor"

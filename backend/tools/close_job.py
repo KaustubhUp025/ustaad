@@ -3,6 +3,7 @@ teaches the next one. Pure: the agent wrapper embeds and saves the card and chan
 
 from datetime import datetime
 
+from jobs.ingest.cards import present
 from jobs.ingest.dedupe import LEVELS
 from models.fault_card import FaultCard, FaultCardPart, FaultCardSource
 from models.inventory import InventoryDelta
@@ -26,20 +27,22 @@ def close_job(
     # The photo Ustaad asked for and read; a gate photo carries no findings and only shows the MCB.
     photo = next((m.uri for m in reversed(job.media) if m.kind == "photo" and m.findings), None)
     card = FaultCard(
-        id=card_id,
-        created_at=now,
-        photo_uri=photo,
-        brand=canonical_brand(inp.brand or ""),
-        appliance_type=inp.appliance_type,
-        error_code=inp.error_code or "",
-        symptom=inp.symptom,
-        root_cause=inp.outcome,
-        fix_steps=[inp.fix_summary],
-        parts=[FaultCardPart(name=p.part) for p in inp.parts_used],
-        hazard=max((s.hazard for s in job.steps), key=LEVELS.index, default="none"),
-        source=FaultCardSource(type="job", date=now.date().isoformat()),
-        confidence=JOB_CARD_CONFIDENCE,
-        review_status="needs_review",
+        **present(
+            id=card_id,
+            created_at=now,
+            photo_uri=photo,
+            brand=canonical_brand(inp.brand or ""),
+            appliance_type=inp.appliance_type,
+            error_code=inp.error_code or "",
+            symptom=inp.symptom,
+            root_cause=inp.outcome,
+            fix_steps=[inp.fix_summary],
+            parts=[FaultCardPart(name=p.part) for p in inp.parts_used],
+            hazard=max((s.hazard for s in job.steps), key=LEVELS.index, default="none"),
+            source=FaultCardSource(type="job", date=now.date().isoformat()),
+            confidence=JOB_CARD_CONFIDENCE,
+            review_status="needs_review",
+        )
     )
     closed = job.model_copy(
         update={"status": "closed", "outcome": inp.outcome, "parts_used": inp.parts_used, "closed_at": now}

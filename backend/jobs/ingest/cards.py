@@ -56,7 +56,7 @@ def prompt(thread: list[ThreadMessage]) -> str:
     return PROMPT + "\n".join(lines)
 
 
-def _set(**fields) -> dict:
+def present(**fields) -> dict:
     # The contract models take a missing optional field as unset, not None.
     return {k: v for k, v in fields.items() if v is not None}
 
@@ -99,7 +99,7 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
     # Credited as voice only with its stored audio: the source chip must have something to play.
     voice = fix is not None and fix.kind == "voice" and fix.audio_uri is not None
     source = FaultCardSource(
-        **_set(
+        **present(
             type="whatsapp_voice" if voice else "whatsapp_text",
             author=fix and _first_name(fix.speaker),
             date=fix and fix.ts.astimezone(EXPORT_TZ).date().isoformat(),
@@ -108,7 +108,7 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
         )
     )
     return FaultCard(
-        **_set(
+        **present(
             id=card_id,
             created_at=now,
             # A thread that names no brand gives a general card: search offers it for every brand.

@@ -3,7 +3,7 @@ Defined once here; the Job, FaultCard and WebSocket models import them."""
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 Hazard = Literal["none", "HV", "capacitor", "refrigerant"]
 ApplianceType = Literal[
@@ -17,6 +17,7 @@ TRADE_TYPES: dict[Trade, list[ApplianceType]] = {
 }
 GateId = Literal["G_MAINS_OFF", "G_CAP_DISCHARGE"]
 GateState = Literal["open", "passed", "failed"]
+JobStatus = Literal["open", "guiding", "waiting_part", "closed"]
 MediaKind = Literal["photo", "video", "document"]
 # Why a photo is on the job: Ustaad asked for it, or the worker sent it himself (a side issue or a manual page).
 MediaReason = Literal["requested", "side_issue", "manual"]
@@ -64,6 +65,14 @@ class JobMedia(BaseModel):
     reason: MediaReason | None = None
 
 
+class PartUsed(BaseModel):
+    """One entry of `jobs.parts_used[]`."""
+
+    model_config = ConfigDict(extra="forbid")
+    part: str
+    qty: Annotated[int, Field(ge=1)]
+
+
 class RepairJob(BaseModel):
     """The part of `jobs/{jid}` the repair, gate and media tools read and write. A new job has all gates open."""
 
@@ -73,3 +82,8 @@ class RepairJob(BaseModel):
     gates: dict[GateId, GateState] = {"G_MAINS_OFF": "open", "G_CAP_DISCHARGE": "open"}
     current_step: Annotated[int, Field(ge=0)] = 0
     media: list[JobMedia] = []
+    # Set by close_job (T22).
+    status: JobStatus = "open"
+    outcome: str | None = None
+    parts_used: list[PartUsed] = []
+    closed_at: AwareDatetime | None = None

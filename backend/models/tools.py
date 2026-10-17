@@ -141,6 +141,13 @@ class StepOut(BaseModel):
     job_id: str
     of: int
     step: RepairStep
+    translation_lang: str | None = None
+
+
+class StepTranslations(BaseModel):
+    """Flash's translation of a job's steps: one line per step, in order."""
+
+    lines: list[str]
 
 
 class SafetyGateOut(BaseModel):

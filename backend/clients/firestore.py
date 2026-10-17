@@ -13,7 +13,7 @@ from models.inventory import InventoryItem
 from models.repair import RepairJob
 from models.worker import Worker
 
-REPAIR_FIELDS = {"steps", "gates", "current_step", "media", "status", "outcome", "parts_used", "closed_at"}
+REPAIR_FIELDS = {"steps", "gates", "current_step", "media", "status", "outcome", "parts_used", "closed_at", "translation_lang"}
 DISTANCE = "distance"
 
 

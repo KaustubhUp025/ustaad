@@ -11,7 +11,7 @@ from google.genai import types
 from agent.media_tools import MediaDesk
 from clients.firestore import JobStore
 from clients.gemini import ask_json
-from models.tools import ProposedStep, StartRepairIn, StepTranslations
+from models.tools import AlreadyParked, ParkedPlan, ProposedStep, StartRepairIn, StepTranslations
 from tools import repair, translate_steps
 from tools.gates import open_gate
 
@@ -68,7 +68,31 @@ def repair_tools(jobs: JobStore, desk: MediaDesk, ask: Ask = ask_json) -> list[F
         note when it passes. DONE means every step was given."""
         return jobs.update(tool_context.state["job_id"], repair.next_step).model_dump(mode="json")
 
-    tools = [FunctionTool(start_repair), FunctionTool(next_step)]
+    def park_repair(tool_context: ToolContext, issue: str) -> dict:
+        """He wants to deal with a side issue now ("abhi"): keeps the repair at the step he is on. Then start_repair
+        for the side issue as for any repair, and resume_repair when it is done. `issue` in a few words.
+        ALREADY_PARKED: one side issue is open already; tell him you noted this one and will come back to it.
+        NOTHING_TO_PARK: no step was given yet, so just deal with it."""
+        state = tool_context.state
+        if state.get("parked"):
+            state["side_issues"] = [*(state.get("side_issues") or []), issue]
+            return AlreadyParked(noted=issue).model_dump(mode="json")
+        out, plan = repair.park(jobs.load(state["job_id"]), issue)
+        if plan is not None:
+            state["parked"] = plan.model_dump(mode="json")
+        return out.model_dump(mode="json")
+
+    def resume_repair(tool_context: ToolContext) -> dict:
+        """Back to the repair he was on: after he chose "baad mein" (later) for a side issue, or when the side issue
+        is done. Gives the step he was on again, on his screen, through its safety gates; say it as you would a
+        next_step result. SAFETY_GATE: his phone asks for that photo first."""
+        state = tool_context.state
+        parked = ParkedPlan.model_validate(state["parked"]) if state.get("parked") else None
+        out = jobs.update(state["job_id"], lambda job: repair.resume(job, parked))
+        state["parked"] = None
+        return out.model_dump(mode="json")
+
+    tools = [FunctionTool(start_repair), FunctionTool(next_step), FunctionTool(park_repair), FunctionTool(resume_repair)]
     for tool in tools:
         tool.behavior = types.Behavior.BLOCKING
     return tools

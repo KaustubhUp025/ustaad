@@ -24,8 +24,9 @@ def close_job(
     gate = open_gate(job)
     if gate:
         return SafetyGateOut(gate_id=gate, required_evidence=EVIDENCE[gate]), job, None
-    # The photo Ustaad asked for and read; a gate photo carries no findings and only shows the MCB.
-    photo = next((m.uri for m in reversed(job.media) if m.kind == "photo" and m.findings), None)
+    # The photo Ustaad asked for and read; a gate photo carries no findings and only shows the MCB, and a side issue's
+    # photo belongs to its own card.
+    photo = _photo(job, main=True)
     card = FaultCard(
         **present(
             id=card_id,
@@ -48,6 +49,42 @@ def close_job(
         update={"status": "closed", "outcome": inp.outcome, "parts_used": inp.parts_used, "closed_at": now}
     )
     return Closed(card_id=card_id), closed, card
+
+
+def side_card(inp: CloseJobIn, job: RepairJob, card_id: str, now: datetime) -> FaultCard | None:
+    """A side issue he fixed on this job, drafted into its own card for review, tagged with the job's code (S7)."""
+    fix = inp.side_fix
+    if fix is None:
+        return None
+    return FaultCard(
+        **present(
+            id=card_id,
+            created_at=now,
+            photo_uri=_photo(job, main=False),
+            brand=canonical_brand(inp.brand or ""),
+            appliance_type=inp.appliance_type,
+            error_code="",
+            symptom=f"{fix.symptom} (found while fixing {inp.error_code or inp.symptom})",
+            root_cause=fix.outcome,
+            fix_steps=[fix.fix_summary],
+            parts=[],
+            hazard="none",
+            source=FaultCardSource(type="job", date=now.date().isoformat()),
+            confidence=JOB_CARD_CONFIDENCE,
+            review_status="needs_review",
+        )
+    )
+
+
+def _photo(job: RepairJob, main: bool) -> str | None:
+    return next(
+        (
+            m.uri
+            for m in reversed(job.media)
+            if m.kind == "photo" and m.findings and (m.reason == "side_issue") != main
+        ),
+        None,
+    )
 
 
 def stock_deltas(parts: list[PartUsed]) -> list[InventoryDelta]:

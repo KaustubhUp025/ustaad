@@ -9,6 +9,9 @@ from models.tools import (
     ConfirmSafetyOut,
     GateCheck,
     ManualPage,
+    NothingToPark,
+    Parked,
+    ParkedPlan,
     PlannedStep,
     RepairDone,
     SafetyGateOut,
@@ -61,8 +64,9 @@ def start_repair(
     steps = [
         RepairStep(n=n, instruction=i, instruction_en=e, hazard=h, source=s) for n, (i, e, h, s) in enumerate(drafts, 1)
     ]
-    # A new plan starts with every gate open: power may have been switched back on since the last plan.
-    job = RepairJob(job_id=job.job_id, steps=steps)
+    # A new plan starts with every gate open: power may have been switched back on since the last plan. The job's
+    # photos stay: a side finding logged before a side plan is not lost (S7).
+    job = RepairJob(job_id=job.job_id, steps=steps, media=job.media)
     return Started(of=len(steps), steps=[PlannedStep(n=s.n, hazard=s.hazard, source=s.source) for s in steps]), job
 
 
@@ -78,6 +82,28 @@ def next_step(job: RepairJob) -> tuple[StepOut | SafetyGateOut | RepairDone, Rep
     return out, job.model_copy(
         update={"current_step": job.current_step + 1}
     )
+
+
+def park(job: RepairJob, issue: str) -> tuple[Parked | NothingToPark, ParkedPlan | None]:
+    """The main repair at the step he is on, kept while a side issue is dealt with now (S7)."""
+    if job.current_step == 0:
+        return NothingToPark(), None
+    plan = ParkedPlan(steps=job.steps, current_step=job.current_step, translation_lang=job.translation_lang, issue=issue)
+    return Parked(n=job.current_step, of=len(job.steps)), plan
+
+
+def resume(job: RepairJob, parked: ParkedPlan | None) -> tuple[StepOut | SafetyGateOut | RepairDone, RepairJob]:
+    """The step he was on, again, through next_step and its gates. A parked plan comes back with every gate open:
+    the side work was a plan of its own (SAFETY.md), and power may be back on."""
+    if parked is not None:
+        job = RepairJob(
+            job_id=job.job_id,
+            steps=parked.steps,
+            current_step=parked.current_step,
+            translation_lang=parked.translation_lang,
+            media=job.media,
+        )
+    return next_step(job.model_copy(update={"current_step": max(job.current_step - 1, 0)}))
 
 
 def step_card(out: StepOut, lang: str) -> StepCard:

@@ -40,7 +40,8 @@ def fake_client(monkeypatch):
 def retries(kwargs: dict) -> bool:
     options = kwargs.get("http_options")
     # The SDK's defaults (5 attempts, exponential backoff) retry 408, 429 and 5xx (google.genai._api_client).
-    return options is not None and options.retry_options is not None
+    # A hung call raises httpx.TimeoutException after `timeout`, which the SDK also retries.
+    return options is not None and options.retry_options is not None and options.timeout is not None
 
 
 async def test_import_calls_retry_transient_errors(tmp_path: Path):

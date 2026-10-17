@@ -10,8 +10,9 @@ from pydantic import BaseModel
 
 # Vertex answers Flash with transient 429s even at one call at a time (Oct 17 dev import lost 8 of 19 attachments and
 # the thread grouping to them). The SDK only retries when asked; its defaults retry 408, 429 and 5xx 5 times with
-# 1-8 s backoff. Not on read_photo: a live gate check fails fast and the worker retakes.
-RETRY = types.HttpOptions(retry_options=types.HttpRetryOptions())
+# 1-8 s backoff. A call that hangs (seen on the same run) times out after 2 min and is retried like a 429. Not on
+# read_photo: a live gate check fails fast and the worker retakes.
+RETRY = types.HttpOptions(timeout=120_000, retry_options=types.HttpRetryOptions())
 
 
 async def read_photo[M: BaseModel](question: str, media_uri: str, schema: type[M]) -> M:

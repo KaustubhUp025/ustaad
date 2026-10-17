@@ -138,9 +138,9 @@ async def test_complete_offline_job_persists_lifecycle_counts_and_generated_audi
     assert cards.saved[0].source.audio_uri == storage.uploads[0]
 
 
-async def test_done_import_is_idempotently_skipped(tmp_path):
+async def test_done_import_is_idempotent(tmp_path):
     imports = FakeImports(status="done")
-    deps = ImportJobDependencies.unused_for_skip(imports=imports, workspace=tmp_path)
+    deps = ImportJobDependencies(imports=imports, workspace=tmp_path)
 
     assert await run_ingest_job("i_done", "ustaad101-media", deps) is True
     assert imports.updates == []

@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-from jobs.ingest.cards import EXTRACTION_FAILED, card_from_draft, import_cards
+from jobs.ingest.cards import EXTRACTION_FAILED, card_from_draft, card_text, import_cards
 from models.imports import CardDraft, ThreadMessage
 from tests.unit.fake_cards import FakeCardStore, embed
 
@@ -246,3 +246,34 @@ def test_the_card_keeps_the_drafts_english_beside_the_words_as_said():
 def test_a_draft_without_english_symptom_leaves_it_unset():
     public = card_from_draft(draft(), THREAD, "fc_1", NOW).to_public_dict()
     assert "symptom_en" not in public and "root_cause_en" not in public
+
+
+ENGLISH = {"symptom_en": "Test English symptom", "root_cause_en": "Test English cause", "fix_steps_en": ["Test en"]}
+
+
+def test_the_stored_english_never_changes_the_embedded_text():
+    card = card_from_draft(draft(), THREAD, "fc_1", NOW)
+    for changed in ({k: None for k in ENGLISH}, ENGLISH, {"fix_steps_en": ["Test capacitor gas brazing"]}):
+        assert card_text(card.model_copy(update=changed)) == card_text(card)
+
+
+@pytest.mark.parametrize(
+    ("changes", "stripped"),
+    [
+        ({"steps": [{"text": "Test step one", "summary_en": " ", "hazard": "none"}]}, {"fix_steps_en"}),
+        ({"symptom_en": "", "root_cause_en": "Test English cause"}, {"symptom_en"}),
+        ({"symptom_en": "Test English symptom", "root_cause_en": "  "}, {"root_cause_en"}),
+    ],
+)
+async def test_an_unusable_english_line_strips_only_that_english_and_the_card_is_still_saved(changes, stripped):
+    async def ask(prompt: str, schema: type) -> CardDraft:
+        return draft(**{"symptom_en": "Test English symptom", "root_cause_en": "Test English cause"} | changes)
+
+    store = FakeCardStore()
+    counts = await import_cards([THREAD], ask, embed, store, NOW)
+    ((card, _),) = store.cards.values()
+    assert counts.cards_created == 1
+    assert (card.symptom, card.root_cause, card.fix_steps) == ("Test symptom", "Test cause", ["Test step one"])
+    public = card.to_public_dict()
+    assert stripped.isdisjoint(public) and (set(ENGLISH) - stripped) <= set(public)
+    assert (card.hazard, card.review_status) == (card_from_draft(draft(), THREAD, "fc_2", NOW).hazard, "auto")

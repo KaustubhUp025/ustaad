@@ -61,6 +61,16 @@ def _set(**fields) -> dict:
     return {k: v for k, v in fields.items() if v is not None}
 
 
+def _usable(english: str | None) -> str | None:
+    return (english.strip() or None) if english else None
+
+
+def _usable_steps(english: list[str]) -> list[str] | None:
+    # All or nothing, so item i still translates fix_steps[i].
+    lines = [_usable(line) for line in english]
+    return None if None in lines else lines
+
+
 def card_text(card: FaultCard) -> str:
     """The text embedded for a card; search embeds its query against these."""
     parts = (card.brand, card.model, card.error_code, card.symptom, card.root_cause, *card.fix_steps)
@@ -109,9 +119,10 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
             symptom=draft.symptom,
             root_cause=draft.root_cause,
             fix_steps=[s.text for s in draft.steps],
-            symptom_en=draft.symptom_en,
-            root_cause_en=draft.root_cause_en,
-            fix_steps_en=[s.summary_en for s in draft.steps],
+            # Display-only: an unusable English line is dropped and the card is saved without it.
+            symptom_en=_usable(draft.symptom_en),
+            root_cause_en=_usable(draft.root_cause_en),
+            fix_steps_en=_usable_steps([s.summary_en for s in draft.steps]),
             parts=draft.parts,
             hazard=hazard,
             source=source,

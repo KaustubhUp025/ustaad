@@ -17,5 +17,6 @@ document.documentElement.lang = lng
 i18n.use(initReactI18next).init({
   resources: Object.fromEntries(Object.entries(resources).map(([k, v]) => [k, { translation: v }])),
   lng,
+  fallbackLng: 'en',
   interpolation: { escapeValue: false },
 })

@@ -1,24 +1,162 @@
 {
   "voltas_error_table": {
     "legible": true,
-    "confidence": 0.92,
-    "brand": "Voltas",
-    "model": null,
-    "page_title": "Troubleshooting",
+    "confidence": 0.95,
+    "brand": "VOLTAS",
+    "model": "ODU TYPE-2 :- DC FAN MOTOR WITH EEV",
+    "page_title": "Instructions for Installation",
     "error_codes": [
-      {"code": "EE", "meaning": "Indoor machine EE fault"},
-      {"code": "E1", "meaning": "Indoor fan fault"},
-      {"code": "E2", "meaning": "Indoor fan zero-crossing detection abnormal"},
-      {"code": "E3", "meaning": "Indoor coil fault and sensor fault"}
+      {
+        "code": "EE",
+        "meaning": "Indoor machine EE fault"
+      },
+      {
+        "code": "E1",
+        "meaning": "Indoor fan fault"
+      },
+      {
+        "code": "E2",
+        "meaning": "Indoor fan zero-crossing detection abnormal"
+      },
+      {
+        "code": "E3",
+        "meaning": "Indoor coil fault and sensor fault"
+      },
+      {
+        "code": "E4",
+        "meaning": "Indoor ambient temperature sensor fault"
+      },
+      {
+        "code": "E0",
+        "meaning": "Outdoor EE fault"
+      },
+      {
+        "code": "E6",
+        "meaning": "Indoor and outdoor machine communication fault"
+      },
+      {
+        "code": "F1",
+        "meaning": "Compressor starting abnormal (phase failure, reverse)"
+      },
+      {
+        "code": "F2",
+        "meaning": "Compressor out-of-step fault"
+      },
+      {
+        "code": "F3",
+        "meaning": "IPM module fault"
+      },
+      {
+        "code": "F4",
+        "meaning": "Compressor shell roof fault/protection"
+      },
+      {
+        "code": "F5",
+        "meaning": "Discharge temperature sensor fault"
+      },
+      {
+        "code": "F6",
+        "meaning": "Suction temperature sensor fault"
+      },
+      {
+        "code": "F7",
+        "meaning": "Outdoor coil temperature sensor fault"
+      },
+      {
+        "code": "F8",
+        "meaning": "Outdoor ambient temperature sensor fault"
+      },
+      {
+        "code": "F9",
+        "meaning": "Outdoor DC fan fault"
+      },
+      {
+        "code": "E8",
+        "meaning": "Outdoor communication fault"
+      },
+      {
+        "code": "P1",
+        "meaning": "Outdoor machine AC current protection"
+      },
+      {
+        "code": "P2",
+        "meaning": "Compressor phase current protection"
+      },
+      {
+        "code": "P3",
+        "meaning": "Outdoor unit over-high/over-low AC voltage protection"
+      },
+      {
+        "code": "P4",
+        "meaning": "DC voltage over-high or over-low voltage protection"
+      },
+      {
+        "code": "P5",
+        "meaning": "IPM over-high temperature protection"
+      },
+      {
+        "code": "P6",
+        "meaning": "Discharge temperature overheat protection"
+      },
+      {
+        "code": "P7",
+        "meaning": "Cooling indoor coil anti-freezing protection"
+      },
+      {
+        "code": "P8",
+        "meaning": "Cooling outdoor coil overheat protection"
+      },
+      {
+        "code": "P9",
+        "meaning": "Heating indoor coil overheat protection"
+      },
+      {
+        "code": "PC",
+        "meaning": "Cooling outdoor ambient temperature over-low protection"
+      },
+      {
+        "code": "PH",
+        "meaning": "Heating outdoor ambient temperature over-high protection"
+      },
+      {
+        "code": "L1",
+        "meaning": "Drive bus voltage over-high protection"
+      },
+      {
+        "code": "L2",
+        "meaning": "Drive bus voltage over-low protection"
+      },
+      {
+        "code": "L3",
+        "meaning": "Drive phase current overload fault"
+      },
+      {
+        "code": "L4",
+        "meaning": "Phase current sampling abnormal"
+      },
+      {
+        "code": "E9",
+        "meaning": "Wi-Fi Module Fault"
+      }
     ],
-    "steps": [],
+    "steps": [
+      {
+        "instruction": "Fault codes will show on display board once occur. Protection codes will not show on the display board directly. But customer can check these protection codes by pressing the \"WIFI\" / \"ADJ\" button 8 times in 10 seconds constantly. If there no protection is activated, \"00\" exhibits on the display board.",
+        "summary_en": "Check protection codes by pressing WIFI or ADJ eight times within ten seconds."
+      },
+      {
+        "instruction": "For Wi-Fi Model E9 Error (Wi-Fi Module Fault) can be seen while pressing the Emergency switch & power ON the IDU (Test Mode)",
+        "summary_en": "Enter Test Mode by pressing the Emergency switch while powering ON the indoor unit to check for Wi-Fi module errors."
+      }
+    ],
     "warnings": [
-      "DUE TO HIGH VOLTAGE, DO NOT TOUCH THE TERMINALS IN THE CONTROL BOARD DURING OPERATION AND 5 MINUTES AFTER SWITCHING OFF. NEXT, CONFIRM THE VOLTAGE RECTIFICATION CIRCUIT BETWEEN DIODE BRIDGE (+) AND (-) HAS DROPPED TO BELOW 42V, BEFORE ACCESSING THE TERMINALS IN THE CONTROL BOARD."
+      "DUE TO HIGH VOLTAGE, DO NOT TOUCH THE TERMINALS IN THE CONTROL BOARD DURING OPERATION AND 5 MINUTES AFTER SWITCHING OFF. NEXT, CONFIRM THE VOLTAGE RECTIFICATION CIRCUIT BETWEEN DIODE BRIDGE (+) AND (-) HAS DROPPED TO BELOW 42V, BEFORE ACCESSING TO THE TERMINALS IN THE CONTROL BOARD.",
+      "NOTE- 1. THE WIRING DIAGRAM IS ONLY FOR EXPLANATION PURPOSE. 2. THE ACTUAL SHAPE OF COMPONENT AND PCB MAY BE DIFFERENT."
     ]
   },
   "blurry": {
     "legible": false,
-    "confidence": 0.3,
+    "confidence": 0.0,
     "brand": null,
     "model": null,
     "page_title": null,
@@ -51,7 +189,12 @@
     "brand": "Daikin",
     "model": null,
     "page_title": null,
-    "error_codes": [{"code": "61", "meaning": "Cond. Pipe sensor temp. high"}],
+    "error_codes": [
+      {
+        "code": "61",
+        "meaning": "Cond. Pipe sensor temp. high"
+      }
+    ],
     "steps": [
       {
         "instruction": "Check the load condition. (Refrigerant, Pipe length, Blocked, ...)",

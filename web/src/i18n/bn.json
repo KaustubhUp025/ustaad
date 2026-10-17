@@ -84,6 +84,8 @@
     "send": "নমুনা ছবি পাঠান: {{name}}",
     "displayE6": "Voltas ডিসপ্লেতে E6",
     "voltasLabel": "Voltas এনার্জি লেবেল",
-    "publicPost": "পাবলিক পোস্ট থেকে নেওয়া ছবি"
+    "mcbOff": "OFF অবস্থায় MCB",
+    "publicPost": "পাবলিক পোস্ট থেকে নেওয়া ছবি",
+    "ownPhoto": "আমাদের নিজের ছবি"
   }
 }

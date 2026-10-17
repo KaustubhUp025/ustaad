@@ -544,3 +544,23 @@ async def test_after_a_gate_ustaad_is_told_the_english_and_an_english_phone_show
     assert (card.instruction, card.instruction_translated) == ("Test PCB par step", english)
     (notice,) = queue.notices
     assert english in notice and "Test PCB par step" not in notice
+
+
+# Samyak's review of #61: an exception's text can carry a URI, a token or the photo's content, so it never reaches
+# the logs; only the fixed message and the exception's class do.
+LEAKY = RuntimeError("gs://media/jobs/j_1/r_1/a.jpg?X-Goog-Signature=SYNTHETIC_TOKEN reads: Raju 98xxxxxx")
+
+
+async def test_a_failed_photo_check_logs_only_a_fixed_message(caplog):
+    caplog.set_level("DEBUG")
+    desk, _, _, _, tool = session(checks=[LEAKY])
+    await tool.func(context(), **PCB.model_dump())
+    await photo(desk, desk_request_id(desk))
+    assert [r.getMessage() for r in caplog.records] == ["photo check failed (RuntimeError)"]
+    assert all(r.exc_info is None and r.exc_text is None for r in caplog.records)
+    assert "SYNTHETIC_TOKEN" not in caplog.text and "gs://" not in caplog.text
+
+
+def desk_request_id(desk):
+    (request_id,) = desk._open
+    return request_id

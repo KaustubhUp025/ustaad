@@ -266,8 +266,9 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             schema, question = MediaCheck, rules.question(request.inp)
         try:
             check = await asyncio.wait_for(read_photo(question, uri, schema), VISION_TIMEOUT_S)
-        except Exception:  # quota, network or a hung call: the request stays open and he sends the photo again
-            logger.exception("photo check failed")
+        except Exception as exc:  # noqa: BLE001 — quota, network or a hung call: the request stays open, he sends again
+            # Only the class: the error text can carry the photo's URI, a token or what the photo shows.
+            logger.error("photo check failed (%s)", type(exc).__name__)
             await desk.show(
                 MediaResult(
                     request_id=request.request_id,

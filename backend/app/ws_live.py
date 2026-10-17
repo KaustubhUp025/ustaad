@@ -41,6 +41,7 @@ from models.ws import (
     Ptt,
     SafetyGate,
     SessionReady,
+    StepDone,
     Text,
     client_frame,
 )
@@ -207,6 +208,9 @@ async def _upstream(ws: WebSocket, queue: LiveRequestQueue | None, desk: MediaDe
             queue.send_content(types.Content(role="user", parts=[types.Part(text=frame.text)]))
         elif isinstance(frame, MediaOffer):
             await desk.offer(frame.kind)
+        elif isinstance(frame, StepDone):
+            if desk.on_step_done:
+                await desk.on_step_done(frame.n)
         elif isinstance(frame, MediaReady | MediaCancel):
             taken = desk.ready(frame) if isinstance(frame, MediaReady) else desk.cancel(frame)
             if not taken:

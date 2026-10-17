@@ -87,6 +87,9 @@ class MediaDesk:
         self._queue: LiveRequestQueue | None = None
         self.lang = "hi"
         self.on_photo: Callable[[OpenRequest, str], Awaitable[None]] | None = None
+        self.on_step_done: Callable[[int], Awaitable[None]] | None = None
+        # The step whose done-tap was taken: a repeat tap must not hand out a gate or the end again.
+        self.step_tapped: int | None = None
         self.tasks: set[asyncio.Task] = set()
 
     def attach(self, send: Send, queue: LiveRequestQueue, lang: str) -> None:
@@ -197,6 +200,10 @@ class MediaDesk:
         else:
             return
         self._tell(content)
+
+    def note(self, text: str) -> None:
+        """A text turn for Ustaad about something he did not call for. Held while disconnected."""
+        self._tell(types.Content(role="user", parts=[types.Part(text=text)]))
 
     def _tell(self, content: types.Content) -> None:
         if self._queue:
@@ -313,16 +320,30 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
         # The server hands out what comes next, through the same gate-checked next_step, so the step card always
         # shows and Ustaad says the step it handed out (he called next_step himself for only 3 of 5 passes, Oct 15).
         after = jobs.update(desk.job_id, repair.next_step)
-        notice = await _hand_out(gate_id, after)
+        notice = await _hand_out(f"Safety check {gate_id} passed.", after)
         desk.answer(request, response | {"next": after.model_dump(mode="json")}, done=True, notice=notice)
 
-    async def _hand_out(gate_id: GateId, after: StepOut | SafetyGateOut | RepairDone) -> str:
-        """Shows what next_step returned after a passed gate and returns the note that tells Ustaad."""
+    async def step_done(n: int) -> None:
+        """His done-tap on step card `n` (ws-events step_done): only on the last step handed out, and only once."""
+        if desk.step_tapped == n:
+            return
+
+        def change(job):
+            return (None, job) if job.current_step != n else repair.next_step(job)
+
+        after = jobs.update(desk.job_id, change)
+        if after is None:
+            return
+        desk.step_tapped = n
+        desk.note(await _hand_out(f"He tapped done on step {n}.", after))
+
+    async def _hand_out(lead: str, after: StepOut | SafetyGateOut | RepairDone) -> str:
+        """Shows what next_step returned (after a passed gate or a done-tap) and returns the note that tells Ustaad."""
         if isinstance(after, StepOut):
             step = after.step
             await desk.show(repair.step_card(after, desk.lang))
             return (
-                f"[Safety check {gate_id} passed. The app handed out step {step.n} of {after.of}, now on his screen: "
+                f"[{lead} The app handed out step {step.n} of {after.of}, now on his screen: "
                 f'"{step.instruction_en or step.instruction}". Tell him this step now in the language he last spoke, '
                 "translating it if it is in another language; do not call next_step until he reports back on it.]"
             )
@@ -332,15 +353,16 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             )
             await desk.open_gate(after.gate_id)
             return (
-                f"[Safety check {gate_id} passed. Another safety check comes before the next step: {after.gate_id}, "
+                f"[{lead} Another safety check comes before the next step: {after.gate_id}, "
                 f"{after.required_evidence}. His phone asks for that photo; tell him what to do. Do not say the step.]"
             )
-        return f"[Safety check {gate_id} passed. Every step has been given.]"
+        return f"[{lead} Every step has been given.]"
 
     def _record(job, request: OpenRequest, uri: str, findings, confidence: float, reason="requested"):
         return rules.record(job, request.request_id, request.inp.kind, uri, findings, confidence, reason)
 
     desk.on_photo = on_photo
+    desk.on_step_done = step_done
     # After a reconnect, possibly on another instance: a gate before the next step needs its photo request again.
     gate = open_gate(jobs.load(desk.job_id))
     if gate:

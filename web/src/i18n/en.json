@@ -24,6 +24,7 @@
   "repair": {
     "closed": "Job closed and saved as a card for review.",
     "step": "Step {{n}} of {{of}}",
+    "stepDone": "Done, next step",
     "gateTitle": "Safety check first",
     "gate": {
       "G_MAINS_OFF": "Switch off the MCB or pull out the plug.",

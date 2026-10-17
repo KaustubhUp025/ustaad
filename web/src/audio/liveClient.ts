@@ -61,6 +61,7 @@ export interface LiveConnection {
   mediaOffer(kind: 'photo' | 'document'): void
   mediaReady(requestId: string, uri: string, kind: MediaKind): void
   mediaCancel(requestId: string): void
+  stepDone(n: number): void
   close(): void
 }
 
@@ -235,6 +236,9 @@ export function openLive(
     },
     mediaCancel(requestId) {
       sendFrame({ type: 'media_cancel', request_id: requestId })
+    },
+    stepDone(n) {
+      sendFrame({ type: 'step_done', n })
     },
     close() {
       closed = true

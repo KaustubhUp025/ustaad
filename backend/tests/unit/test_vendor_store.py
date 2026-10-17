@@ -1,5 +1,5 @@
 """Vendors as quote requests read them (firestore.md, approved Oct 17): a shop named in onboarding has no Telegram
-chat until it is linked, so it is skipped; a linked vendor is read with its chat."""
+chat until it is linked, so no quote request goes to it; a linked vendor is read with its chat."""
 
 from types import SimpleNamespace
 

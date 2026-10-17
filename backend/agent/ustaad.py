@@ -11,6 +11,7 @@ from agent.identify_tools import identify_tools
 from agent.inventory_tools import inventory_tools
 from agent.manual_tools import manual_tools
 from agent.media_tools import MediaDesk, ReadPhoto, media_tools
+from agent.profile_tools import profile_tools
 from agent.quote_tools import quote_tools, vendor_tools
 from agent.repair_tools import repair_tools
 from agent.search_tools import search_tools
@@ -50,6 +51,7 @@ def build_ustaad(
         + inventory_tools(inventory, desk)
         + close_tools(jobs, cards, inventory, desk, embed)
         + quote_tools(quotes, bot, desk)
-        + vendor_tools(quotes, workers, places),
+        + vendor_tools(quotes, workers, places)
+        + profile_tools(workers, inventory, desk),
         before_tool_callback=gate_guard(jobs.load),
     )

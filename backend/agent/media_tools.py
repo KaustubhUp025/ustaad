@@ -298,7 +298,10 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             )
         )
         if not retake:
-            reason = ("manual" if request.inp.kind == "document" else "side_issue") if own else "requested"
+            if own:
+                reason = "manual" if request.inp.kind == "document" else "side_issue"
+            else:
+                reason = "side_issue" if request.inp.reason == "side_issue" else "requested"
             jobs.update(
                 desk.job_id, lambda job: (None, _record(job, request, uri, out.findings, out.confidence, reason))
             )

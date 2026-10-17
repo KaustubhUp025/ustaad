@@ -186,6 +186,33 @@ class RepairDone(BaseModel):
     status: Literal["DONE"] = "DONE"
 
 
+class ParkedPlan(BaseModel):
+    """The main repair while a side issue is dealt with now (S7): its steps and the step he was on. Session state,
+    not the job, holds it (BUILD-GUIDE §9.2)."""
+
+    steps: list[RepairStep]
+    current_step: int
+    translation_lang: str | None
+    issue: str
+
+
+class Parked(BaseModel):
+    status: Literal["PARKED"] = "PARKED"
+    n: int
+    of: int
+
+
+class AlreadyParked(BaseModel):
+    """One side issue at a time: a further one is noted for later, never nested."""
+
+    status: Literal["ALREADY_PARKED"] = "ALREADY_PARKED"
+    noted: str
+
+
+class NothingToPark(BaseModel):
+    status: Literal["NOTHING_TO_PARK"] = "NOTHING_TO_PARK"
+
+
 class ConfirmSafetyIn(BaseModel):
     gate_id: GateId
     media_uri: str
@@ -269,6 +296,14 @@ class InventoryNotUpdated(BaseModel):
     part: str
 
 
+class SideFix(BaseModel):
+    """His answers about a side issue he fixed: what it was, what caused it, what fixed it."""
+
+    symptom: str
+    outcome: str
+    fix_summary: str
+
+
 class CloseJobIn(BaseModel):
     """The worker's two closing answers (what caused it, what fixed it) and what Ustaad knows of the job. The job
     record holds no brand or code, so Ustaad passes them."""
@@ -280,6 +315,8 @@ class CloseJobIn(BaseModel):
     brand: str | None = None
     error_code: str | None = None
     appliance_type: ApplianceType | None = None
+    # A side issue found on this job that he says he fixed: drafted into a second card (S7).
+    side_fix: SideFix | None = None
 
 
 class Closed(BaseModel):

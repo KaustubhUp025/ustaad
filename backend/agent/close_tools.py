@@ -14,7 +14,7 @@ from models.tools import CloseJobIn
 from models.ws import JobClosed, Stock
 from tools import inventory
 from tools.close_job import close_job as close
-from tools.close_job import stock_deltas
+from tools.close_job import side_card, stock_deltas
 from tools.search_fault_cards import Embed
 
 
@@ -28,11 +28,14 @@ def close_tools(jobs: JobStore, cards: CardStore, stock: InventoryStore, desk: M
         brand: str | None = None,
         error_code: str | None = None,
         appliance_type: str | None = None,
+        side_fix: dict | None = None,
     ) -> dict:
         """Closes the job once he says it is fixed and has told you what caused it (`outcome`) and what fixed it
         (`fix_summary`), in his words. `parts_used`: [{"part": "capacitor", "qty": 1}]. Pass the brand, code and
         appliance type you know from the job. His stock goes down by the parts used; `stock_not_updated` says why it
-        did not. ALREADY_CLOSED: the job was closed before; say so briefly."""
+        did not. ALREADY_CLOSED: the job was closed before; say so briefly. If a side issue was found on this job, ask
+        him once before closing whether he fixed it; if he did, pass `side_fix`: {"symptom", "outcome",
+        "fix_summary"} in his words, and it becomes a second card."""
         inp = CloseJobIn(
             symptom=symptom,
             outcome=outcome,
@@ -41,6 +44,7 @@ def close_tools(jobs: JobStore, cards: CardStore, stock: InventoryStore, desk: M
             brand=brand,
             error_code=error_code,
             appliance_type=appliance_type,
+            side_fix=side_fix,
         )
         now = datetime.now(UTC)
         made = {}
@@ -53,8 +57,11 @@ def close_tools(jobs: JobStore, cards: CardStore, stock: InventoryStore, desk: M
         card = made["card"]
         if card is None:
             return out.model_dump(mode="json")
-        cards.save(card, embed([card_text(card)], "RETRIEVAL_DOCUMENT")[0])
-        result = out.model_dump(mode="json")
+        side = side_card(inp, jobs.load(tool_context.state["job_id"]), f"fc_{uuid4().hex[:16]}", now)
+        drafted = [card, side] if side else [card]
+        for saved, vector in zip(drafted, embed([card_text(c) for c in drafted], "RETRIEVAL_DOCUMENT"), strict=True):
+            cards.save(saved, vector)
+        result = out.model_dump(mode="json") | ({"side_card_id": side.id} if side else {})
         deltas = stock_deltas(inp.parts_used)
         if deltas:
 

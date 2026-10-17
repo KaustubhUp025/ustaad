@@ -6,6 +6,7 @@ import os
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from functools import partial
 from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -16,7 +17,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from clients.audio import to_flac
 from clients.firestore import CardStore, ImportStore
-from clients.gemini import ask_json, describe_import_photo, embed, transcribe_import_audio
+from clients.gemini import IMPORT_CALLS, ask_json, describe_import_photo, embed, transcribe_import_audio
 from clients.storage import ImportStorageClient
 from jobs.ingest.adapter import ENRICHMENT_FAILED
 from jobs.ingest.cards import EXTRACTION_FAILED, Ask
@@ -194,6 +195,7 @@ async def run_ingest_job(import_id: str, media_bucket: str, deps: ImportJobDepen
 
 def _concrete_dependencies(database: str, bucket: str, workspace: Path) -> ImportJobDependencies:
     db = firestore.Client(database=database)
+    ask = partial(ask_json, http_options=IMPORT_CALLS)
     return ImportJobDependencies(
         imports=ImportStore(db),
         storage=ImportStorageClient(bucket),
@@ -203,9 +205,9 @@ def _concrete_dependencies(database: str, bucket: str, workspace: Path) -> Impor
         converter=convert_to_flac,
         transcriber=transcribe_import_audio,
         describer=describe_import_photo,
-        thread_client=FlashThreadGroupingClient(),
-        ask=ask_json,
-        embed=embed,
+        thread_client=FlashThreadGroupingClient(ask),
+        ask=ask,
+        embed=partial(embed, http_options=IMPORT_CALLS),
         workspace=workspace,
     )
 

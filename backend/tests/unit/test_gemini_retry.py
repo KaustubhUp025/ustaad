@@ -1,20 +1,22 @@
-"""The import's Flash and embedding calls retry Vertex's transient 429s (Oct 17 dev import: 8 of 19 attachments,
-the thread grouping and threads were lost to single 429s). Gemini itself is faked: only the client's options are read."""
+"""The WhatsApp import's Gemini calls retry Vertex 429s and hung calls (Oct 17 dev imports lost attachments, the thread
+grouping and threads to both); a worker's live search embedding fails fast. Gemini is faked: only client options are read."""
 
 from pathlib import Path
 from types import SimpleNamespace
 
+import httpx
 import pytest
+from google.genai import _api_client, errors
 from pydantic import BaseModel
 
 from clients import gemini
+from jobs.ingest import job
+
+MADE: list[dict] = []
 
 
 class Answer(BaseModel):
     ok: bool
-
-
-MADE: list[dict] = []
 
 
 class FakeClient:
@@ -37,20 +39,51 @@ def fake_client(monkeypatch):
     monkeypatch.setenv("EMBED_DIM", "1")
 
 
-def retries(kwargs: dict) -> bool:
-    options = kwargs.get("http_options")
-    # The SDK's defaults (5 attempts, exponential backoff) retry 408, 429 and 5xx (google.genai._api_client).
-    # A hung call raises httpx.TimeoutException after `timeout`, which the SDK also retries.
-    return options is not None and options.retry_options is not None and options.timeout is not None
+def import_policy(kwargs: dict) -> bool:
+    options = kwargs["http_options"]
+    return options.timeout == 120_000 and options.retry_options is not None
 
 
-async def test_import_calls_retry_transient_errors(tmp_path: Path):
+async def test_import_media_calls_use_the_120_s_retrying_policy(tmp_path: Path):
     media = tmp_path / "m.flac"
     media.write_bytes(b"synthetic")
-    await gemini.ask_json("q", Answer)
     await gemini.transcribe_import_audio(media)
     await gemini.describe_import_photo(media)
-    gemini.embed(["t"], "RETRIEVAL_DOCUMENT")
 
-    assert len(MADE) == 4
-    assert all(retries(kwargs) for kwargs in MADE)
+    assert len(MADE) == 2
+    assert all(import_policy(kwargs) for kwargs in MADE)
+
+
+async def test_import_job_wires_grouping_extraction_and_embedding_to_the_import_policy(monkeypatch, tmp_path: Path):
+    monkeypatch.setattr(job.firestore, "Client", lambda **_: object())
+    monkeypatch.setattr(job, "ImportStorageClient", lambda bucket: object())
+    deps = job._concrete_dependencies("(default)", "bucket", tmp_path)
+
+    await deps.ask("q", Answer)
+    await deps.thread_client._ask("q", Answer)
+    deps.embed(["t"], "RETRIEVAL_DOCUMENT")
+
+    assert len(MADE) == 3
+    assert all(import_policy(kwargs) for kwargs in MADE)
+
+
+async def test_live_search_embedding_fails_fast_and_other_ask_json_callers_are_unchanged():
+    gemini.embed(["t"], "RETRIEVAL_QUERY")
+    await gemini.ask_json("q", Answer)
+
+    live, ask = MADE
+    assert live["http_options"].timeout == 10_000
+    assert live["http_options"].retry_options is None
+    assert ask["http_options"] is None
+
+
+def test_the_sdk_retries_429_and_timeouts_with_the_import_options_but_not_400():
+    # The installed SDK's own rule (google.genai._api_client.retry_args), so an upgrade that changes it fails here.
+    rule = _api_client.retry_args(gemini.IMPORT_CALLS.retry_options)
+    exhausted = errors.ClientError(429, {"error": {"code": 429, "status": "RESOURCE_EXHAUSTED", "message": "busy"}})
+    invalid = errors.ClientError(400, {"error": {"code": 400, "status": "INVALID_ARGUMENT", "message": "bad"}})
+
+    assert rule["retry"].predicate(exhausted)
+    assert rule["retry"].predicate(httpx.ReadTimeout("hung"))
+    assert not rule["retry"].predicate(invalid)
+    assert rule["stop"].max_attempt_number == 5

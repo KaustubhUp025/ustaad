@@ -58,8 +58,7 @@ LANGS = {
     "te": ("te-IN", "Telugu, written in Telugu script"),
     "ta": ("ta-IN", "Tamil, written in Tamil script"),
     "bn": ("bn-IN", "Bengali, written in Bengali script"),
-    # Cards and notes are mostly Hinglish; without this Ustaad answered an English session in Hinglish (Oct 17).
-    "en": ("en-IN", "English, translating any Hindi or Hinglish into English"),
+    "en": ("en-IN", "English"),
 }
 
 

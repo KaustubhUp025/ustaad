@@ -364,7 +364,7 @@ async def test_a_reconnect_reopens_the_gate_request_from_the_job_alone():
 
 
 async def test_a_reconnect_shows_the_gate_before_its_photo_request():
-    # Phone test (Oct 17): after a reload the phone got only the request, so it skipped the gate screen and showed
+    # Phone test (Oct 17): after a reload the phone got only the request, so it never showed the gate screen and put
     # the server's English evidence text as the sheet title.
     desk = MediaDesk("j_1", "media")
     phone = Phone()

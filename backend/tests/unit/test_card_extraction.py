@@ -75,6 +75,15 @@ def test_message_ids_not_in_the_thread_are_dropped():
     assert card.source.message_ids == ["m2"]
 
 
+def test_ids_returned_without_the_import_prefix_still_credit_the_message():
+    # Real run (Oct 17): Flash sometimes answered "m59" for "i_wa_1017a:m59"; the card lost its author and audio.
+    thread = [m.model_copy(update={"id": f"i_1:{m.id}"}) for m in THREAD]
+    card = card_from_draft(draft(fix_message_id="m2", message_ids=["m1", "i_1:m2", "m3"]), thread, "fc_1", NOW)
+    assert (card.source.author, card.source.audio_uri) == ("Samyak", "gs://b/imports/i_1/PTT-1.flac")
+    assert card.source.message_ids == ["i_1:m1", "i_1:m2", "i_1:m3"]
+    assert card.review_status == "auto"
+
+
 def test_an_unknown_fix_message_goes_to_review_without_an_author():
     card = card_from_draft(draft(fix_message_id="m9"), THREAD, "fc_1", NOW)
     assert card.review_status == "needs_review"

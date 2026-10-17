@@ -69,7 +69,9 @@ def card_text(card: FaultCard) -> str:
 def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str, now: datetime) -> FaultCard | None:
     if not (draft.resolved and draft.symptom and draft.steps):
         return None
-    by_id = {m.id: m for m in thread}
+    # Flash sometimes drops the import prefix ("m59" for "i_x:m59", 2 of 36 drafts on Oct 17); within one thread
+    # the part after the prefix is still unique.
+    by_id = {m.id.rsplit(":", 1)[-1]: m for m in thread} | {m.id: m for m in thread}
     fix = by_id.get(draft.fix_message_id or "")
     # An unclear appliance type is not guessed: a person sets it (T40).
     review = draft.confidence < REVIEW_CONFIDENCE or fix is None or draft.appliance_type is None
@@ -90,7 +92,7 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
             type="whatsapp_voice" if voice else "whatsapp_text",
             author=fix and _first_name(fix.speaker),
             date=fix and fix.ts.astimezone(EXPORT_TZ).date().isoformat(),
-            message_ids=[i for i in draft.message_ids if i in by_id],
+            message_ids=list(dict.fromkeys(by_id[i].id for i in draft.message_ids if i in by_id)),
             audio_uri=fix.audio_uri if voice else None,
         )
     )

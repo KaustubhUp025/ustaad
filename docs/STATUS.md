@@ -126,7 +126,7 @@ job, Firestore import persistence, the Cloud Run Job trigger and any private rea
 | Speech end → reply starts (p50, 4G) | ≤ 2.5 s | |
 | Photo → findings spoken (p50) | ≤ 6 s | |
 | Golden photos identified | 6/6 | |
-| Import 30 notes | ≤ 2 min, ≥ 20 cards, ≥ 80% correct | |
+| Import 30 notes | ≤ 2 min, ≥ 20 cards, ≥ 80% correct | Oct 17, partial export (60 messages, 13 notes, 6 photos), gemini-3.8-flash on dev: 9 threads all grouped right; 8 cards + 1 merge, 8/8 correct and 8/8 recall against `seed/gold_cards.md`, every credit right; 1 min 47 s end to end. Full export after tonight's recordings |
 | Quote round trip | ≤ 2 min | |
 | Safety bypass tests | 0/10 succeed | |
 

@@ -13,7 +13,7 @@ from agent.media_tools import MediaDesk
 from clients.firestore import QuoteStore, WorkerStore
 from clients.places import PlacesClient
 from clients.telegram import TelegramBot
-from models.quotes import FindVendorsOut, RequestQuotesOut
+from models.quotes import FindVendorsOut, GetQuotesOut, QuoteRequestUpdate, QuoteUpdate, RequestQuotesOut
 from models.ws import QuoteItem, Quotes
 from tools import quotes, vendors
 
@@ -74,10 +74,37 @@ def quote_tools(store: QuoteStore, bot: TelegramBot, desk: MediaDesk) -> list[Fu
             quote_request_id=request.id, vendors=[q.vendor_name for q in reached]
         ).model_dump(mode="json")
 
+    async def get_quotes(tool_context: ToolContext) -> dict:
+        """Reads quote updates for this job. Call it when the worker asks for quote updates. Describe quoted vendors
+        from its result; do not say nobody has replied when it contains quoted vendors."""
+        now = datetime.now(UTC)
+        requests = []
+        for request, docs in store.for_job(tool_context.state["worker_id"], tool_context.state["job_id"]):
+            request, docs = quotes.on_read(request, docs, now)
+            requests.append(
+                QuoteRequestUpdate(
+                    status=request.status,
+                    quotes=[
+                        QuoteUpdate(
+                            vendor_name=quote.vendor_name,
+                            available=quote.available,
+                            price_inr=quote.price_inr,
+                            eta=quote.eta,
+                            from_voice=quote.from_voice,
+                        )
+                        for quote in quotes.rank(docs)
+                    ],
+                )
+            )
+        return GetQuotesOut(requests=requests).model_dump(mode="json")
+
     tool = FunctionTool(request_quotes)
     tool.behavior = types.Behavior.NON_BLOCKING
     tool.response_scheduling = types.FunctionResponseScheduling.WHEN_IDLE
-    return [tool]
+    updates = FunctionTool(get_quotes)
+    updates.behavior = types.Behavior.BLOCKING
+    updates.response_scheduling = types.FunctionResponseScheduling.WHEN_IDLE
+    return [tool, updates]
 
 
 def vendor_tools(store: QuoteStore, workers: WorkerStore, places: PlacesClient) -> list[FunctionTool]:

@@ -1,13 +1,15 @@
-"""request_quotes as the Live agent calls it (SPEC §6, BUILD-GUIDE T19): the job and worker come from session state;
-one quote per saved vendor; each vendor gets the request with its two buttons; the phone gets the `quotes` frame."""
+"""The Live quote tools: requests go to saved vendors and get_quotes reports only this worker's job safely."""
 
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 from google.genai import types
 
 from agent.media_tools import MediaDesk
 from agent.quote_tools import quote_tools
-from tests.unit.fake_quotes import FakeBot, FakeQuoteStore
+from models.quotes import ParsedReply
+from tests.unit.fake_quotes import FakeBot, FakeQuoteStore, sent_request
+from tools import quotes
 
 
 class Desk(MediaDesk):
@@ -21,19 +23,28 @@ class Desk(MediaDesk):
 
 def setup(bot=None):
     store, bot, desk = FakeQuoteStore(), bot or FakeBot(), Desk()
-    (tool,) = quote_tools(store, bot, desk)
-    return store, bot, desk, tool, SimpleNamespace(state={"worker_id": "w_hi_demo", "job_id": "j_1"})
+    request, updates = quote_tools(store, bot, desk)
+    return store, bot, desk, request, updates, SimpleNamespace(state={"worker_id": "w_hi_demo", "job_id": "j_1"})
 
 
 def test_request_quotes_is_non_blocking_and_answers_when_idle():
-    *_, tool, _ = setup()
-    assert (tool.name, tool.behavior) == ("request_quotes", types.Behavior.NON_BLOCKING)
-    assert tool.response_scheduling == types.FunctionResponseScheduling.WHEN_IDLE
+    *_, request, _updates, _ = setup()
+    assert (request.name, request.behavior) == ("request_quotes", types.Behavior.NON_BLOCKING)
+    assert request.response_scheduling == types.FunctionResponseScheduling.WHEN_IDLE
+
+
+def test_get_quotes_is_blocking_and_requires_actual_vendor_updates():
+    *_, updates, _ = setup()
+    assert (updates.name, updates.behavior) == ("get_quotes", types.Behavior.BLOCKING)
+    assert updates.response_scheduling == types.FunctionResponseScheduling.WHEN_IDLE
+    description = " ".join(updates.description.split())
+    assert "Call it when the worker asks for quote updates." in description
+    assert "Describe quoted vendors from its result; do not say nobody has replied when it contains quoted vendors." in description
 
 
 async def test_pcb_nahi_hai_sends_the_request_to_every_saved_vendor():
-    store, bot, desk, tool, ctx = setup()
-    out = await tool.run_async(
+    store, bot, desk, request_tool, _, ctx = setup()
+    out = await request_tool.run_async(
         args={"part": "outdoor PCB", "specs": "Daikin FTKF50", "qty": 1}, tool_context=ctx
     )
     qrid = out["quote_request_id"]
@@ -66,16 +77,77 @@ async def test_a_vendor_who_cannot_be_reached_is_left_out():
                 raise RuntimeError("Telegram sendMessage failed: 403 Forbidden: bot was blocked by the user")
             return await super().send_message(chat_id, text, buttons)
 
-    store, _, _, tool, ctx = setup(BlockedB())
-    out = await tool.run_async(args={"part": "outdoor PCB"}, tool_context=ctx)
+    store, _, _, request_tool, _, ctx = setup(BlockedB())
+    out = await request_tool.run_async(args={"part": "outdoor PCB"}, tool_context=ctx)
     assert out["vendors"] == ["Vendor A", "Vendor C"]
     _, docs = store.get(out["quote_request_id"])
     assert [q.state for q in docs] == ["SENT", "CREATED", "SENT"]
 
 
 async def test_no_saved_vendors():
-    store, bot, desk, tool, ctx = setup()
+    store, bot, desk, request_tool, _, ctx = setup()
     store.vendor_list = []
-    out = await tool.run_async(args={"part": "outdoor PCB"}, tool_context=ctx)
+    out = await request_tool.run_async(args={"part": "outdoor PCB"}, tool_context=ctx)
     assert out == {"quote_request_id": None, "vendors": []}
     assert (store.requests, bot.sent, desk.shown) == ({}, [], [])
+
+
+def quoted(quote, price: int, eta_minutes: int, from_voice: bool = False):
+    now = datetime.now(UTC)
+    reply = ParsedReply(
+        price_inr=price, available=True, eta=f"{eta_minutes} min", eta_minutes=eta_minutes, confidence=0.9
+    )
+    return quotes.parsed(quotes.replied(quote, "", from_voice, now), reply, now)
+
+
+async def test_get_quotes_reports_a_quoted_vendor_without_server_only_fields():
+    store, _, _, _, updates, ctx = setup()
+    request, (a, b, c) = sent_request(now=datetime.now(UTC))
+    store.create(request, [quoted(a, 300, 60, from_voice=True), b, c])
+
+    out = await updates.run_async(args={}, tool_context=ctx)
+
+    assert out == {
+        "requests": [
+            {
+                "status": "open",
+                "quotes": [
+                    {"vendor_name": "Vendor A", "available": True, "price_inr": 300, "eta": "60 min", "from_voice": True},
+                    {"vendor_name": "Vendor B", "available": None, "price_inr": None, "eta": None, "from_voice": False},
+                    {"vendor_name": "Vendor C", "available": None, "price_inr": None, "eta": None, "from_voice": False},
+                ],
+            }
+        ]
+    }
+
+
+async def test_get_quotes_keeps_no_reply_vendors_waiting():
+    store, _, _, _, updates, ctx = setup()
+    request, docs = sent_request(now=datetime.now(UTC))
+    store.create(request, docs)
+
+    out = await updates.run_async(args={}, tool_context=ctx)
+
+    assert [row["available"] for row in out["requests"][0]["quotes"]] == [None, None, None]
+    assert [row["price_inr"] for row in out["requests"][0]["quotes"]] == [None, None, None]
+
+
+async def test_get_quotes_preserves_existing_quote_ranking():
+    store, _, _, _, updates, ctx = setup()
+    request, (a, b, c) = sent_request(now=datetime.now(UTC))
+    store.create(request, [quoted(a, 300, 60), b, quoted(c, 250, 120)])
+
+    out = await updates.run_async(args={}, tool_context=ctx)
+
+    assert [row["vendor_name"] for row in out["requests"][0]["quotes"]] == ["Vendor C", "Vendor A", "Vendor B"]
+
+
+async def test_get_quotes_never_reads_another_worker_or_job():
+    store, _, _, _, updates, ctx = setup()
+    now = datetime.now(UTC)
+    other_worker, other_worker_docs = quotes.new_request("qr_other_worker", "j_1", "w_te_demo", "part", "", 1, [], now)
+    other_job, other_job_docs = quotes.new_request("qr_other_job", "j_other", "w_hi_demo", "part", "", 1, [], now)
+    store.create(other_worker, other_worker_docs)
+    store.create(other_job, other_job_docs)
+
+    assert await updates.run_async(args={}, tool_context=ctx) == {"requests": []}

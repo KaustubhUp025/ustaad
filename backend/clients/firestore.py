@@ -208,6 +208,21 @@ class QuoteStore:
         quotes = [QuoteDoc.model_validate(q.to_dict() | {"id": q.id}) for q in self._quotes(qrid).stream()]
         return QuoteRequest.model_validate(doc.to_dict() | {"id": qrid}), quotes
 
+    def for_job(self, worker_id: str, job_id: str) -> list[tuple[QuoteRequest, list[QuoteDoc]]]:
+        """Every quote request for one authenticated worker's current job."""
+        query = (
+            self._db.collection("quote_requests")
+            .where(filter=FieldFilter("worker_id", "==", worker_id))
+            .where(filter=FieldFilter("job_id", "==", job_id))
+        )
+        return [
+            (
+                QuoteRequest.model_validate(doc.to_dict() | {"id": doc.id}),
+                [QuoteDoc.model_validate(q.to_dict() | {"id": q.id}) for q in self._quotes(doc.id).stream()],
+            )
+            for doc in query.stream()
+        ]
+
     def _unexpired(self, now: datetime) -> list[QuoteRequest]:
         query = self._db.collection("quote_requests").where(filter=FieldFilter("expires_at", ">", now))
         return [QuoteRequest.model_validate(doc.to_dict() | {"id": doc.id}) for doc in query.stream()]

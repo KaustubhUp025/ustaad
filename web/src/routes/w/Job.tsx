@@ -78,6 +78,7 @@ function JobScreen() {
           key={request.request_id}
           view={{ ...live.media, request }}
           title={gate ? t(`repair.evidence.${gate.gate_id}`) : request.target || t('camera.ownTitle')}
+          gateId={gate?.gate_id}
           jobId={id}
           onSent={(uri) => live.mediaReady(request.request_id, uri, request.kind)}
           // A gate's photo request belongs to the gate: closing the sheet goes back to the gate screen.

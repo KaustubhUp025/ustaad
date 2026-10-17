@@ -5,13 +5,14 @@ import { useTranslation } from 'react-i18next'
 import { uploadPhoto } from '@/api/media'
 import type { MediaView } from '@/audio/media'
 import { prepare } from '@/camera/photo'
-import { SAMPLES } from '@/camera/samples'
+import { samplesFor } from '@/camera/samples'
 import { useCamera } from '@/camera/useCamera'
 import { Button } from '@/components/ui/button'
 
 type Props = {
   view: MediaView & { request: NonNullable<MediaView['request']> }
   title: string
+  gateId?: string
   jobId: string
   onSent: (uri: string) => void
   onCancel: () => void
@@ -26,8 +27,9 @@ const STILL_CHECKING_MS = 10_000
 // It takes the job's middle area and leaves the mic below it, so he can still talk to Ustaad. A very dark or blurry
 // photo is caught on the phone before any upload; "send anyway" lets him overrule it. The parent keys the sheet by
 // request, so the camera keeps running through retakes; a new retake reason resets the sheet.
-export function CameraSheet({ view: { request, retakeReason, answers }, title, jobId, onSent, onCancel }: Props) {
+export function CameraSheet({ view: { request, retakeReason, answers }, title, gateId, jobId, onSent, onCancel }: Props) {
   const { t } = useTranslation()
+  const samples = samplesFor(gateId)
   const camera = useCamera()
   const fallback = useRef<HTMLInputElement>(null)
   const [phase, setPhase] = useState<Phase>('ready')
@@ -157,11 +159,11 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, j
         </p>
       )}
 
-      {!busy && (
+      {!busy && samples.length > 0 && (
         <div className="flex flex-col gap-1">
           <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('samples.title')}</p>
           <ul className="flex gap-3 overflow-x-auto pb-1">
-            {SAMPLES.map((sample) => (
+            {samples.map((sample) => (
               <li key={sample.src} className="flex w-24 shrink-0 flex-col gap-1">
                 <button
                   type="button"

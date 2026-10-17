@@ -690,6 +690,9 @@ Storage imports/{id}/*  ->  1 unzip + locate chat .txt
 
 **Design rules.** Parsing is pure and tested on both formats. Per-file failures are appended to `errors[]` and do not abort the import. Transcribe calls go through an injected client. Write progress at most every second or so to avoid hot-document contention in Firestore.
 
+For tonight's dev run, disable platform retries so an operator decides whether to rerun an import:
+`gcloud run jobs update ingest-whatsapp --region=asia-south1 --max-retries=0`.
+
 **Tests.** Unit: `whatsapp_export_small/` fixture produces messages plus transcripts (stubbed transcription) matching expected JSON (§8.6). Edge cases: iOS format, multi-line, missing media, DD/MM vs MM/DD. Manual: run the real demo export once and time it (target 30 notes under 2 min, 8 parallel).
 
 **Pitfalls.** `.opus` from WhatsApp is OGG-Opus; ffmpeg needs `libopus` (the Job image must include a full ffmpeg). Very short or silent notes produce empty transcripts: mark low confidence, don't crash. Memory on Jobs: stream large files, do not load a whole zip in memory.

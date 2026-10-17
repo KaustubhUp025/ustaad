@@ -61,6 +61,33 @@ class StorageUploadClient:
         )
 
 
+class ImportStorageClient:
+    """Read one uploaded ZIP and store generated derived media for an import."""
+
+    def __init__(self, bucket_name: str, client: storage.Client | None = None) -> None:
+        self.bucket_name = bucket_name
+        self._client = client or storage.Client()
+
+    def load_archive(self, import_id: str) -> bytes:
+        prefix = f"imports/{import_id}/"
+        blobs = [
+            blob
+            for blob in self._client.list_blobs(self.bucket_name, prefix=prefix)
+            if blob.name.lower().endswith(".zip") and "/derived/" not in blob.name
+        ]
+        if len(blobs) != 1:
+            raise ValueError("import must have exactly one ZIP archive")
+        return blobs[0].download_as_bytes()
+
+    async def upload_derived(self, source, destination_uri: str) -> str:
+        prefix = f"gs://{self.bucket_name}/"
+        if not destination_uri.startswith(prefix):
+            raise ValueError("derived media destination uses another bucket")
+        object_name = destination_uri.removeprefix(prefix)
+        self._client.bucket(self.bucket_name).blob(object_name).upload_from_filename(source)
+        return destination_uri
+
+
 @cache
 def _client() -> storage.Client:
     return storage.Client()

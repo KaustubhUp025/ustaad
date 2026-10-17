@@ -22,8 +22,11 @@ def merge(old: FaultCard, new: FaultCard) -> FaultCard:
     surer = new if new.confidence > old.confidence else old
     # A voice note is what the source chip plays, so it takes the credit from a first card that has none.
     credit = new.source if new.source.audio_uri and not old.source.audio_uri else old.source
+    old_message_ids = old.source.message_ids or []
+    new_message_ids = new.source.message_ids or []
+    has_new_evidence = bool(set(new_message_ids) - set(old_message_ids))
     source = credit.model_copy(
-        update={"message_ids": list(dict.fromkeys([*(old.source.message_ids or []), *(new.source.message_ids or [])]))}
+        update={"message_ids": list(dict.fromkeys([*old_message_ids, *new_message_ids]))}
     )
     human = old.review_status in ("approved", "rejected")
     return old.model_copy(
@@ -31,7 +34,7 @@ def merge(old: FaultCard, new: FaultCard) -> FaultCard:
         | {
             "source": source,
             "confidence": surer.confidence,
-            "verified_count": old.verified_count + 1,
+            "verified_count": old.verified_count + has_new_evidence,
             "hazard": max(old.hazard, new.hazard, key=LEVELS.index),
             "review_status": old.review_status if human else surer.review_status,
         }

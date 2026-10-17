@@ -25,10 +25,11 @@ from app import admission
 from app.demo_safe import demo_safe
 from app.live_events import to_frames
 from app.session import verify
-from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore, QuoteStore
+from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore, QuoteStore, WorkerStore
 from clients.gemini import read_photo
 from clients.storage import object_md5
 from clients.telegram import telegram_bot
+from models.worker import Worker
 from models.ws import (
     Error,
     Frame,
@@ -63,13 +64,25 @@ LANGS = {
 }
 
 
+def session_state(worker: Worker, lang: str, job_id: str) -> dict[str, str]:
+    """What the instruction and the tools read: the job and worker come from here, never from the model. A worker who
+    has not finished onboarding gets the interview (T21)."""
+    state = {"language_name": LANGS[lang][1], "lang": lang, "job_id": job_id, "worker_id": worker.id}
+    if worker.name:
+        state["worker_name"] = worker.name
+    if worker.pincode:
+        state["area"] = f"pincode {worker.pincode}"
+    state["onboarding"] = "done" if worker.onboarding_done else "pending"
+    return state
+
+
 async def live_events(
     queue: LiveRequestQueue, lang: str, resume: str | None, job_id: str, desk: MediaDesk, worker_id: str
 ) -> AsyncIterator[Event]:
     """One Live session with the model. Unit tests replace this with a fake."""
-    speech_code, language_name = LANGS[lang]
+    speech_code = LANGS[lang][0]
     db = firestore.Client(database=os.environ["FIRESTORE_DB"])
-    jobs = JobStore(db)
+    jobs, workers = JobStore(db), WorkerStore(db)
     runner = InMemoryRunner(
         agent=build_ustaad(
             os.environ["LIVE_MODEL"],
@@ -79,6 +92,7 @@ async def live_events(
             InventoryStore(db),
             QuoteStore(db),
             telegram_bot(),
+            workers,
             desk,
             _photo_reader(db),
         ),
@@ -88,7 +102,7 @@ async def live_events(
     session = await runner.session_service.create_session(
         app_name=APP,
         user_id="demo",
-        state={"language_name": language_name, "lang": lang, "job_id": job_id, "worker_id": worker_id},
+        state=session_state(workers.get(worker_id), lang, job_id),
     )
     config = RunConfig(
         streaming_mode=StreamingMode.BIDI,

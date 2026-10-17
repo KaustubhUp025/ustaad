@@ -5,6 +5,7 @@ import os
 from datetime import UTC, datetime
 from functools import cache
 from typing import Annotated
+from uuid import uuid4
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from google.cloud import firestore
@@ -12,6 +13,7 @@ from google.cloud import firestore
 from app.session import issue
 from clients.firestore import WorkerStore
 from models.worker import DemoSessionRequest, DemoSessionResponse
+from tools.profile import fresh_worker
 
 router = APIRouter(prefix="/api/demo")
 
@@ -27,7 +29,13 @@ def demo_session(
     store: Annotated[WorkerStore, Depends(worker_store)],
     body: Annotated[DemoSessionRequest | None, Body()] = None,
 ) -> DemoSessionResponse:
-    worker = store.get((body or DemoSessionRequest()).worker_id)
+    body = body or DemoSessionRequest()
+    if body.onboarding:
+        # A new worker per visitor, so two judges never share one interview (T21).
+        worker = fresh_worker(f"w_onb_{uuid4().hex[:10]}", body.lang, datetime.now(UTC))
+        store.create(worker)
+    else:
+        worker = store.get(body.worker_id)
     if worker is None or not worker.demo:
         raise HTTPException(404)
     ws_url = str(request.base_url).replace("http", "ws", 1) + "ws/live"

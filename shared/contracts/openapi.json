@@ -85,6 +85,23 @@
       "DemoSessionRequest": {
         "additionalProperties": false,
         "properties": {
+          "lang": {
+            "default": "hi",
+            "enum": [
+              "hi",
+              "te",
+              "ta",
+              "bn",
+              "en"
+            ],
+            "title": "Lang",
+            "type": "string"
+          },
+          "onboarding": {
+            "default": false,
+            "title": "Onboarding",
+            "type": "boolean"
+          },
           "worker_id": {
             "default": "w_hi_demo",
             "title": "Worker Id",
@@ -863,7 +880,6 @@
               "type": "string"
             },
             "maxItems": 3,
-            "minItems": 1,
             "title": "Trades",
             "type": "array"
           }

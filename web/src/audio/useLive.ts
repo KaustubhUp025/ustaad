@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { type LiveConnection, type LiveStatus, type MediaKind, type ServerFrame, openLive } from './liveClient'
 import { mediaReducer, noMedia } from './media'
+import { noProfile, profileReducer } from './profile'
 import { noQuotes, quotesReducer } from './quotes'
 import { noRepair, repairReducer } from './safety'
 
@@ -23,6 +24,7 @@ export function useLive(lang: string, jobId: string) {
   const [repair, setRepair] = useState(noRepair)
   const [media, setMedia] = useState(noMedia)
   const [quotes, setQuotes] = useState(noQuotes)
+  const [profile, setProfile] = useState(noProfile)
   const [talking, setTalking] = useState(false)
   const [micBlocked, setMicBlocked] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -37,6 +39,7 @@ export function useLive(lang: string, jobId: string) {
         setRepair((view) => repairReducer(view, frame))
         setMedia((view) => mediaReducer(view, frame))
         setQuotes((view) => quotesReducer(view, frame))
+        setProfile((view) => profileReducer(view, frame))
       },
       setStatus,
     )
@@ -50,6 +53,7 @@ export function useLive(lang: string, jobId: string) {
     repair,
     media,
     quotes,
+    profile,
     talking,
     micBlocked,
     async startTalking() {

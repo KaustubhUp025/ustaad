@@ -64,7 +64,7 @@ Lane A's code is folded into T12, T16 and T21 above. These rows are the rest. Fi
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T27 | P0 | A | Demo-safe cache, rate limits, "Try the demo" (M10); T11 follow-ups: close silent sockets after 45 s, mic usable while reconnecting; T17 follow-up: "still checking" on slow photo checks (BUILD-GUIDE T27) | SPEC §10 | incognito phone runs G2 with backend models slowed; silent socket closed and its Live slot freed | T26 | doing: #34 limits + silent sockets, #35 demo cache, #36 Try the demo + samples + mic while reconnecting + still checking; left: A's 3 own sample photos, the phone check on 4G, recording the samples on `demo` (T30) |
-| T28 | P1 | B | UI polish pass on every screen | DESIGN.md, playbooks/ui-pass.md | screenshots at 360/1280 in PR | T26 | todo |
+| T28 | P1 | B | UI polish pass on every screen | DESIGN.md, playbooks/ui-pass.md | screenshots at 360/1280 in PR | T26 | doing: scrollable worker caption history slice |
 | T29 | P1 | A | Golden tests + measure the quality bar | GOLDEN_PATHS, SPEC §10 | numbers in STATUS.md | T26 | todo |
 | T30 | P0 | both | Feature freeze; tag `v1-rc`; `make deploy-demo` | WORKFLOW | demo service on v1-rc | T27–T29 | todo |
 

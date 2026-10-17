@@ -1,21 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { type LiveConnection, type LiveStatus, type MediaKind, type ServerFrame, openLive } from './liveClient'
+import { addCaption, type CaptionLine } from './captionHistory'
+import { type LiveConnection, type LiveStatus, type MediaKind, openLive } from './liveClient'
 import { mediaReducer, noMedia } from './media'
 import { noQuotes, quotesReducer } from './quotes'
 import { noRepair, repairReducer } from './safety'
-
-export type CaptionLine = { who: 'user' | 'ustaad'; text: string; final: boolean }
-type CaptionFrame = Extract<ServerFrame, { type: 'caption' }>
-
-const SHOWN = 3 // DESIGN.md: the last 3 turns stay on screen
-
-// A partial caption replaces the previous partial from the same speaker; the final one locks it.
-export function addCaption(lines: CaptionLine[], { who, text, final }: CaptionFrame): CaptionLine[] {
-  const open = lines.findLastIndex((l) => l.who === who && !l.final)
-  const next = open === -1 ? [...lines, { who, text, final }] : lines.with(open, { who, text, final })
-  return next.slice(-SHOWN)
-}
 
 export function useLive(lang: string, jobId: string) {
   const [status, setStatus] = useState<LiveStatus>('connecting')

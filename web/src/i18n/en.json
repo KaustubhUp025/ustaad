@@ -11,6 +11,7 @@
   "live": {
     "hold": "Hold to talk",
     "listening": "Listening…",
+    "conversation": "Conversation",
     "empty": "Hold the mic and ask about the fault.",
     "connecting": "Connecting to Ustaad…",
     "reconnecting": "Network dropped. Reconnecting…",

@@ -52,6 +52,7 @@ export type ServerFrame =
     }
   | { v: 1; type: 'media_result'; request_id: string; matches_expected: boolean; confidence: number; retake_reason: string | null }
   | { v: 1; type: 'quotes'; quote_request_id: string; items: QuoteItem[] }
+  | { v: 1; type: 'profile_update'; fields: Record<string, unknown> }
 
 export type LiveStatus = 'connecting' | 'ready' | 'reconnecting' | 'failed' | 'busy'
 

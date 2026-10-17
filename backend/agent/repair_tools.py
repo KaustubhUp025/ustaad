@@ -33,17 +33,24 @@ def repair_tools(jobs: JobStore, desk: MediaDesk, ask: Ask = ask_json) -> list[F
         jobs.update(job_id, lambda job: (None, translate_steps.apply(job, lang, asked, out.lines)))
 
     def start_repair(
-        tool_context: ToolContext, card_ids: list[str] | None = None, steps: list[ProposedStep] | None = None
+        tool_context: ToolContext,
+        card_ids: list[str] | None = None,
+        steps: list[ProposedStep] | None = None,
+        manual_request_id: str | None = None,
     ) -> dict:
-        """Starts guiding a repair. Pass the IDs of the fault cards you are using. Only when no card or manual
+        """Starts guiding a repair. Pass the IDs of the fault cards you are using, or, to guide the printed steps of
+        his manual page, the `manual_request_id` its photo's result gave you. Only when no card or manual
         matched, pass your proposed steps instead, each with `instruction` in the worker's language and
         `summary_en`, one line of English. Returns the number of steps and their sources, not their text: get
         each step from next_step. STOP_REFER means a step is not allowed: tell him a certified technician is
         needed and offer help with the other checks."""
-        inp = StartRepairIn(card_ids=card_ids or [], steps=steps or [])
+        inp = StartRepairIn(card_ids=card_ids or [], steps=steps or [], manual_request_id=manual_request_id)
+        page = desk.pages.get(manual_request_id) if manual_request_id else None
+        if manual_request_id and not (page and page.steps):
+            return {"status": "NO_PAGE", "message": "No checked manual page with printed steps has that ID."}
         cards = jobs.fault_cards(inp.card_ids)
         state = tool_context.state
-        out = jobs.update(state["job_id"], lambda job: repair.start_repair(inp, job, cards))
+        out = jobs.update(state["job_id"], lambda job: repair.start_repair(inp, job, cards, page))
         # Ustaad often says the first step without calling next_step (phone test, Oct 17), so a gate before it is
         # shown now, by the server, not left to him.
         gate = out.status == "STARTED" and open_gate(jobs.load(state["job_id"]))

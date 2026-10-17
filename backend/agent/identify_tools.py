@@ -40,6 +40,8 @@ def identify_tools(desk: MediaDesk, read_photo: ReadPhoto) -> list[FunctionTool]
             logger.exception("identify failed")
             return NOTHING.model_dump(mode="json")
         out = identify(read)
+        if out.readable and out.brand:
+            desk.brand = out.brand
         await desk.show(Identified(brand=out.brand, model=out.model, error_code=out.error_code, confidence=out.confidence))
         return out.model_dump(mode="json")
 

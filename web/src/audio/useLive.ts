@@ -68,6 +68,8 @@ export function useLive(lang: string, jobId: string) {
     },
     // He starts a photo himself; the server answers with the request to send it on.
     offerPhoto: () => conn.current?.mediaOffer('photo'),
+    // A photo of his manual page or wiring sticker: read as a page and cited as "Photo of manual" (S7).
+    offerManual: () => conn.current?.mediaOffer('document'),
     mediaReady: (requestId: string, uri: string, kind: MediaKind) => conn.current?.mediaReady(requestId, uri, kind),
     // Closing the sheet ends the request on the server too, so the tool answers the model.
     cancelMedia() {

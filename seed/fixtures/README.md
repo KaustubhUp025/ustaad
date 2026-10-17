@@ -9,6 +9,7 @@ Created on Mon Oct 12 with the contracts. Every agent and person uses these inst
 | `vendors.json`, `quotes.json`, `close_job.json` | B | T10 | REST response shapes from `shared/contracts/rest.md` |
 | `backend/fixtures/inventory.json` | B | T10 | Inventory REST response included in the backend-only Cloud Run build context |
 | `identify/*.json` | A | T12 | Flash's recorded `NameplateRead` for the 6 golden photos (gemini-3.8-flash, Oct 16). Recorded on the provisional images (web/AI, kept private, never committed); re-record on our own photos. Serial-number observations are removed after recording: no unit identifiers in fixtures |
+| `manual_pages.json` | A | T37 | `ManualPage` answers for manual-page photos, transcribed verbatim from the hand-verified manuals in `seed/manual_codes.json` (Voltas p.30 error table, Daikin SiUS091133 safety lines and CH61 first check); not recorded from a photo yet |
 | `../whatsapp_export_small/` | B | T13 | Fully synthetic Android/iOS parser inputs; later T13 slices add generated media |
 
 `make mock` copies the JSON/JSONL files into `web/public/mock/` for `VITE_MOCK_LIVE=1`.

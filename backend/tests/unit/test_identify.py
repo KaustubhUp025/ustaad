@@ -139,3 +139,10 @@ async def test_a_failed_vision_call_returns_nothing_read():
     out = await tool.run_async(args={"media_uri": "gs://bucket/jobs/j_1/r_1/a.jpg"}, tool_context=None)
     assert (out["error_code"], out["confidence"]) == (None, 0)
     assert desk.shown == []
+
+
+async def test_a_readable_nameplate_sets_the_brand_a_manual_page_is_checked_against():
+    desk = Desk()
+    (tool,) = identify_tools(desk, read_photo_returning(recorded("nameplate_voltas"))[0])
+    await tool.func(media_uri="gs://bucket/jobs/j_1/r_1/a.jpg")
+    assert desk.brand == "Voltas"

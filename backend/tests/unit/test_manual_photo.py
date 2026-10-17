@@ -102,7 +102,7 @@ async def test_his_manual_page_is_read_and_ustaad_hears_the_codes_and_how_to_use
     request_id = await send_page(desk, phone)
     (notice,) = queue.notices
     assert "Indoor fan fault" in notice and request_id in notice
-    assert desk.pages[request_id].brand == "Voltas"
+    assert desk.pages[request_id].brand == "VOLTAS"
     (entry,) = jobs.job.media
     assert (entry.kind, entry.reason) == ("document", "manual")
     assert ("E1", "Indoor fan fault") in [(f.label, f.value) for f in entry.findings]

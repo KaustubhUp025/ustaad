@@ -79,14 +79,18 @@ def quote_tools(store: QuoteStore, bot: TelegramBot, desk: MediaDesk) -> list[Fu
         from its result; do not say nobody has replied when it contains quoted vendors."""
         now = datetime.now(UTC)
         requests = []
-        for request, docs in store.for_job(tool_context.state["worker_id"], tool_context.state["job_id"]):
+        requests_for_job = store.for_job(tool_context.state["worker_id"], tool_context.state["job_id"])
+        for request, docs in sorted(requests_for_job, key=lambda pair: pair[0].created_at, reverse=True):
             request, docs = quotes.on_read(request, docs, now)
             requests.append(
                 QuoteRequestUpdate(
+                    part=request.part,
+                    qty=request.qty,
                     status=request.status,
                     quotes=[
                         QuoteUpdate(
                             vendor_name=quote.vendor_name,
+                            state=quote.state,
                             available=quote.available,
                             price_inr=quote.price_inr,
                             eta=quote.eta,

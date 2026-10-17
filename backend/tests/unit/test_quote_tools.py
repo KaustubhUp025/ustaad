@@ -1,6 +1,6 @@
 """The Live quote tools: requests go to saved vendors and get_quotes reports only this worker's job safely."""
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 from google.genai import types
@@ -33,13 +33,10 @@ def test_request_quotes_is_non_blocking_and_answers_when_idle():
     assert request.response_scheduling == types.FunctionResponseScheduling.WHEN_IDLE
 
 
-def test_get_quotes_is_blocking_and_requires_actual_vendor_updates():
+def test_get_quotes_is_blocking_and_returns_when_idle():
     *_, updates, _ = setup()
     assert (updates.name, updates.behavior) == ("get_quotes", types.Behavior.BLOCKING)
     assert updates.response_scheduling == types.FunctionResponseScheduling.WHEN_IDLE
-    description = " ".join(updates.description.split())
-    assert "Call it when the worker asks for quote updates." in description
-    assert "Describe quoted vendors from its result; do not say nobody has replied when it contains quoted vendors." in description
 
 
 async def test_pcb_nahi_hai_sends_the_request_to_every_saved_vendor():
@@ -110,11 +107,13 @@ async def test_get_quotes_reports_a_quoted_vendor_without_server_only_fields():
     assert out == {
         "requests": [
             {
+                "part": "outdoor PCB",
+                "qty": 1,
                 "status": "open",
                 "quotes": [
-                    {"vendor_name": "Vendor A", "available": True, "price_inr": 300, "eta": "60 min", "from_voice": True},
-                    {"vendor_name": "Vendor B", "available": None, "price_inr": None, "eta": None, "from_voice": False},
-                    {"vendor_name": "Vendor C", "available": None, "price_inr": None, "eta": None, "from_voice": False},
+                    {"vendor_name": "Vendor A", "state": "QUOTED", "available": True, "price_inr": 300, "eta": "60 min", "from_voice": True},
+                    {"vendor_name": "Vendor B", "state": "SENT", "available": None, "price_inr": None, "eta": None, "from_voice": False},
+                    {"vendor_name": "Vendor C", "state": "SENT", "available": None, "price_inr": None, "eta": None, "from_voice": False},
                 ],
             }
         ]
@@ -130,6 +129,34 @@ async def test_get_quotes_keeps_no_reply_vendors_waiting():
 
     assert [row["available"] for row in out["requests"][0]["quotes"]] == [None, None, None]
     assert [row["price_inr"] for row in out["requests"][0]["quotes"]] == [None, None, None]
+
+
+async def test_get_quotes_lists_newest_requests_first():
+    store, _, _, _, updates, ctx = setup()
+    now = datetime.now(UTC)
+    older, older_docs = sent_request(qrid="qr_old", now=now - timedelta(minutes=1))
+    newer, newer_docs = sent_request(qrid="qr_new", now=now)
+    older = older.model_copy(update={"part": "older part"})
+    newer = newer.model_copy(update={"part": "newer part"})
+    store.create(older, older_docs)
+    store.create(newer, newer_docs)
+
+    out = await updates.run_async(args={}, tool_context=ctx)
+
+    assert [request["part"] for request in out["requests"]] == ["newer part", "older part"]
+    assert [request["qty"] for request in out["requests"]] == [1, 1]
+    assert [request["quotes"][0]["state"] for request in out["requests"]] == ["SENT", "SENT"]
+
+
+async def test_get_quotes_reports_expired_request_and_unanswered_quotes():
+    store, _, _, _, updates, ctx = setup()
+    request, docs = sent_request(now=datetime.now(UTC) - timedelta(minutes=31))
+    store.create(request, docs)
+
+    out = await updates.run_async(args={}, tool_context=ctx)
+
+    assert out["requests"][0]["status"] == "expired"
+    assert [quote["state"] for quote in out["requests"][0]["quotes"]] == ["EXPIRED", "EXPIRED", "EXPIRED"]
 
 
 async def test_get_quotes_preserves_existing_quote_ranking():

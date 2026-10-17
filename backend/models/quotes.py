@@ -98,6 +98,7 @@ class QuoteUpdate(BaseModel):
     """The safe vendor fields the Live agent needs when the worker asks for quote updates."""
 
     vendor_name: str
+    state: QuoteState
     available: bool | None
     price_inr: int | None
     eta: str | None
@@ -105,6 +106,8 @@ class QuoteUpdate(BaseModel):
 
 
 class QuoteRequestUpdate(BaseModel):
+    part: str
+    qty: int
     status: RequestStatus
     quotes: list[QuoteUpdate]
 

@@ -106,7 +106,7 @@ Tools are framework-free functions in `backend/tools/` (fallback: raw `google-ge
 | next_step | job_id, observation, media_uri? | next step or SAFETY_GATE{gate_id, required_evidence} | BLOCKING |
 | confirm_safety | (not a model tool) runs on each photo of a `request_media` with `gate_id` | passed, reason | — |
 | check_inventory / update_inventory | part / [{part, delta}] | stock + low flags | BLOCKING / SILENT |
-| find_vendors | part, pincode | saved + Places results | BLOCKING |
+| find_vendors | part (location and pincode from his profile) | saved shop names + Places shops nearby, nearest first, with distance_km | BLOCKING |
 | request_quotes | part, specs, qty (job and worker from session state; every saved vendor) | quote_request_id, vendor names | NON_BLOCKING, WHEN_IDLE |
 | get_quotes / approve_quote | ids | ranked quotes / confirmation | BLOCKING |
 | close_job | job_id, outcome, parts_used, fix_summary | job log + draft card id | BLOCKING |

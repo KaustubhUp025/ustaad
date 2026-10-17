@@ -16,7 +16,8 @@ LEGAL = [
     ("SENT", "declined", "DECLINED"),
     ("PARSING", "available", "PARSING"),
     ("PARSING", "quoted", "QUOTED"),
-    ("PARSING", "unclear", "SENT"),
+    ("PARSING", "unclear", "CLARIFY"),
+    ("PARSING", "unread", "SENT"),
     ("PARSING", "declined", "DECLINED"),
     ("QUOTED", "available", "QUOTED"),
     ("QUOTED", "declined", "DECLINED"),
@@ -24,6 +25,10 @@ LEGAL = [
     ("CREATED", "expired", "EXPIRED"),
     ("SENT", "expired", "EXPIRED"),
     ("PARSING", "expired", "EXPIRED"),
+    ("CLARIFY", "reply", "PARSING"),
+    ("CLARIFY", "available", "CLARIFY"),
+    ("CLARIFY", "declined", "DECLINED"),
+    ("CLARIFY", "expired", "EXPIRED"),
 ]
 
 
@@ -117,10 +122,35 @@ def test_nahi_hai_declines():
 
 
 @pytest.mark.parametrize("parse", [reply(available=True, eta="1 ghante"), reply(250, confidence=0.3)])
-def test_an_unclear_reply_waits_for_another_and_keeps_what_was_said(parse):
+def test_an_unclear_reply_asks_once_and_keeps_what_was_said(parse):
     _, (quote, *_) = sent_request()
-    done = quotes.parsed(quotes.replied(quote, "haan", False, NOW), parse, NOW)
-    assert (done.state, done.price_inr) == ("SENT", None)
+    unclear = quotes.parsed(quotes.replied(quote, "haan", False, NOW), parse, NOW)
+    assert (unclear.state, unclear.price_inr, unclear.eta) == ("CLARIFY", None, parse.eta)
+    assert quotes.ask_again(quote, unclear)
+    still = quotes.parsed(quotes.replied(unclear, "haan haan", False, NOW), parse, NOW)
+    assert still.state == "CLARIFY"
+    assert not quotes.ask_again(unclear, still)
+
+
+def test_a_clear_answer_after_the_question_becomes_a_quote():
+    _, (quote, *_) = sent_request()
+    unclear = quotes.parsed(quotes.replied(quote, "haan", False, NOW), reply(available=True), NOW)
+    done = quotes.parsed(quotes.replied(unclear, "250, kal tak", False, NOW), reply(250, True, "kal tak", 1440), NOW)
+    assert (done.state, done.price_inr) == ("QUOTED", 250)
+
+
+def test_an_unread_reply_goes_back_to_waiting():
+    _, (quote, *_) = sent_request()
+    assert quotes.unread(quotes.replied(quote, "250", False, NOW), NOW).state == "SENT"
+
+
+def test_the_question_names_the_request():
+    request, _ = sent_request()
+    assert quotes.clarify_text(request) == (
+        "Ustaad stock request #qr_1\noutdoor PCB x 1\n"
+        "Sorry, we could not read the price. Please reply with the price per piece in Rs and the delivery time, "
+        "for example: 250, kal tak"
+    )
 
 
 def test_buttons():
@@ -154,6 +184,11 @@ def test_a_reply_to_our_message_finds_its_quote_else_the_latest_open_one():
     assert quotes.match([(old_request, old[0]), (new_request, answered)]) == (old_request, old[0])
     assert quotes.match(candidates, quote_id=old[0].id) == (old_request, old[0])
     assert quotes.match(candidates, quote_id="q_none") is None
+    asked = quotes.parsed(answered, reply(available=True), NOW)
+    assert quotes.match([(old_request, quotes.replied(old[0], "", False, NOW)), (new_request, asked)]) == (
+        new_request,
+        asked,
+    )
 
 
 def test_approve_confirms_the_quote_and_the_request():

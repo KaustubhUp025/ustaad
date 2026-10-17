@@ -33,7 +33,9 @@ def inventory_tools(store: InventoryStore, desk: MediaDesk) -> list[FunctionTool
     async def update_inventory(tool_context: ToolContext, deltas: list[dict]) -> dict:
         """Changes his stock once he says he used or bought parts, e.g. "do capacitor use kiye" ->
         [{"part": "capacitor", "delta": -2}]. Call it once per thing he says. NOT_UPDATED changes nothing: tell him
-        why (part unknown or unclear, or not enough in stock)."""
+        why (part unknown or unclear, or not enough in stock). After UPDATED, confirm each changed part and its
+        resulting quantity in the language the worker last spoke. After NOT_UPDATED, explain its safe reason in that
+        language; do not claim an update happened."""
         try:
             parsed = [InventoryDelta(part=d["part"], delta=inventory.voice_delta(d["delta"])) for d in deltas]
         except (KeyError, ValueError, ValidationError):
@@ -57,5 +59,5 @@ def inventory_tools(store: InventoryStore, desk: MediaDesk) -> list[FunctionTool
     check.behavior = types.Behavior.BLOCKING
     update = FunctionTool(update_inventory)
     update.behavior = types.Behavior.NON_BLOCKING
-    update.response_scheduling = types.FunctionResponseScheduling.SILENT
+    update.response_scheduling = types.FunctionResponseScheduling.WHEN_IDLE
     return [check, update]

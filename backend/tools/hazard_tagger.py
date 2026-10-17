@@ -45,11 +45,15 @@ RULES: list[tuple[StopReason | Hazard, list[set[str]]]] = [
 ]
 LEVELS: list[Hazard] = ["none", "HV", "capacitor"]
 # General steps never need the power on (SAFETY.md). Kept out of RULES: card and manual steps may need it, and the
-# speech backstop must not stop the power-on diagnosis that happens in conversation before start_repair.
-POWER_ON: list[set[str]] = [
-    {"voltage"}, {"volt"}, {"supply"}, {"live"}, {"tester"}, {"energised"}, {"energized"},
-    {"power", "on"}, {"switch", "on"}, {"turn", "on"},
-]
+# speech backstop must not stop the power-on diagnosis that happens in conversation before start_repair. Phrases, not
+# single words: "water supply", a continuity tester and "with the power off" are power-off steps.
+POWER_ON = re.compile(
+    r"\bvolt(age)?s?\b|\blive\b|\benergi[sz]ed\b"
+    r"|\b(power|mains|electric|electrical|electricity)\s+supply\b|\bsupply\s+volt"
+    r"|\bsupply\b.*\b(socket|mcb)\b|\b(socket|mcb)\b.*\bsupply\b"
+    r"|\b(line|voltage|neon)\s+tester\b"
+    r"|\b(power|powered|switch|switched|turn|turned)\s+(\w+\s+){0,2}?on\b|\bplug(ged)?\s+(it\s+)?in\b"
+)
 
 
 def _words(text: str) -> set[str]:
@@ -70,5 +74,4 @@ def tag(summary_en: str, hazard: Hazard) -> tuple[Hazard, StopReason | None]:
 
 
 def needs_power_on(summary_en: str) -> bool:
-    words = _words(summary_en)
-    return any(group <= words for group in POWER_ON)
+    return bool(POWER_ON.search(summary_en.lower()))

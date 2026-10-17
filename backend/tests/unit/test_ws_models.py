@@ -16,7 +16,7 @@ def examples(section: str) -> list[str]:
 
 
 def test_contract_examples_were_found():
-    assert len(examples(CLIENT_PART)) == 6
+    assert len(examples(CLIENT_PART)) == 7
     assert len(examples(SERVER_PART)) == 19
 
 
@@ -46,3 +46,8 @@ def test_ptt_end_is_accepted():
 def test_frames_outside_the_contract_are_rejected(raw):
     with pytest.raises(ValidationError):
         server_frame.validate_json(raw)
+
+
+def test_step_done_needs_a_step_number_from_1():
+    with pytest.raises(ValidationError):
+        client_frame.validate_json('{"v":1,"type":"step_done","n":0}')

@@ -44,6 +44,13 @@ class Text(Frame):
     text: str
 
 
+class StepDone(Frame):
+    """The worker taps "done" on step card `n`; a stale or repeated `n` is ignored by the server."""
+
+    type: Literal["step_done"] = "step_done"
+    n: int = Field(ge=1)
+
+
 class Ping(Frame):
     type: Literal["ping"] = "ping"
 
@@ -185,7 +192,7 @@ class Error(Frame):
     message: str
 
 
-WsClientFrame = Annotated[Ptt | MediaReady | MediaCancel | MediaOffer | Text | Ping, Field(discriminator="type")]
+WsClientFrame = Annotated[Ptt | MediaReady | MediaCancel | MediaOffer | Text | StepDone | Ping, Field(discriminator="type")]
 WsServerFrame = Annotated[
     SessionReady
     | Caption

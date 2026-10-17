@@ -17,7 +17,7 @@ Seeded and synthetic data is labelled in the app.
 
 ## Built with
 Gemini Live and Gemini Flash on Google Cloud Agent Platform, Agent Development Kit, Memory Bank, Agent Search,
-Cloud Run, Firestore, Cloud Storage, Firebase Hosting, Places API, Telegram Bot API (WhatsApp Cloud API is the production path, blocked on Meta verification).
+Cloud Run, Firestore, Cloud Storage, Firebase Hosting, Places API, Telegram Bot API (demo fallback; WhatsApp Cloud API after Meta verification).
 Built with AI coding agents under one shared rule set (`AGENTS.md`); each PR records the tools used (see `docs/WORKFLOW.md`).
 
 ## For the team
@@ -27,8 +27,8 @@ Start with `docs/SETUP.md`, then `docs/WORKFLOW.md`. Ground truth: `docs/SPEC.md
 Rules for any AI coding agent: `AGENTS.md`; playbooks in `docs/playbooks/`; commands via `make`.
 
 ### Vendor quotes bot (Telegram)
-Quote requests (M8) go to vendors through a Telegram bot. WhatsApp Cloud API is the production path: our test number
-was blocked by Meta business verification (error 131031), so the demo uses Telegram until a business is verified.
+Quote requests (M8) go to vendors through a Telegram bot, the demo fallback: Meta locked both of our WhatsApp business
+accounts (error 131031) pending business verification. WhatsApp Cloud API is the future production path after verification.
 1. Create the bot with @BotFather (`/newbot`) and store its token without pasting it anywhere:
    `read -rs T && printf '%s' "$T" | gcloud secrets versions add tg-bot-token --data-file=-`
    (`infra/setup.sh` creates `tg-bot-token` and a random `tg-webhook-secret`).

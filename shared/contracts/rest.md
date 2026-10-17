@@ -33,12 +33,11 @@ numbers, exception text, request-validation details, tracebacks, credentials, se
 | `GET /api/clusters?pincode=` | — | `{"items": [Cluster]}` |
 | `GET /api/nudges` | — | `{"items": [{"id", "text", "kind": "skill"\|"restock", "action"?: {...}}]}` |
 | `GET /api/dashboard/summary` | — | `{"cards": int, "cards_needing_review": int, "jobs_7d": int, "imports": int}` |
-| `GET /webhook/whatsapp` | Meta verify query | `hub.challenge` |
-| `POST /webhook/whatsapp` | Meta payload, `X-Hub-Signature-256` checked | `200` at once; processed in background |
+| `POST /webhook/telegram` | Telegram `Update`; header `X-Telegram-Bot-Api-Secret-Token` must equal `TG_WEBHOOK_SECRET`, else `forbidden` (403) | `200` at once; processed in background |
 | `GET /healthz` | — | `{"ok": true, "flash_model", "live_model", "demo_safe"}` |
 
 Entity shapes (Worker, Job, FaultCard, InventoryItem, Vendor, QuoteRequest, Quote, Import, Cluster) are the
-Firestore documents in `firestore.md` plus `id`, minus server-only fields (`embedding`, raw webhook bodies).
+Firestore documents in `firestore.md` plus `id`, minus server-only fields (`embedding`, `tg_chat_id`, `tg_message_id`, raw webhook bodies).
 
 ## Media upload URL validation
 

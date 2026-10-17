@@ -70,6 +70,14 @@ test('a safety_stop shows the stop until a later step arrives', () => {
   expect(run(stop, step('none', 2)).stop).toBeNull()
 })
 
+test('a closed job clears the step card and shows the job was saved', () => {
+  // Phone test (Oct 17): the finished job's step card stayed on screen while he asked about another problem.
+  const view = run(step('none'), { v: 1, type: 'job_closed', job_id: 'j_1', card_id: 'fc_1' })
+  expect(view.step).toBeNull()
+  expect(view.closed).toBe(true)
+  expect(run(step('none'), { v: 1, type: 'job_closed', job_id: 'j_1', card_id: 'fc_1' }, step('none', 2)).closed).toBe(false)
+})
+
 test('the step card shows the translation with the original small, and only the original when there is none', () => {
   const card = (instruction_translated: string | null) => ({ ...(step('none') as Of), instruction_translated })
   expect(stepLines(card('Test translated'))).toEqual({ main: 'Test translated', original: 'Test step 1' })

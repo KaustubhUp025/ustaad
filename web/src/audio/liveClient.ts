@@ -31,6 +31,7 @@ export type ServerFrame =
   | { v: 1; type: 'safety_gate'; gate_id: GateId; message: string; required_evidence: string }
   | { v: 1; type: 'gate_result'; gate_id: GateId; passed: boolean; reason: string | null }
   | { v: 1; type: 'safety_stop'; reason: string; message: string }
+  | { v: 1; type: 'job_closed'; job_id: string; card_id: string }
   | {
       v: 1
       type: 'media_request'

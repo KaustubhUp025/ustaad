@@ -22,6 +22,7 @@
     "ustaad": "Ustaad"
   },
   "repair": {
+    "closed": "Job closed and saved as a card for review.",
     "step": "Step {{n}} of {{of}}",
     "gateTitle": "Safety check first",
     "gate": {

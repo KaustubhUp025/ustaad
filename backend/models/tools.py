@@ -16,6 +16,7 @@ from models.repair import (
     Hazard,
     MediaKind,
     Observation,
+    PartUsed,
     RepairStep,
     StepSource,
     StopReason,
@@ -233,3 +234,25 @@ class InventoryNotUpdated(BaseModel):
     status: Literal["NOT_UPDATED"] = "NOT_UPDATED"
     reason: StockErrorReason | Literal["bad_delta"]
     part: str
+
+
+class CloseJobIn(BaseModel):
+    """The worker's two closing answers (what caused it, what fixed it) and what Ustaad knows of the job. The job
+    record holds no brand or code, so Ustaad passes them."""
+
+    symptom: str
+    outcome: str
+    fix_summary: str
+    parts_used: list[PartUsed] = []
+    brand: str | None = None
+    error_code: str | None = None
+    appliance_type: ApplianceType | None = None
+
+
+class Closed(BaseModel):
+    status: Literal["CLOSED"] = "CLOSED"
+    card_id: str
+
+
+class AlreadyClosed(BaseModel):
+    status: Literal["ALREADY_CLOSED"] = "ALREADY_CLOSED"

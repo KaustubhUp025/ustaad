@@ -138,7 +138,7 @@ async def test_start_repair_from_his_page_shows_step_cards_citing_the_photo_of_m
     desk, phone, _, jobs = session("daikin_safety_checks")
     await desk.offer("document")
     request_id = await send_page(desk, phone)
-    start_repair, next_step = repair_tools(jobs, desk)
+    start_repair, next_step = repair_tools(jobs, desk)[:2]
     out = start_repair.func(context(), manual_request_id=request_id)
     assert out["status"] == "STARTED" and out["of"] == 2
     jobs.job = jobs.job.model_copy(update={"gates": {"G_MAINS_OFF": "passed", "G_CAP_DISCHARGE": "open"}})

@@ -183,9 +183,11 @@ export function openLive(
     }
   }
 
-  // VITE_MOCK_LIVE=1: replay the recorded G2 session (run `make mock`); nothing is sent anywhere.
+  // VITE_MOCK_LIVE=1: replay the recorded G2 session, or G8 for job `general` (run `make mock`); nothing is sent
+  // anywhere.
   const replay = async () => {
-    const lines = (await (await fetch('/mock/live_session.jsonl')).text()).trim().split('\n')
+    const file = jobId === 'general' ? 'live_session_general.jsonl' : 'live_session.jsonl'
+    const lines = (await (await fetch(`/mock/${file}`)).text()).trim().split('\n')
     if (closed) return
     for (const line of lines) {
       const { t_ms, frame } = JSON.parse(line) as { t_ms: number; frame: ServerFrame }

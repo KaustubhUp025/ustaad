@@ -15,7 +15,15 @@ from models.ws import (
     SafetyStop,
     TurnComplete,
 )
+from tools.hazard_tagger import tag
 from tools.repair import step_card
+
+
+def _backstop(caption: str) -> SafetyStop | None:
+    """Backstop on speech, not a gate (SAFETY.md): it fires after the words have begun, so it only catches what the
+    tool and the gates did not. Both speakers count, so a gas question from the worker also gets the stop screen."""
+    _, stop = tag(caption, "none")
+    return SafetyStop(reason=stop, message="Stopped for safety") if stop else None
 
 
 def _tool_frame(name: str, result: dict[str, Any], lang: str) -> Frame | None:
@@ -54,6 +62,9 @@ def to_frames(event: Event, partials: dict[str, str], lang: str = "hi") -> list[
             else:
                 partials.pop(who, None)
                 out.append(Caption(who=who, text=said.text, final=True))
+                stop = _backstop(said.text)
+                if stop:
+                    out.append(stop)
     if event.interrupted:
         out.append(Interrupted())
     if event.turn_complete:

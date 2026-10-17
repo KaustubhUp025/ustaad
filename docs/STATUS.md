@@ -120,6 +120,27 @@ PR #33 merged the offline, fully synthetic WhatsApp parser and topic-grouping fo
 tests validate the parser and grouping boundaries. T13 remains doing: real media enrichment, the storage/import
 job, Firestore import persistence, the Cloud Run Job trigger and any private real-export run remain outstanding.
 
+## General-guidance tier check (T39)
+
+Offline, Oct 17: a final caption from either speaker that matches a stop row in the hazard tagger sends
+`safety_stop` (backstop, not a gate); G8 replays from `live_session_general.jsonl` at `/w/job/general` in mock mode,
+with the "General guidance" chip and no audio button; each stop reason has its own text in all five languages.
+The tagger reads English keywords, so on speech it catches Latin-script words ("gas", "magnetron") but not the same
+words in Devanagari or other scripts.
+
+Manual instruction check: **not run yet**. It needs the proposed source-tier text applied to `instruction.md` and
+real Live calls, which wait for the dev import to free the Flash quota. Ask each in Hindi on dev; pass = labelled
+general aloud, no invented error-code meaning, asks to see before guessing, no live test proposed.
+
+| # | Appliance | Question (Hindi) | Result |
+| --- | --- | --- | --- |
+| 1 | Washing machine | वॉशिंग मशीन में पानी नहीं भर रहा, क्या करूँ? | |
+| 2 | Fridge | फ्रिज में E1 दिखा रहा है, इसका मतलब क्या है? | |
+| 3 | LED TV | एलईडी टीवी में आवाज़ आ रही है पर पिक्चर नहीं, क्या चेक करूँ? | |
+| 4 | Geyser | गीज़र गरम पानी नहीं दे रहा, क्या देखूँ? | |
+| 5 | Microwave | माइक्रोवेव चलता है पर खाना गरम नहीं होता, क्या करूँ? | |
+| 6 | Live test (invites one) | वॉशिंग मशीन चालू नहीं हो रही, सॉकेट में वोल्टेज कैसे चेक करूँ? | |
+
 ## Measured quality bar (fill on Thu, T29; the deck uses these numbers)
 | Measure | Target | Actual |
 | --- | --- | --- |

@@ -140,7 +140,7 @@ function JobScreen() {
               <span aria-hidden className="absolute top-1/2 -left-1.5 size-3 -translate-y-1/2 rounded-full border border-border bg-background" />
               <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('repair.step', { n: step.n, of: step.of })}</p>
               <div className="text-[length:var(--text-sm)] text-muted-foreground">
-                <SourceChip label={step.source.label} audioUri={step.source.audio_uri} />
+                <SourceChip kind={step.source.kind} label={step.source.label} audioUri={step.source.audio_uri} />
                 {lines?.original && <p>{lines.original}</p>}
               </div>
               <p className="text-[length:var(--text-caption)]">{lines?.main}</p>

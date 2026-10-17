@@ -1,8 +1,10 @@
 """Firestore access for the repair tools: a job's repair fields and the fault cards it uses (firestore.md)."""
 
 from collections.abc import Callable
+from datetime import datetime
 from typing import ClassVar
 
+from google.api_core.exceptions import Conflict
 from google.cloud import firestore
 from google.cloud.firestore_v1 import FieldFilter
 from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
@@ -10,6 +12,7 @@ from google.cloud.firestore_v1.vector import Vector
 
 from models.fault_card import FaultCard
 from models.inventory import InventoryItem
+from models.quotes import QuoteDoc, QuoteRequest, Vendor
 from models.repair import RepairJob
 from models.worker import Worker
 
@@ -173,3 +176,98 @@ class WorkerStore:
     def get(self, worker_id: str) -> Worker | None:
         doc = self._db.collection("workers").document(worker_id).get()
         return Worker.model_validate(doc.to_dict() | {"id": worker_id}) if doc.exists else None
+
+
+class QuoteStore:
+    """`quote_requests/{qrid}` with their `quotes`, the worker's `vendors`, and `tg_updates` for webhook dedupe.
+    Only requests younger than their expiry are searched, so the scan stays the size of the last 30 minutes."""
+
+    def __init__(self, db: firestore.Client) -> None:
+        self._db = db
+
+    def _quotes(self, qrid: str) -> firestore.CollectionReference:
+        return self._db.collection("quote_requests").document(qrid).collection("quotes")
+
+    def vendors(self, worker_id: str) -> list[Vendor]:
+        docs = self._db.collection("workers").document(worker_id).collection("vendors").stream()
+        return [Vendor(id=doc.id, name=doc.get("name"), tg_chat_id=doc.get("tg_chat_id")) for doc in docs]
+
+    def create(self, request: QuoteRequest, docs: list[QuoteDoc]) -> None:
+        batch = self._db.batch()
+        batch.set(
+            self._db.collection("quote_requests").document(request.id), request.model_dump(exclude={"id"})
+        )
+        for quote in docs:
+            batch.set(self._quotes(request.id).document(quote.id), quote.model_dump(exclude={"id"}))
+        batch.commit()
+
+    def get(self, qrid: str) -> tuple[QuoteRequest, list[QuoteDoc]] | None:
+        doc = self._db.collection("quote_requests").document(qrid).get()
+        if not doc.exists:
+            return None
+        quotes = [QuoteDoc.model_validate(q.to_dict() | {"id": q.id}) for q in self._quotes(qrid).stream()]
+        return QuoteRequest.model_validate(doc.to_dict() | {"id": qrid}), quotes
+
+    def _unexpired(self, now: datetime) -> list[QuoteRequest]:
+        query = self._db.collection("quote_requests").where(filter=FieldFilter("expires_at", ">", now))
+        return [QuoteRequest.model_validate(doc.to_dict() | {"id": doc.id}) for doc in query.stream()]
+
+    def find(self, qid: str, now: datetime) -> tuple[QuoteRequest, QuoteDoc] | None:
+        """The quote and its request, if the request has not expired."""
+        for request in self._unexpired(now):
+            doc = self._quotes(request.id).document(qid).get()
+            if doc.exists:
+                return request, QuoteDoc.model_validate(doc.to_dict() | {"id": qid})
+        return None
+
+    def open_for_chat(self, chat_id: int, now: datetime) -> list[tuple[QuoteRequest, QuoteDoc]]:
+        """Every quote sent to this Telegram chat in a request that is still open."""
+        return [
+            (request, QuoteDoc.model_validate(doc.to_dict() | {"id": doc.id}))
+            for request in self._unexpired(now)
+            if request.status == "open"
+            for doc in self._quotes(request.id)
+            .where(filter=FieldFilter("tg_chat_id", "==", chat_id))
+            .stream()
+        ]
+
+    def update_quote(self, qrid: str, qid: str, change: Callable[[QuoteDoc], QuoteDoc]) -> QuoteDoc:
+        """Runs `change` on the stored quote in a transaction, so a tap and a reply cannot both start from the same
+        state."""
+        ref = self._quotes(qrid).document(qid)
+
+        @firestore.transactional
+        def run(tx: firestore.Transaction) -> QuoteDoc:
+            quote = change(QuoteDoc.model_validate(ref.get(transaction=tx).to_dict() | {"id": qid}))
+            tx.set(ref, quote.model_dump(exclude={"id"}))
+            return quote
+
+        return run(self._db.transaction())
+
+    def approve(
+        self, qrid: str, qid: str, change: Callable[[QuoteRequest, QuoteDoc], tuple[QuoteRequest, QuoteDoc]]
+    ) -> tuple[QuoteRequest, QuoteDoc]:
+        request_ref = self._db.collection("quote_requests").document(qrid)
+        quote_ref = self._quotes(qrid).document(qid)
+
+        @firestore.transactional
+        def run(tx: firestore.Transaction) -> tuple[QuoteRequest, QuoteDoc]:
+            request, quote = change(
+                QuoteRequest.model_validate(request_ref.get(transaction=tx).to_dict() | {"id": qrid}),
+                QuoteDoc.model_validate(quote_ref.get(transaction=tx).to_dict() | {"id": qid}),
+            )
+            tx.set(request_ref, request.model_dump(exclude={"id"}))
+            tx.set(quote_ref, quote.model_dump(exclude={"id"}))
+            return request, quote
+
+        return run(self._db.transaction())
+
+    def first_delivery(self, update_id: int) -> bool:
+        """Records a Telegram update; False if it was recorded before (Telegram retries a delivery it timed out)."""
+        try:
+            self._db.collection("tg_updates").document(str(update_id)).create(
+                {"received_at": firestore.SERVER_TIMESTAMP}
+            )
+        except Conflict:
+            return False
+        return True

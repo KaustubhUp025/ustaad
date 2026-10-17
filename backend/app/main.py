@@ -1,5 +1,5 @@
 """ustaad-api entry point. Routers for chat, media, jobs, inventory, quotes, imports and the
-WhatsApp webhook are added in their own modules (spec §7)."""
+Telegram vendor webhook are added in their own modules (spec §7)."""
 
 import os
 
@@ -10,6 +10,8 @@ from app.demo_session import router as demo_session_router
 from app.errors import HTTP_ERRORS, install_error_handlers
 from app.inventory import router as inventory_router
 from app.media import router as media_router
+from app.quotes import router as quotes_router
+from app.telegram import router as telegram_router
 from app.ws_live import router as ws_live_router
 from models.errors import ErrorResponse
 
@@ -30,6 +32,8 @@ app.add_middleware(
 app.include_router(demo_session_router)
 app.include_router(media_router)
 app.include_router(inventory_router)
+app.include_router(quotes_router)
+app.include_router(telegram_router)
 app.include_router(ws_live_router)
 
 

@@ -104,3 +104,18 @@ def test_done_marks_onboarding_only_once_his_trades_are_saved():
     assert save(done=True).out.problems[0].reason == "missing"
     finished = save(worker=save(trades=["ac"]).worker, done=True)
     assert finished.worker.onboarding_done and finished.out.onboarding_done
+
+
+# The conditional trades rule (firestore.md, approved Oct 17): 0 to 3 while onboarding, 1 to 3 once onboarded, never
+# more than 3 and never repeated, in either state.
+
+
+@pytest.mark.parametrize("onboarded", [False, True])
+@pytest.mark.parametrize("trades", [["ac", "fridge", "geyser", "led_tv"], ["ac", "ac"], ["mixer"]])
+def test_too_many_repeated_or_unknown_trades_are_invalid_whether_or_not_onboarded(onboarded, trades):
+    with pytest.raises(ValueError):
+        Worker.model_validate(new().model_dump() | {"trades": trades, "onboarding_done": onboarded})
+
+
+def test_an_onboarding_worker_may_have_no_trades_yet():
+    assert Worker.model_validate(new().model_dump() | {"trades": []}).trades == []

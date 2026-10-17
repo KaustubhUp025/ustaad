@@ -52,6 +52,13 @@ class DemoSessionRequest(BaseModel):
     onboarding: bool = False
     lang: Lang = "hi"
 
+    @model_validator(mode="after")
+    def fresh_worker_only(self) -> "DemoSessionRequest":
+        # Onboarding always gets a new worker, so naming an existing one is a mistake, not a choice.
+        if self.onboarding and "worker_id" in self.model_fields_set:
+            raise ValueError("onboarding makes a new worker; do not send worker_id")
+        return self
+
 
 class StockAnswer(BaseModel):
     """A part he keeps, as he said it; `qty` 0 when he doesn't keep it, None when he gave no count."""

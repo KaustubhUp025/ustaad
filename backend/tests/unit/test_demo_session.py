@@ -83,3 +83,21 @@ async def test_onboarding_gives_each_visitor_a_new_empty_demo_worker_in_his_lang
     assert (first["worker"]["trades"], first["worker"]["onboarding_done"], first["worker"]["demo"]) == ([], False, True)
     assert verify(first["token"], datetime.now(UTC)) == first["worker"]["id"]
     assert set(fake.docs) == {first["worker"]["id"], second["worker"]["id"]}
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"onboarding": True, "lang": "mr"},  # only hi, te, ta, bn, en
+        {"onboarding": True, "worker_id": "w_hi_demo"},  # a fresh worker, never an existing one
+    ],
+)
+async def test_onboarding_takes_only_a_supported_language_and_never_a_worker_id(body):
+    fake = CreatingWorkers({"w_hi_demo": DEMO})
+    app.dependency_overrides[worker_store] = lambda: fake
+    try:
+        response = await post(body)
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 422
+    assert set(fake.docs) == {"w_hi_demo"}

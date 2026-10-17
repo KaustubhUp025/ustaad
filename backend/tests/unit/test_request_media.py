@@ -343,6 +343,14 @@ async def test_a_server_opened_gate_photo_is_judged_and_ustaad_gets_a_notice():
     assert not desk.ready(ready(rid))
 
 
+async def test_the_handed_out_step_is_said_in_his_language_not_read_out():
+    # Phone test (Oct 17): told to "say this step", Ustaad read the card's Hinglish words out in an English session.
+    desk, phone, queue, _, _ = session(gate_checks=[MCB_OFF], job=gated_job())
+    await desk.open_gate("G_MAINS_OFF")
+    await photo(desk, phone.of(MediaRequest)[0].request_id)
+    assert "in the language he last spoke" in queue.notices[-1]
+
+
 async def test_ustaads_own_gate_request_joins_the_open_one_and_gets_the_answer():
     desk, phone, queue, _, tool = session(gate_checks=[MCB_OFF], job=gated_job())
     await desk.open_gate("G_MAINS_OFF")

@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { Navigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { demoSession } from '@/api/session'
+import { hasProfile } from '@/audio/profile'
 import { stepLines } from '@/audio/safety'
 import { useLive } from '@/audio/useLive'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 import { CameraSheet } from './CameraSheet'
+import { ProfileCard } from './ProfileCard'
 import { SourceChip } from './SourceChip'
 import { QuotesCard } from './QuotesCard'
 
@@ -163,6 +165,7 @@ function JobScreen() {
               </Button>
             </article>
           )}
+          {hasProfile(live.profile) && <ProfileCard profile={live.profile} />}
           <QuotesCard quoteRequestId={live.quotes.quoteRequestId} initialItems={live.quotes.items} />
         </>
       )}

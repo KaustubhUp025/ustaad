@@ -6,18 +6,23 @@ import { useHealth } from '@/api/health'
 import { startDemo } from '@/api/session'
 import { Button } from '@/components/ui/button'
 
+type Lang = 'hi' | 'te' | 'ta' | 'bn' | 'en'
+const LANGS: Lang[] = ['hi', 'te', 'ta', 'bn', 'en']
+
 export default function Home() {
   const { t } = useTranslation()
   const health = useHealth()
   const navigate = useNavigate()
   const [demo, setDemo] = useState<'idle' | 'starting' | 'failed'>('idle')
+  const [picking, setPicking] = useState(false)
 
   // No login: a demo session for the seeded worker, then a new job in the language picked here. English comes first
   // so a judge who speaks no Hindi can follow; Ustaad still cites the senior's Hindi voice note (phone test, Oct 17).
-  const tryDemo = async (lang: 'en' | 'hi') => {
+  // "Set up a profile" starts the onboarding interview (G1) on a new, empty demo worker in the language he picks.
+  const tryDemo = async (lang: Lang, onboarding = false) => {
     setDemo('starting')
     try {
-      await startDemo()
+      await startDemo(onboarding ? { onboarding, lang } : undefined)
       navigate(`/w/job/j_${crypto.randomUUID().slice(0, 8)}?lang=${lang}`)
     } catch {
       setDemo('failed')
@@ -47,6 +52,34 @@ export default function Home() {
         >
           {t('demo.tryHi')}
         </Button>
+        <Button
+          variant="outline"
+          className="h-(--touch) w-full text-[length:var(--text-body)]"
+          disabled={demo === 'starting'}
+          aria-expanded={picking}
+          onClick={() => setPicking(!picking)}
+        >
+          {t('onboard.setup')}
+        </Button>
+        {picking && (
+          <fieldset className="w-full">
+            <legend className="mb-2 text-[length:var(--text-body)]">{t('onboard.pickLanguage')}</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {LANGS.map((lang) => (
+                <Button
+                  key={lang}
+                  variant="outline"
+                  lang={lang}
+                  className="h-(--touch) text-[length:var(--text-body)]"
+                  disabled={demo === 'starting'}
+                  onClick={() => void tryDemo(lang, true)}
+                >
+                  {t(`languages.${lang}`)}
+                </Button>
+              ))}
+            </div>
+          </fieldset>
+        )}
         {demo === 'failed' && (
           <p role="alert" className="border-l-4 border-l-destructive pl-3">
             {t('demo.failed')}

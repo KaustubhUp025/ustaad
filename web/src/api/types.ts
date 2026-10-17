@@ -193,6 +193,17 @@ export interface components {
         /** DemoSessionRequest */
         DemoSessionRequest: {
             /**
+             * Lang
+             * @default hi
+             * @enum {string}
+             */
+            lang: "hi" | "te" | "ta" | "bn" | "en";
+            /**
+             * Onboarding
+             * @default false
+             */
+            onboarding: boolean;
+            /**
              * Worker Id
              * @default w_hi_demo
              */

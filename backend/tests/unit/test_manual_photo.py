@@ -153,3 +153,12 @@ async def test_start_repair_with_an_unknown_page_tells_ustaad_to_ask_for_it():
     out = repair_tools(jobs, desk)[0].func(context(), manual_request_id="r_nothere")
     assert out["status"] == "NO_PAGE"
     assert jobs.job.steps == []
+
+
+def test_a_real_manual_step_that_powers_the_unit_on_is_still_guided():
+    # The recorded Voltas page: "... pressing the Emergency switch & power ON the IDU (Test Mode)". Only general
+    # steps are refused for needing power on (T39); a merge must keep that scoped to them.
+    out, job = repair.start_repair(StartRepairIn(manual_request_id="r_1"), RepairJob(job_id="j_1"), [], page("voltas_error_table"))
+    assert out.status == "STARTED" and out.of == 2
+    assert "power ON the IDU" in job.steps[1].instruction
+    assert {s.source.kind for s in job.steps} == {"manual_photo"}

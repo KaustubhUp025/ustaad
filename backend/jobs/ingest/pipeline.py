@@ -34,6 +34,9 @@ LifecycleCallback = Callable[[ImportLifecycle], Awaitable[None] | None]
 
 class PipelineResult(CardCounts):
     status: ImportLifecycle
+    audio_total: int = 0
+    audio_done: int = 0
+    threads: int = 0
 
     @property
     def card_counts(self) -> CardCounts:
@@ -98,6 +101,9 @@ async def run_import_pipeline(
     await _report(on_lifecycle, ImportLifecycle.DONE)
     return PipelineResult(
         status=ImportLifecycle.DONE,
+        audio_total=sum(message.kind == "voice" for message in prepared.messages),
+        audio_done=sum(message.kind == "voice" for message in prepared.messages),
+        threads=len(threads),
         cards_created=counts.cards_created,
         cards_merged=counts.cards_merged,
         cards_needing_review=counts.cards_needing_review,

@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from datetime import datetime
+from typing import ClassVar
 
 from google.api_core.exceptions import Conflict
 from google.cloud import firestore
@@ -79,6 +80,38 @@ class CardStore:
     def save(self, card: FaultCard, vector: list[float]) -> None:
         data = {k: v for k, v in card.to_public_dict().items() if k != "id"}
         self._db.collection("fault_cards").document(card.id).set(data | {"embedding": Vector(vector)})
+
+
+class ImportStore:
+    """Contracted lifecycle fields for `imports/{id}`."""
+
+    ALLOWED_FIELDS: ClassVar[set[str]] = {
+        "status",
+        "files_total",
+        "audio_total",
+        "audio_done",
+        "threads",
+        "cards_created",
+        "cards_needing_review",
+        "errors",
+        "started_at",
+        "finished_at",
+    }
+
+    def __init__(self, db: firestore.Client) -> None:
+        self._db = db
+
+    def load(self, import_id: str) -> dict | None:
+        snapshot = self._db.collection("imports").document(import_id).get()
+        if not snapshot.exists:
+            return None
+        data = snapshot.to_dict() or {}
+        return {"status": data.get("status"), "errors": data.get("errors", [])}
+
+    def update(self, import_id: str, **fields) -> None:
+        if not fields.keys() <= self.ALLOWED_FIELDS:
+            raise ValueError("unsupported import fields")
+        self._db.collection("imports").document(import_id).set(fields, merge=True)
 
 
 def _inventory_item(snapshot: firestore.DocumentSnapshot) -> InventoryItem:

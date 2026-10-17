@@ -22,7 +22,9 @@ job (`start_repair` again), starts with all gates `open`.
 
 Default gate for unsourced jobs: a job with no fault-card or manual source (its steps have source kind `general`)
 must pass `G_MAINS_OFF` before its first step, whatever that step's hazard. Power-on diagnosis happens in
-conversation before `start_repair`, so it is not blocked. `G_CAP_DISCHARGE` applies to any step tagged
+conversation before `start_repair`, so it is not blocked. General steps never need the power on: a voltage,
+supply or live test comes only from a fault card or manual, otherwise Ustaad says a qualified electrician should
+check. The gate cannot catch such a step (`G_MAINS_OFF` has already passed), so this rule lives in the instruction. `G_CAP_DISCHARGE` applies to any step tagged
 `capacitor`, from any source.
 
 ## Hazard tagger (general steps)
@@ -53,8 +55,8 @@ baaki checks mein madad kar sakta hoon."
    `step_card` that arrives while it holds an open gate (defence in depth).
 5. The system instruction says the same, but tests never rely on the model obeying it.
 
-Backstop on speech (not a gate): the tagger also runs over each of Ustaad's final captions, and a stop match sends
-`safety_stop`. It fires after the words have begun, so it is a backstop only and is not counted in the bypass tests.
+Backstop on speech (not a gate): the tagger also runs over each final caption, Ustaad's and the worker's, and a
+stop match sends `safety_stop`. It fires after the words have begun, so it is a backstop only and is not counted in the bypass tests.
 
 ## Tests (must all pass; "0/10 bypasses" in the deck comes from these)
 | # | Attempt | Expected |

@@ -1,4 +1,4 @@
-import { Camera, Check, Flashlight, LoaderCircle, X } from 'lucide-react'
+import { Camera, Check, Flashlight, ImageUp, LoaderCircle, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -32,6 +32,7 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
   const samples = samplesFor(gateId)
   const camera = useCamera()
   const fallback = useRef<HTMLInputElement>(null)
+  const picker = useRef<HTMLInputElement>(null)
   const [phase, setPhase] = useState<Phase>('ready')
   // Each server answer unlocks the sheet, even a second retake with the same reason (found on the phone, Oct 15).
   const [answersSeen, setAnswersSeen] = useState(answers)
@@ -207,6 +208,20 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
         </div>
       )}
 
+      {/* A photo or screenshot already on the phone (a manual page, a sticker, an earlier job). Never at a gate:
+          an old photo cannot show the power is off now. */}
+      <input
+        ref={picker}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        onChange={(e) => {
+          void take(e.target.files?.[0])
+          e.target.value = ''
+        }}
+      />
       <input
         ref={fallback}
         type="file"
@@ -229,6 +244,17 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
           <Camera aria-hidden className="size-6" />
           {t(phase === 'ready' && !retakeReason ? 'camera.take' : 'camera.retake')}
         </Button>
+        {!gateId && phase !== 'dark' && phase !== 'blurry' && (
+          <Button
+            variant="outline"
+            className="h-(--touch) gap-2 text-[length:var(--text-body)]"
+            disabled={busy}
+            onClick={() => picker.current?.click()}
+          >
+            <ImageUp aria-hidden className="size-6" />
+            {t('camera.pickFromPhone')}
+          </Button>
+        )}
         {(phase === 'dark' || phase === 'blurry') && (
           <Button variant="outline" className="h-(--touch) text-[length:var(--text-body)]" onClick={() => void upload(held.current!)}>
             {t('camera.sendAnyway')}

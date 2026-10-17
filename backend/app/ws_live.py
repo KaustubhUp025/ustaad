@@ -14,12 +14,14 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from google.adk.agents.live_request_queue import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.events import Event
+from google.adk.memory import VertexAiMemoryBankService
 from google.adk.runners import InMemoryRunner
 from google.cloud import firestore
 from google.genai import types
 from pydantic import ValidationError
 
 from agent.media_tools import MediaDesk, ReadPhoto
+from agent.memory import APP, recall, remember
 from agent.ustaad import build_ustaad
 from app import admission
 from app.demo_safe import demo_safe
@@ -50,7 +52,6 @@ logger = logging.getLogger(__name__)
 FIXTURE = Path(__file__).parents[2] / "seed/fixtures/live_session.jsonl"
 # Each job's open photo requests, kept across reconnects to this instance (session affinity routes them here).
 DESKS: dict[str, MediaDesk] = {}
-APP = "ustaad"
 # The phone pings every 20 s; a socket silent this long lost its network, and closing it frees its Live slot (T11).
 SILENT_CLOSE_S = 45
 # Speech code, and the wording the instruction uses: naming the script keeps captions out of Latin letters.
@@ -70,6 +71,17 @@ async def live_events(
     speech_code, language_name = LANGS[lang]
     db = firestore.Client(database=os.environ["FIRESTORE_DB"])
     jobs = JobStore(db)
+    # Memory is per worker and per database, so dev test sessions never reach the judges' demo worker.
+    user_id = f"{os.environ['FIRESTORE_DB']}:{worker_id}"
+    memory = (
+        VertexAiMemoryBankService(
+            project=os.environ["GOOGLE_CLOUD_PROJECT"],
+            location=os.getenv("MEMORY_LOCATION", "us-central1"),
+            agent_engine_id=os.environ["AGENT_ENGINE_ID"],
+        )
+        if os.getenv("AGENT_ENGINE_ID")
+        else None
+    )
     runner = InMemoryRunner(
         agent=build_ustaad(
             os.environ["LIVE_MODEL"],
@@ -87,8 +99,14 @@ async def live_events(
     # The repair tools and the gate callback read the job from here; the model never chooses it.
     session = await runner.session_service.create_session(
         app_name=APP,
-        user_id="demo",
-        state={"language_name": language_name, "lang": lang, "job_id": job_id, "worker_id": worker_id},
+        user_id=user_id,
+        state={
+            "language_name": language_name,
+            "lang": lang,
+            "job_id": job_id,
+            "worker_id": worker_id,
+            "memory_summary": await recall(memory, user_id) if memory else None,
+        },
     )
     config = RunConfig(
         streaming_mode=StreamingMode.BIDI,
@@ -101,10 +119,16 @@ async def live_events(
         session_resumption=types.SessionResumptionConfig(handle=resume),
         context_window_compression=types.ContextWindowCompressionConfig(sliding_window=types.SlidingWindow()),
     )
-    async for event in runner.run_live(
-        user_id="demo", session_id=session.id, live_request_queue=queue, run_config=config
-    ):
-        yield event
+    try:
+        async for event in runner.run_live(
+            user_id=user_id, session_id=session.id, live_request_queue=queue, run_config=config
+        ):
+            yield event
+    finally:
+        # The socket closing cancels this session; what was said is saved for his next one.
+        if memory:
+            ended = await runner.session_service.get_session(app_name=APP, user_id=user_id, session_id=session.id)
+            await remember(memory, user_id, ended.events)
 
 
 async def _send(ws: WebSocket, frame: Frame) -> None:

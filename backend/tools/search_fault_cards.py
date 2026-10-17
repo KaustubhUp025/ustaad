@@ -40,8 +40,9 @@ def _hit(card: FaultCard) -> CardHit:
         brand=card.brand,
         model=card.model,
         error_code=card.error_code,
-        symptom=card.symptom,
-        root_cause=card.root_cause,
+        # Ustaad speaks from English: Hinglish in his tool results pulls his replies into Hinglish (Oct 17).
+        symptom=card.symptom_en or card.symptom,
+        root_cause=card.root_cause_en or card.root_cause,
         hazard=card.hazard,
         steps=len(card.fix_steps),
         confidence=card.confidence,

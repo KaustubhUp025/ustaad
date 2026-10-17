@@ -5,7 +5,9 @@ from models.fault_card import FaultCard
 
 MERGE_SIMILARITY = 0.9
 LEVELS = ["none", "HV", "capacitor", "refrigerant"]
+# The English fields move with the words they translate.
 CONTENT = {"model", "series", "year_range", "appliance_type", "symptom", "root_cause", "fix_steps", "parts", "language"}
+CONTENT |= {"symptom_en", "root_cause_en", "fix_steps_en"}
 
 
 def match(card: FaultCard, candidates: list[tuple[FaultCard, float]]) -> FaultCard | None:

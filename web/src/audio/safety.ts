@@ -11,6 +11,13 @@ export type RepairView = {
   stop: Of<'safety_stop'> | null
 }
 
+// The step in the session language when the server translated it, with the original words kept small beside ▶.
+export function stepLines(step: Of<'step_card'>): { main: string; original: string | null } {
+  const translated = step.instruction_translated
+  if (!translated || translated === step.instruction) return { main: step.instruction, original: null }
+  return { main: translated, original: step.instruction }
+}
+
 export const noRepair: RepairView = { step: null, gate: null, failReason: null, stop: null }
 
 export function repairReducer(view: RepairView, frame: ServerFrame): RepairView {

@@ -6,9 +6,9 @@ import pytest
 from pydantic import ValidationError
 
 from models.fault_card import FaultCard
-from models.repair import RepairJob
-from models.tools import ConfirmSafetyIn, GateCheck, ProposedStep, StartRepairIn
-from tools.repair import confirm_safety, next_step, start_repair
+from models.repair import RepairJob, RepairStep
+from models.tools import ConfirmSafetyIn, GateCheck, ProposedStep, StartRepairIn, StepOut
+from tools.repair import GENERAL, confirm_safety, next_step, start_repair, step_card
 
 TELUGU = "కెపాసిటర్ దగ్గర పరీక్ష దశ"  # "test step near the capacitor"
 
@@ -130,3 +130,39 @@ def test_a_passed_gate_is_stored_on_the_job():
     )
     assert out.passed and out.reason is None
     assert job.gates == {"G_MAINS_OFF": "passed", "G_CAP_DISCHARGE": "open"}
+
+
+# Display-only English (language-design.md): each step keeps its words and carries the English beside them.
+
+
+def test_card_steps_carry_the_cards_english_in_order_and_proposed_steps_their_summary():
+    english = card("none", ["Test ek", "Test do"]).model_copy(update={"fix_steps_en": ["Test one", "Test two"]})
+    _, job = start_repair(StartRepairIn(card_ids=["fc_none"]), RepairJob(job_id="j_1"), [english])
+    assert [(s.instruction, s.instruction_en) for s in job.steps] == [("Test ek", "Test one"), ("Test do", "Test two")]
+    _, job = start_repair(general("Test summary"), RepairJob(job_id="j_1"), [])
+    assert (job.steps[0].instruction, job.steps[0].instruction_en) == ("Test instruction 1", "Test summary")
+
+
+def test_a_card_without_english_gives_steps_without_it():
+    _, job = start_repair(StartRepairIn(card_ids=["fc_none"]), RepairJob(job_id="j_1"), [card()])
+    assert job.steps[0].instruction_en is None
+
+
+def test_the_english_never_changes_hazard_order_or_gates():
+    plain = card("HV", ["Test a", "Test b"])
+    english = plain.model_copy(update={"fix_steps_en": ["Test capacitor gas brazing", "Test b"]})
+    _, without = start_repair(StartRepairIn(card_ids=["fc_HV"]), RepairJob(job_id="j_1"), [plain])
+    _, with_en = start_repair(StartRepairIn(card_ids=["fc_HV"]), RepairJob(job_id="j_1"), [english])
+    strip = [s.model_dump(exclude={"instruction_en"}) for s in with_en.steps]
+    assert strip == [s.model_dump(exclude={"instruction_en"}) for s in without.steps]
+    assert next_step(with_en)[0] == next_step(without)[0]
+
+
+@pytest.mark.parametrize(
+    ("lang", "english", "shown"),
+    [("en", "Test one", "Test one"), ("en", None, None), ("hi", "Test one", None), ("te", "Test one", None)],
+)
+def test_the_step_card_translation_is_the_english_only_in_an_english_session(lang, english, shown):
+    step = RepairStep(n=1, instruction="Test ek", instruction_en=english, hazard="none", source=GENERAL)
+    card = step_card(StepOut(job_id="j_1", of=1, step=step), lang)
+    assert (card.instruction, card.instruction_translated) == ("Test ek", shown)

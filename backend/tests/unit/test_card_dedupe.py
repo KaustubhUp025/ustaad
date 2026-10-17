@@ -94,3 +94,20 @@ def test_a_first_card_with_audio_keeps_its_credit():
     second = card(cid="fc_new", ids=("n1",))
     second = second.model_copy(update={"source": second.source.model_copy(update={"audio_uri": "gs://b/n.flac"})})
     assert merge(first, second).source.audio_uri == "gs://b/m.flac"
+
+
+def test_merge_moves_the_english_with_the_steps_it_translates():
+    old = card(confidence=0.5).model_copy(update={"fix_steps_en": ["Test English of fc_old"]})
+    merged = merge(old, card(cid="fc_new", confidence=0.9))
+    assert merged.fix_steps == ["Test step from fc_new"] and merged.fix_steps_en is None
+    FaultCard.model_validate(merged.to_public_dict())
+
+
+def test_the_english_never_changes_which_card_matches_or_what_a_merge_keeps_safe():
+    english = {"symptom_en": "Test other words", "root_cause_en": "Test", "fix_steps_en": ["Test capacitor gas"]}
+    old, new = card(confidence=0.5, hazard="HV"), card(cid="fc_new", confidence=0.9)
+    candidates = [(old, 0.95), (card(cid="fc_e5", code="E5"), 0.99)]
+    assert match(new.model_copy(update=english), candidates) == match(new, candidates) == old
+    plain, translated = merge(old, new), merge(old, new.model_copy(update=english))
+    safe = {"id", "hazard", "fix_steps", "source", "verified_count", "review_status", "confidence"}
+    assert translated.model_dump(include=safe) == plain.model_dump(include=safe)

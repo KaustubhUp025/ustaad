@@ -92,6 +92,7 @@ class StepCard(Frame):
     n: int
     of: int
     instruction: str
+    instruction_translated: str | None = None
     hazard: Hazard
     source: StepSource
 

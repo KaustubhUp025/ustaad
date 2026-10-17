@@ -36,7 +36,6 @@ from models.ws import (
     MediaRequest,
     MediaResult,
     SafetyGate,
-    StepCard,
 )
 from tools import repair
 from tools import request_media as rules
@@ -304,10 +303,11 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
         """Shows what next_step returned after a passed gate and returns the note that tells Ustaad."""
         if isinstance(after, StepOut):
             step = after.step
-            await desk.show(StepCard(job_id=after.job_id, of=after.of, **step.model_dump()))
+            await desk.show(repair.step_card(after, desk.lang))
             return (
-                f"[Safety check {gate_id} passed. The app handed out step {step.n} of {after.of}; it is on his screen: "
-                f'"{step.instruction}". Say this step to him now; do not call next_step until he reports back on it.]'
+                f"[Safety check {gate_id} passed. The app handed out step {step.n} of {after.of}, now on his screen: "
+                f'"{step.instruction_en or step.instruction}". Tell him this step now in the language he last spoke, '
+                "translating it if it is in another language; do not call next_step until he reports back on it.]"
             )
         if isinstance(after, SafetyGateOut):
             await desk.show(

@@ -73,6 +73,21 @@
       },
       "minItems": 1
     },
+    "symptom_en": {
+      "type": "string",
+      "description": "Optional display-only English of symptom"
+    },
+    "root_cause_en": {
+      "type": "string",
+      "description": "Optional display-only English of root_cause"
+    },
+    "fix_steps_en": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional display-only English of fix_steps: exactly as many items, item i translates fix_steps[i]. Never used for hazards, gates, step order, citations or safety logic."
+    },
     "parts": {
       "type": "array",
       "items": {

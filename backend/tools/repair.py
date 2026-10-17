@@ -16,6 +16,7 @@ from models.tools import (
     StepOut,
     StopRefer,
 )
+from models.ws import StepCard
 from tools.gates import EVIDENCE, open_gate
 from tools.hazard_tagger import tag
 
@@ -41,17 +42,20 @@ def start_repair(
 ) -> tuple[Started | StopRefer, RepairJob]:
     """`cards` are the fault cards named in `inp.card_ids`, in order. A step that hits a hard stop is never
     stored: the whole start returns STOP_REFER and the job is left as it was."""
-    drafts: list[tuple[str, str, StepSource]] = []  # instruction, hazard, source
+    drafts: list[tuple[str, str | None, str, StepSource]] = []  # instruction, its English, hazard, source
     for card in cards:
         if card.hazard == "refrigerant":
             return StopRefer(reason="refrigerant"), job
-        drafts += [(text, card.hazard, _card_source(card)) for text in card.fix_steps]
+        english = card.fix_steps_en or [None] * len(card.fix_steps)
+        drafts += [(t, e, card.hazard, _card_source(card)) for t, e in zip(card.fix_steps, english, strict=True)]
     for proposed in inp.steps:
         hazard, stop = tag(proposed.summary_en, "none")
         if stop:
             return StopRefer(reason=stop), job
-        drafts.append((proposed.instruction, hazard, GENERAL))
-    steps = [RepairStep(n=n, instruction=i, hazard=h, source=s) for n, (i, h, s) in enumerate(drafts, 1)]
+        drafts.append((proposed.instruction, proposed.summary_en, hazard, GENERAL))
+    steps = [
+        RepairStep(n=n, instruction=i, instruction_en=e, hazard=h, source=s) for n, (i, e, h, s) in enumerate(drafts, 1)
+    ]
     # A new plan starts with every gate open: power may have been switched back on since the last plan.
     job = RepairJob(job_id=job.job_id, steps=steps)
     return Started(of=len(steps), steps=[PlannedStep(n=s.n, hazard=s.hazard, source=s.source) for s in steps]), job
@@ -67,6 +71,16 @@ def next_step(job: RepairJob) -> tuple[StepOut | SafetyGateOut | RepairDone, Rep
     step = job.steps[job.current_step]
     return StepOut(job_id=job.job_id, of=len(job.steps), step=step), job.model_copy(
         update={"current_step": job.current_step + 1}
+    )
+
+
+def step_card(out: StepOut, lang: str) -> StepCard:
+    """The phone's card for a handed-out step: the original words, and the English for an English session. Other
+    languages get no translation yet, so the phone shows the original."""
+    step = out.step
+    translated = step.instruction_en if lang == "en" else None
+    return StepCard(
+        job_id=out.job_id, of=out.of, **step.model_dump(exclude={"instruction_en"}), instruction_translated=translated
     )
 
 

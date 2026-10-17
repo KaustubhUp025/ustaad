@@ -6,16 +6,24 @@ import { voiceNoteUrl } from '@/api/media'
 import { demoSession } from '@/api/session'
 import { cn } from '@/lib/utils'
 
-type Props = { label: string; audioUri: string | null }
+type Props = { kind: string; label: string; audioUri: string | null }
 
 // The step's source (DESIGN.md: "[▶ Ramesh · May 2025]"). With a voice note he can hear the senior's original words;
-// without one it is just the label.
-export function SourceChip({ label, audioUri }: Props) {
+// without one it is just the label. General guidance has no verified source, so it gets its own outline and never a
+// play button (SPEC §6 source tiers).
+export function SourceChip({ kind, label, audioUri }: Props) {
   const { t } = useTranslation()
   const [state, setState] = useState<'idle' | 'loading' | 'playing' | 'failed'>('idle')
   const audio = useRef<HTMLAudioElement | null>(null)
   useEffect(() => () => audio.current?.pause(), [])
 
+  if (kind === 'general') {
+    return (
+      <span className="inline-flex items-center rounded-sm border-2 border-dashed border-muted-foreground px-3 py-1 text-foreground">
+        {t('repair.source.general')}
+      </span>
+    )
+  }
   if (!audioUri) return <span>{label}</span>
 
   const toggle = async () => {

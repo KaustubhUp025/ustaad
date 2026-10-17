@@ -143,6 +143,8 @@ function JobScreen() {
               <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('repair.step', { n: step.n, of: step.of })}</p>
               <div className="text-[length:var(--text-sm)] text-muted-foreground">
                 <SourceChip
+                <SourceChip
+                  kind={step.source.kind}
                   label={step.source.kind === 'manual_photo' ? t('repair.source.manualPhoto') : step.source.label}
                   audioUri={step.source.audio_uri}
                 />

@@ -1,0 +1,63 @@
+{
+  "voltas_error_table": {
+    "legible": true,
+    "confidence": 0.92,
+    "brand": "Voltas",
+    "model": null,
+    "page_title": "Troubleshooting",
+    "error_codes": [
+      {"code": "EE", "meaning": "Indoor machine EE fault"},
+      {"code": "E1", "meaning": "Indoor fan fault"},
+      {"code": "E2", "meaning": "Indoor fan zero-crossing detection abnormal"},
+      {"code": "E3", "meaning": "Indoor coil fault and sensor fault"}
+    ],
+    "steps": [],
+    "warnings": [
+      "DUE TO HIGH VOLTAGE, DO NOT TOUCH THE TERMINALS IN THE CONTROL BOARD DURING OPERATION AND 5 MINUTES AFTER SWITCHING OFF. NEXT, CONFIRM THE VOLTAGE RECTIFICATION CIRCUIT BETWEEN DIODE BRIDGE (+) AND (-) HAS DROPPED TO BELOW 42V, BEFORE ACCESSING THE TERMINALS IN THE CONTROL BOARD."
+    ]
+  },
+  "blurry": {
+    "legible": false,
+    "confidence": 0.3,
+    "brand": null,
+    "model": null,
+    "page_title": null,
+    "error_codes": [],
+    "steps": [],
+    "warnings": []
+  },
+  "daikin_safety_checks": {
+    "legible": true,
+    "confidence": 0.9,
+    "brand": "Daikin",
+    "model": null,
+    "page_title": null,
+    "error_codes": [],
+    "steps": [
+      {
+        "instruction": "Check to make sure that the voltage between (+) and (–) of the power module is approx. 0 V before checking.",
+        "summary_en": "Check to make sure that the voltage between (+) and (–) of the power module is approx. 0 V before checking."
+      },
+      {
+        "instruction": "Discharge the capacitor completely before conducting repair work.",
+        "summary_en": "Discharge the capacitor completely before conducting repair work."
+      }
+    ],
+    "warnings": []
+  },
+  "daikin_ch61": {
+    "legible": true,
+    "confidence": 0.9,
+    "brand": "Daikin",
+    "model": null,
+    "page_title": null,
+    "error_codes": [{"code": "61", "meaning": "Cond. Pipe sensor temp. high"}],
+    "steps": [
+      {
+        "instruction": "Check the load condition. (Refrigerant, Pipe length, Blocked, ...)",
+        "summary_en": "Check the load condition. (Refrigerant, Pipe length, Blocked, ...)"
+      }
+    ],
+    "warnings": []
+  }
+}

@@ -48,7 +48,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | T25 | P2 | B | Seed: 80 cards, 200 jobs, 3 workers; clusters job + area map (S2) | SPEC §10 | cluster visible, badged "Demo data" | T15 | todo |
 | T26 | P0 | both | **Integration gate**: G2 + G3 on a real phone, dev | GOLDEN_PATHS | both pass; logged in STATUS.md, with the two T17 phone checks (BUILD-GUIDE T26) | T15, T16, T17, T18, T19, T23 | todo |
 | T36 | P2 | A | Side issues mid-repair: instruction paragraph, `park_repair` / `resume_repair`, `media[].reason`, close-job question (S7) | BUILD-GUIDE §9, SPEC §6, SAFETY.md | tests in BUILD-GUIDE §9.7 (A) pass; on phone: side photo mid-step → choose "baad mein" → same step resumes | T16, T17 | todo |
-| T37 | P2 | A | Manual / sticker photo: `kind:"document"`, ManualPage extraction, `manual_photo` source chip, "Manual photo" button (S7) | BUILD-GUIDE §9, contracts/ws-events.md | tests in BUILD-GUIDE §9.7 (B) pass; real photographed page cited on phone | T17, contracts PR merged | todo |
+| T37 | P2 | A | Manual / sticker photo: `kind:"document"`, ManualPage extraction, `manual_photo` source chip, "Manual photo" button (S7) | BUILD-GUIDE §9, contracts/ws-events.md | tests in BUILD-GUIDE §9.7 (B) pass; real photographed page cited on phone | T17, contracts PR merged | doing: §9.7 (B) tests pass on pages transcribed from the verified manuals; phone test with a real photographed page pending |
 
 ## General-appliance tier (T38 onward; before the freeze, and only after M2–M5, M6 and M8 work for AC)
 Lane A's code is folded into T12, T16 and T21 above. These rows are the rest. First in the cut order (SPEC §3).

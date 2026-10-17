@@ -8,6 +8,7 @@ from models.tools import (
     ConfirmSafetyIn,
     ConfirmSafetyOut,
     GateCheck,
+    ManualPage,
     PlannedStep,
     RepairDone,
     SafetyGateOut,
@@ -21,6 +22,7 @@ from tools.gates import EVIDENCE, open_gate
 from tools.hazard_tagger import tag
 
 GENERAL = StepSource(kind="general", label="General guidance", audio_uri=None, doc=None, page=None)
+MANUAL_PHOTO = StepSource(kind="manual_photo", label="Photo of manual", audio_uri=None, doc=None, page=None)
 MIN_GATE_CONFIDENCE = 0.7
 MAX_DISCHARGED_VOLTS = 5.0
 RETRY_MAINS = "Photo does not clearly show the MCB or isolator OFF, or the plug out. Send a clearer photo."
@@ -38,21 +40,24 @@ def _card_source(card: FaultCard) -> StepSource:
 
 
 def start_repair(
-    inp: StartRepairIn, job: RepairJob, cards: list[FaultCard]
+    inp: StartRepairIn, job: RepairJob, cards: list[FaultCard], page: ManualPage | None = None
 ) -> tuple[Started | StopRefer, RepairJob]:
-    """`cards` are the fault cards named in `inp.card_ids`, in order. A step that hits a hard stop is never
-    stored: the whole start returns STOP_REFER and the job is left as it was."""
+    """`cards` are the fault cards named in `inp.card_ids`, in order; `page` is the manual page named by
+    `inp.manual_request_id`. A step that hits a hard stop is never stored: the whole start returns STOP_REFER and
+    the job is left as it was."""
     drafts: list[tuple[str, str | None, str, StepSource]] = []  # instruction, its English, hazard, source
     for card in cards:
         if card.hazard == "refrigerant":
             return StopRefer(reason="refrigerant"), job
         english = card.fix_steps_en or [None] * len(card.fix_steps)
         drafts += [(t, e, card.hazard, _card_source(card)) for t, e in zip(card.fix_steps, english, strict=True)]
-    for proposed in inp.steps:
+    # A page's printed steps take the same tagging, gates and stops as proposed ones.
+    sourced = [(p, GENERAL) for p in inp.steps] + [(p, MANUAL_PHOTO) for p in (page.steps if page else [])]
+    for proposed, source in sourced:
         hazard, stop = tag(proposed.summary_en, "none")
         if stop:
             return StopRefer(reason=stop), job
-        drafts.append((proposed.instruction, proposed.summary_en, hazard, GENERAL))
+        drafts.append((proposed.instruction, proposed.summary_en, hazard, source))
     steps = [
         RepairStep(n=n, instruction=i, instruction_en=e, hazard=h, source=s) for n, (i, e, h, s) in enumerate(drafts, 1)
     ]

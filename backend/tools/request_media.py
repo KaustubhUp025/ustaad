@@ -3,7 +3,7 @@ worker's language, give up after MAX_RETAKES, and list the photo on the job. Pur
 A gate photo is not judged here: the gate check in tools/repair.py decides, and it has no retake limit."""
 
 from models.repair import JobMedia, MediaKind, MediaReason, Observation, RepairJob
-from models.tools import MediaCheck, RequestMediaIn, RequestMediaOut
+from models.tools import ManualPage, MediaCheck, RequestMediaIn, RequestMediaOut
 
 MIN_MEDIA_CONFIDENCE = 0.6
 MAX_RETAKES = 2
@@ -14,26 +14,31 @@ RETAKE: dict[str, dict[str, str]] = {
         "blurry": "फ़ोटो धुंधली है। थोड़ा पास से लो, फ़्लैश ऑन करो।",
         "dark": "फ़ोटो में अंधेरा है। फ़्लैश ऑन करके दोबारा लो।",
         "not_visible": "जो माँगा था वो फ़ोटो में नहीं दिख रहा। पूरा हिस्सा फ़्रेम में लेकर दोबारा लो।",
+        "illegible": "पेज पढ़ा नहीं जा रहा। पूरा पेज सीधा, रोशनी में रखकर दोबारा फ़ोटो लो।",
     },
     "te": {
         "blurry": "ఫోటో మసకగా ఉంది. కొంచెం దగ్గరగా తీయండి, ఫ్లాష్ ఆన్ చేయండి.",
         "dark": "ఫోటో చీకటిగా ఉంది. ఫ్లాష్ ఆన్ చేసి మళ్ళీ తీయండి.",
         "not_visible": "నేను అడిగినది ఫోటోలో కనిపించడం లేదు. ఆ భాగం మొత్తం ఫ్రేమ్‌లో వచ్చేలా మళ్ళీ తీయండి.",
+        "illegible": "పేజీ చదవలేకపోతున్నాను. పేజీ మొత్తం నేరుగా, వెలుతురులో ఉంచి మళ్ళీ ఫోటో తీయండి.",
     },
     "ta": {
         "blurry": "புகைப்படம் மங்கலாக உள்ளது. கொஞ்சம் அருகில் சென்று, ஃபிளாஷ் ஆன் செய்து எடுங்கள்.",
         "dark": "புகைப்படம் இருட்டாக உள்ளது. ஃபிளாஷ் ஆன் செய்து மீண்டும் எடுங்கள்.",
         "not_visible": "நான் கேட்ட பகுதி புகைப்படத்தில் தெரியவில்லை. அந்தப் பகுதி முழுவதும் தெரியும்படி மீண்டும் எடுங்கள்.",
+        "illegible": "பக்கத்தைப் படிக்க முடியவில்லை. முழுப் பக்கத்தையும் நேராக, வெளிச்சத்தில் வைத்து மீண்டும் புகைப்படம் எடுங்கள்.",
     },
     "bn": {
         "blurry": "ছবিটা ঝাপসা। একটু কাছ থেকে, ফ্ল্যাশ অন করে তুলুন।",
         "dark": "ছবিটা খুব অন্ধকার। ফ্ল্যাশ অন করে আবার তুলুন।",
         "not_visible": "যেটা চেয়েছিলাম সেটা ছবিতে দেখা যাচ্ছে না। পুরো অংশটা ফ্রেমে রেখে আবার তুলুন।",
+        "illegible": "পাতাটা পড়া যাচ্ছে না। পুরো পাতাটা সোজা করে, আলোয় রেখে আবার ছবি তুলুন।",
     },
     "en": {
         "blurry": "Photo is blurry. Move a little closer and turn the flash on.",
         "dark": "Photo is too dark. Turn the flash on and take it again.",
         "not_visible": "I can't see what I asked for. Get the whole part in the frame and take it again.",
+        "illegible": "I can't read the page. Hold the whole page straight, in good light, and take it again.",
     },
 }
 # A failed gate photo, on the camera sheet. Same rule as docs/SAFETY.md "On fail"; the model gets the check's reason.
@@ -72,6 +77,17 @@ GAVE_UP = "The photo is still unclear after the retakes. Do not ask for it again
 CANCELLED = "He did not send the photo. Do not ask again unless he offers; ask him what he sees."
 
 
+# The photo of a manual page or wiring sticker (BUILD-GUIDE §9.3): copied, never recalled.
+PAGE_QUESTION = (
+    "A repair technician photographed a page of an appliance manual or a wiring-diagram sticker. Copy only what is "
+    "printed, exactly; never add anything from memory. legible: false if you cannot read the page clearly, and then "
+    "leave every other field empty or null. confidence: 0 to 1, how sure you are of your reading. brand, model and "
+    "page_title as printed, else null. error_codes: each printed code with its printed meaning. steps: each printed "
+    "repair or check instruction in order, with instruction as printed and summary_en one line of English saying "
+    "the same. warnings: each printed caution or warning."
+)
+
+
 def question(inp: RequestMediaIn) -> str:
     if not inp.target:  # he sent it on his own, so there is nothing to match: judge only whether it is readable
         return (
@@ -108,6 +124,34 @@ def judge(check: MediaCheck, uri: str, retakes: int, lang: str, own: bool = Fals
         findings=check.findings,
         matches_expected=good,
         confidence=check.confidence,
+        follow_up=follow_up,
+        retaking=retake,
+    )
+    return out, retake
+
+
+def judge_page(page: ManualPage, uri: str, retakes: int, lang: str, brand: str | None) -> tuple[RequestMediaOut, bool]:
+    """Like `judge`, for a manual page. `brand`: the identified appliance's, if any. A page of another brand is not
+    used and not retaken: he may not have the right one, so Ustaad asks."""
+    other_brand = bool(page.brand and brand) and page.brand.strip().casefold() != brand.strip().casefold()
+    retake = not page.legible and retakes < MAX_RETAKES
+    if other_brand:
+        follow_up = (
+            f"This page is for {page.brand}, but the appliance is {brand.strip()}. Do not use it; tell him it looks "
+            "like another brand's page and ask for the right one."
+        )
+    elif retake:
+        follow_up = RETAKE[lang]["illegible"]
+    elif not page.legible:
+        follow_up = GAVE_UP
+    else:
+        follow_up = None
+    findings = [{"label": c.code, "value": c.meaning, "confidence": page.confidence} for c in page.error_codes]
+    out = RequestMediaOut(
+        media_uri=uri,
+        findings=findings,
+        matches_expected=page.legible and not other_brand,
+        confidence=page.confidence,
         follow_up=follow_up,
         retaking=retake,
     )

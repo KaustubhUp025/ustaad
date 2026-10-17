@@ -1,4 +1,4 @@
-import { Camera, Check, Mic } from 'lucide-react'
+import { BookOpen, Camera, Check, Mic } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useParams, useSearchParams } from 'react-router-dom'
@@ -82,7 +82,7 @@ function JobScreen() {
         <CameraSheet
           key={request.request_id}
           view={{ ...live.media, request }}
-          title={gate ? t(`repair.evidence.${gate.gate_id}`) : request.target || t('camera.ownTitle')}
+          title={gate ? t(`repair.evidence.${gate.gate_id}`) : request.target || t(request.kind === 'document' ? 'camera.manualTitle' : 'camera.ownTitle')}
           gateId={gate?.gate_id}
           jobId={id}
           onSent={(uri) => live.mediaReady(request.request_id, uri, request.kind)}
@@ -142,7 +142,10 @@ function JobScreen() {
               <span aria-hidden className="absolute top-1/2 -left-1.5 size-3 -translate-y-1/2 rounded-full border border-border bg-background" />
               <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('repair.step', { n: step.n, of: step.of })}</p>
               <div className="text-[length:var(--text-sm)] text-muted-foreground">
-                <SourceChip label={step.source.label} audioUri={step.source.audio_uri} />
+                <SourceChip
+                  label={step.source.kind === 'manual_photo' ? t('repair.source.manualPhoto') : step.source.label}
+                  audioUri={step.source.audio_uri}
+                />
                 {lines?.original && <p>{lines.original}</p>}
               </div>
               <p className="text-[length:var(--text-caption)]">{lines?.main}</p>
@@ -210,6 +213,19 @@ function JobScreen() {
         >
           <Mic aria-hidden className="size-9" />
         </button>
+          {!stop && !gate && !request ? (
+            <Button
+              variant="outline"
+              className="h-auto min-h-(--touch) flex-col gap-0.5 justify-self-end px-3 py-1 text-[length:var(--text-sm)]"
+              disabled={live.status !== 'ready'}
+              onClick={live.offerManual}
+            >
+              <BookOpen aria-hidden className="size-6" />
+              {t('camera.manualPhoto')}
+            </Button>
+          ) : (
+            <span />
+          )}
         </div>
         <p className={cn('text-[length:var(--text-sm)]', !stop && 'text-muted-foreground')}>
           {t(live.talking ? 'live.listening' : 'live.hold')}

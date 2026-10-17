@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from google.genai import types
 
-from agent.media_tools import MediaDesk, media_tools
+from agent.media_tools import PHOTO_ARRIVED, MediaDesk, media_tools
 from models.repair import RepairJob, RepairStep
 from models.tools import GateCheck, MediaCheck, RequestMediaIn
 from models.ws import GateResult, MediaCancel, MediaReady, MediaRequest, MediaResult, SafetyGate, StepCard
@@ -82,16 +82,20 @@ class FakeJobs:
 
 
 class FakeQueue:
-    """Collects what the desk sends the model: answers to its calls, and notices for requests it did not make."""
+    """Collects what the desk sends the model: answers to its calls, notices for requests it did not make, and the
+    "photo arrived" notes kept apart, so the tests that count notices are not about them (approved by A, Oct 17)."""
 
     def __init__(self):
         self.answers = []
         self.notices = []
+        self.arrived = []
 
     def send_content(self, content):
         part = content.parts[0]
         if part.function_response:
             self.answers.append(part.function_response)
+        elif part.text == PHOTO_ARRIVED:
+            self.arrived.append(part.text)
         else:
             self.notices.append(part.text)
 
@@ -341,6 +345,16 @@ async def test_a_server_opened_gate_photo_is_judged_and_ustaad_gets_a_notice():
     assert queue.answers == []
     assert len(queue.notices) == 2 and "G_MAINS_OFF" in queue.notices[1]
     assert not desk.ready(ready(rid))
+
+
+async def test_ustaad_hears_the_photo_arrived_before_its_check_ends():
+    # Phone test (Oct 17): 4-5 s of silence while a gate photo was checked. He now says he got it, at once.
+    desk, phone, _, _, _ = session(gate_checks=[MCB_OFF], job=gated_job())
+    said = []
+    desk.attach(phone.send, SimpleNamespace(send_content=lambda c: said.append(c.parts[0].text)), "hi")
+    await desk.open_gate("G_MAINS_OFF")
+    await photo(desk, phone.of(MediaRequest)[0].request_id)
+    assert said[0] == PHOTO_ARRIVED and "G_MAINS_OFF passed" in said[1]
 
 
 async def test_the_handed_out_step_is_said_in_his_language_not_read_out():

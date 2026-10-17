@@ -49,6 +49,13 @@ logger = logging.getLogger(__name__)
 VISION_TIMEOUT_S = 30
 
 
+# Said at once when a photo arrives: its check takes several seconds, and silence felt broken (phone test, Oct 17).
+PHOTO_ARRIVED = (
+    "[His photo arrived and is being checked; that takes a few seconds. In one short sentence, in the language he "
+    "last spoke, tell him you got it and are looking at it. Do not guess what it shows and do not say any step.]"
+)
+
+
 @dataclass
 class OpenRequest:
     request_id: str
@@ -155,6 +162,7 @@ class MediaDesk:
         # Only this request's folder: a photo uploaded for an earlier request cannot answer it (PR #25 review).
         if not request or request.inp.kind != frame.kind or not frame.uri.startswith(f"{self._prefix}{request.request_id}/"):
             return False
+        self._tell(types.Content(role="user", parts=[types.Part(text=PHOTO_ARRIVED)]))
         self.spawn(self.on_photo(request, frame.uri))
         return True
 
@@ -188,6 +196,9 @@ class MediaDesk:
             content = types.Content(role="user", parts=[types.Part(text=notice)])
         else:
             return
+        self._tell(content)
+
+    def _tell(self, content: types.Content) -> None:
         if self._queue:
             self._queue.send_content(content)
         else:

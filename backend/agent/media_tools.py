@@ -323,10 +323,15 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
         return rules.record(job, request.request_id, request.inp.kind, uri, findings, confidence, reason)
 
     desk.on_photo = on_photo
+    async def reopen_gate(gate_id: GateId) -> None:
+        # The gate first: with only the request, the phone skips the gate screen (phone test, Oct 17).
+        await desk.show(SafetyGate(gate_id=gate_id, message="Safety check first", required_evidence=EVIDENCE[gate_id]))
+        await desk.open_gate(gate_id)
+
     # After a reconnect, possibly on another instance: a gate before the next step needs its photo request again.
     gate = open_gate(jobs.load(desk.job_id))
     if gate:
-        desk.spawn(desk.open_gate(gate))
+        desk.spawn(reopen_gate(gate))
     tool = FunctionTool(request_media)
     tool.behavior = types.Behavior.NON_BLOCKING
     tool.response_scheduling = types.FunctionResponseScheduling.WHEN_IDLE

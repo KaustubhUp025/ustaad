@@ -363,6 +363,18 @@ async def test_a_reconnect_reopens_the_gate_request_from_the_job_alone():
     assert [r.target for r in phone.of(MediaRequest)] == [EVIDENCE["G_MAINS_OFF"]]
 
 
+async def test_a_reconnect_shows_the_gate_before_its_photo_request():
+    # Phone test (Oct 17): after a reload the phone got only the request, so it skipped the gate screen and showed
+    # the server's English evidence text as the sheet title.
+    desk = MediaDesk("j_1", "media")
+    phone = Phone()
+    desk.attach(phone.send, FakeQueue(), "hi")
+    media_tools(desk, FakeJobs(gated_job()), None)
+    await asyncio.gather(*desk.tasks)
+    assert [type(f) for f in phone.frames] == [SafetyGate, MediaRequest]
+    assert phone.of(SafetyGate)[0].gate_id == "G_MAINS_OFF"
+
+
 # A vision call that fails or hangs must not leave the sheet waiting forever.
 
 
@@ -475,9 +487,11 @@ async def test_a_passed_gate_before_another_gate_opens_that_gate_instead_of_a_st
     step = RepairStep(n=1, instruction="Test step at the capacitor", hazard="capacitor", source=GENERAL)
     desk, phone, queue, jobs, _ = session(gate_checks=[MCB_OFF], job=RepairJob(job_id="j_1", steps=[step]))
     await desk.open_gate("G_MAINS_OFF")
+    await asyncio.gather(*desk.tasks)
+    shown = len(phone.frames)  # the session opened on a gated job, so the phone already has the MCB gate
     await photo(desk, phone.of(MediaRequest)[0].request_id)
     assert phone.of(StepCard) == []
-    assert [g.gate_id for g in phone.of(SafetyGate)] == ["G_CAP_DISCHARGE"]
+    assert [g.gate_id for g in phone.frames[shown:] if isinstance(g, SafetyGate)] == ["G_CAP_DISCHARGE"]
     assert [r.target for r in phone.of(MediaRequest)][-1] == EVIDENCE["G_CAP_DISCHARGE"]
     assert jobs.job.current_step == 0
     assert "Test step at the capacitor" not in queue.notices[0] and "G_CAP_DISCHARGE" in queue.notices[0]

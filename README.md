@@ -3,7 +3,7 @@
 Ustaad is a voice-first assistant for Indian AC and appliance repair technicians. It turns a technician group's
 WhatsApp voice notes into searchable, cited fault cards, guides a worker step by step by voice in Hindi, Telugu,
 Tamil or Bengali while he stands at the broken unit, asks for photos when it needs to see, stops him at safety
-steps, checks his stock and gets quotes from his parts shops on Telegram.
+steps, checks his stock and gets quotes from his parts shops (on Telegram for the demo; WhatsApp once Meta verifies us).
 
 Built for the Google Cloud AI Builder Cup 2026 — theme: Future of Work & Enterprise Productivity.
 
@@ -17,7 +17,7 @@ Seeded and synthetic data is labelled in the app.
 
 ## Built with
 Gemini Live and Gemini Flash on Google Cloud Agent Platform, Agent Development Kit, Memory Bank, Agent Search,
-Cloud Run, Firestore, Cloud Storage, Firebase Hosting, Places API, Telegram Bot API.
+Cloud Run, Firestore, Cloud Storage, Firebase Hosting, Places API, Telegram Bot API (WhatsApp Cloud API is the production path, blocked on Meta verification).
 Built with AI coding agents under one shared rule set (`AGENTS.md`); each PR records the tools used (see `docs/WORKFLOW.md`).
 
 ## For the team

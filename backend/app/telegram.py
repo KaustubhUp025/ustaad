@@ -30,6 +30,8 @@ QUESTION = (
     'number ("kal tak" is 1440, "1 ghante mein" is 60), null if not said. confidence 0-1: how sure you are of these '
     "fields."
 )
+# Fixed text: a vendor's reply, chat or quote IDs, the bot token or exception text must never reach the logs.
+PARSE_FAILED = "vendor reply not parsed; the quote waits for the next reply"
 UNREAD = ParsedReply(price_inr=None, available=None, eta=None, eta_minutes=None, confidence=0)
 
 
@@ -72,7 +74,7 @@ def _apply(
     try:
         return store.update_quote(found[0].id, found[1].id, change)
     except quotes.IllegalTransition:
-        logger.info("vendor update dropped: quote %s is past it", found[1].id)
+        logger.info("vendor update dropped: the quote is past it")
         return None
 
 
@@ -108,8 +110,9 @@ async def _reply(
         reply = await (
             parser.voice(await bot.download_file(msg.voice.file_id)) if msg.voice else parser.text(msg.text)
         )
-    except Exception:
+    except Exception:  # noqa: BLE001 — Flash, ffmpeg or download errors can carry the reply; only PARSE_FAILED is logged
         # Back to waiting, so the vendor's next message is still read.
         _apply(store, found, lambda q: quotes.parsed(q, UNREAD, datetime.now(UTC)))
-        raise
+        logger.warning(PARSE_FAILED)
+        return
     _apply(store, found, lambda q: quotes.parsed(q, reply, datetime.now(UTC)))

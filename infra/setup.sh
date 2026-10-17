@@ -50,7 +50,7 @@ gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
 
 # Secrets with a placeholder version so the first deploy works; replace the bot token from @BotFather (README):
 #   read -rs T && printf '%s' "$T" | gcloud secrets versions add tg-bot-token --data-file=-
-for s in tg-bot-token places-api-key; do
+for s in tg-bot-token wa-token wa-verify-token wa-app-secret places-api-key; do
   if ! gcloud secrets describe "$s" >/dev/null 2>&1; then
     gcloud secrets create "$s" --replication-policy=automatic
     printf 'placeholder' | gcloud secrets versions add "$s" --data-file=-

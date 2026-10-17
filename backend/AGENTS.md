@@ -1,7 +1,7 @@
 # backend/ — local rules (the root AGENTS.md also applies)
 
 - Layout: `app/` FastAPI (routers, `ws_live.py`, `telegram.py` vendor webhook) · `agent/` agent factory + instruction (human-owned) ·
-  `tools/` pure functions · `models/` Pydantic contracts · `jobs/` Cloud Run Jobs.
+  `tools/` pure functions · `models/` Pydantic contracts · `jobs/` Cloud Run Jobs · `wa/` WhatsApp client (blocked; Telegram for now).
 - Each tool: `tools/<name>.py` + `tests/unit/test_<name>.py`. Inputs/outputs are models from `models/`.
 - External calls go through one thin client per service (`clients/gemini.py`, `clients/firestore.py`, `clients/telegram.py`)
   so tests can swap in fakes. Never call SDKs directly from tools.

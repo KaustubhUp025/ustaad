@@ -8,7 +8,7 @@ import pytest
 
 from app.main import app
 from app.quotes import quote_store
-from app.telegram import reply_parser
+from app.telegram import PARSE_FAILED, reply_parser
 from clients.telegram import telegram_bot
 from models.quotes import ParsedReply
 from tests.unit.fake_quotes import FakeBot, FakeQuoteStore, sent_request
@@ -162,13 +162,22 @@ async def test_commands_and_unknown_chats_are_ignored(world):
     assert parser.texts == []
 
 
-async def test_a_failed_parse_leaves_the_quote_waiting_for_the_next_reply(world):
+@pytest.mark.parametrize("content", [{"text": "250 rs, call 9999999999"}, {"voice": {"file_id": "f_secret"}}])
+async def test_a_failed_parse_logs_one_fixed_line_and_leaves_the_quote_waiting(world, caplog, content):
     store, _, parser, qrid = world
+    leak = "token=123:SYNTHETIC_TOKEN reply=250 rs"
 
-    async def broken(text):
-        raise RuntimeError("Flash unavailable")
+    async def broken(_):
+        raise RuntimeError(leak)
 
-    parser.text = broken
-    with pytest.raises(RuntimeError):
-        await post(message(11, 1001, text="250"))
+    parser.text = parser.voice = broken
+    caplog.set_level("DEBUG")
+    response = await post(message(11, 1001, **content))
+    assert response.status_code == 200
     assert quote_of(store, qrid, "v_a").state == "SENT"
+    assert [(r.getMessage(), r.exc_info) for r in caplog.records if r.name.startswith("app")] == [
+        (PARSE_FAILED, None)
+    ]
+    # Every logger, not only ours (the test client's own request line is here too).
+    for secret in (leak, "9999999999", "f_secret", qrid, quote_of(store, qrid, "v_a").id, "1001", SECRET):
+        assert secret not in caplog.text

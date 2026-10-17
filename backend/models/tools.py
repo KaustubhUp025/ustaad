@@ -85,6 +85,30 @@ class MediaCheck(BaseModel):
     findings: list[Observation]
 
 
+class ManualCode(BaseModel):
+    code: str
+    meaning: str
+
+
+class ManualStep(BaseModel):
+    instruction: str  # as printed
+    summary_en: str  # one line of English: what the hazard tagger reads
+
+
+class ManualPage(BaseModel):
+    """What Flash vision copies from a photographed manual page or wiring sticker (BUILD-GUIDE §9.3): only what is
+    printed. An illegible page has legible=false and nothing else."""
+
+    legible: bool
+    confidence: Confidence
+    brand: str | None
+    model: str | None
+    page_title: str | None
+    error_codes: list[ManualCode]
+    steps: list[ManualStep]
+    warnings: list[str]
+
+
 class RequestMediaOut(BaseModel):
     media_uri: str | None
     findings: Observations
@@ -108,11 +132,13 @@ class ProposedStep(BaseModel):
 class StartRepairIn(BaseModel):
     card_ids: list[str] = []
     steps: list[ProposedStep] = []
+    # The request ID of a checked photo of his manual page (BUILD-GUIDE §9.3): its printed steps are the plan.
+    manual_request_id: str | None = None
 
     @model_validator(mode="after")
     def cards_or_steps(self) -> "StartRepairIn":
-        if bool(self.card_ids) == bool(self.steps):
-            raise ValueError("pass card_ids or proposed steps, not both and not neither")
+        if [bool(self.card_ids), bool(self.steps), bool(self.manual_request_id)].count(True) != 1:
+            raise ValueError("pass exactly one of card_ids, proposed steps or manual_request_id")
         return self
 
 

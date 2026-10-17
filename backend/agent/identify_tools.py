@@ -36,10 +36,13 @@ def identify_tools(desk: MediaDesk, read_photo: ReadPhoto) -> list[FunctionTool]
             return NOTHING.model_dump(mode="json")
         try:
             read = await asyncio.wait_for(read_photo(QUESTION, media_uri, NameplateRead), VISION_TIMEOUT_S)
-        except Exception:  # quota, network or a hung call: nothing read, so he is asked for the photo again
-            logger.exception("identify failed")
+        except Exception as exc:  # noqa: BLE001 — quota, network or a hung call: nothing read, he is asked again
+            # Only the class: the error text can carry the photo's URI, a token or what the photo shows.
+            logger.error("identify failed (%s)", type(exc).__name__)
             return NOTHING.model_dump(mode="json")
         out = identify(read)
+        if out.readable and out.brand:
+            desk.brand = out.brand
         await desk.show(Identified(brand=out.brand, model=out.model, error_code=out.error_code, confidence=out.confidence))
         return out.model_dump(mode="json")
 

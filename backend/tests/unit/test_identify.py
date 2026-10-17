@@ -139,3 +139,23 @@ async def test_a_failed_vision_call_returns_nothing_read():
     out = await tool.run_async(args={"media_uri": "gs://bucket/jobs/j_1/r_1/a.jpg"}, tool_context=None)
     assert (out["error_code"], out["confidence"]) == (None, 0)
     assert desk.shown == []
+
+
+async def test_a_readable_nameplate_sets_the_brand_a_manual_page_is_checked_against():
+    desk = Desk()
+    (tool,) = identify_tools(desk, read_photo_returning(recorded("nameplate_voltas"))[0])
+    await tool.func(media_uri="gs://bucket/jobs/j_1/r_1/a.jpg")
+    assert desk.brand == "Voltas"
+
+
+async def test_a_failed_vision_call_logs_only_a_fixed_message(caplog):
+    caplog.set_level("DEBUG")
+
+    async def failing(question, uri, schema):
+        raise RuntimeError("gs://bucket/jobs/j_1/r_1/a.jpg?X-Goog-Signature=SYNTHETIC_TOKEN reads: Raju 98xxxxxx")
+
+    (tool,) = identify_tools(Desk(), failing)
+    await tool.run_async(args={"media_uri": "gs://bucket/jobs/j_1/r_1/a.jpg"}, tool_context=None)
+    assert [r.getMessage() for r in caplog.records] == ["identify failed (RuntimeError)"]
+    assert all(r.exc_info is None and r.exc_text is None for r in caplog.records)
+    assert "SYNTHETIC_TOKEN" not in caplog.text and "gs://" not in caplog.text

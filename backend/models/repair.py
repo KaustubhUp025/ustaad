@@ -49,6 +49,8 @@ class RepairStep(BaseModel):
     instruction: str
     # Display-only English of `instruction`; never decides hazard, gates or order.
     instruction_en: str | None = None
+    # Display-only translation into the job's `translation_lang`; never decides hazard, gates or order.
+    instruction_translated: str | None = None
     hazard: Hazard
     source: StepSource
 
@@ -87,3 +89,5 @@ class RepairJob(BaseModel):
     outcome: str | None = None
     parts_used: list[PartUsed] = []
     closed_at: AwareDatetime | None = None
+    # BCP-47 code of every step's instruction_translated; None while the steps have no translation.
+    translation_lang: str | None = None

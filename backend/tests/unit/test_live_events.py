@@ -128,3 +128,10 @@ def test_backstop_waits_for_the_final_caption_and_ignores_hazard_rows():
     assert to_frames(said("ustaad", "PCB ke terminal dekho", False), {}) == [
         Caption(who="ustaad", text="PCB ke terminal dekho", final=True)
     ]
+
+
+def test_backstop_leaves_power_on_diagnosis_talk_alone():
+    # Power-on diagnosis happens in conversation before start_repair (SAFETY.md), so it is not a stop on speech.
+    assert to_frames(said("ustaad", "Check karo supply aa rahi hai ya nahi", False), {}) == [
+        Caption(who="ustaad", text="Check karo supply aa rahi hai ya nahi", final=True)
+    ]

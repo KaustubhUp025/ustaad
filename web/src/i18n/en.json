@@ -40,6 +40,7 @@
       "microwave_hv": "A microwave holds a high voltage that can kill, even when unplugged. Only a trained technician should open it. I can help with the other checks.",
       "crt": "A picture tube keeps a dangerous charge even when switched off. Only a trained technician should work on it. I can help with the other checks.",
       "geyser_open": "Opening a geyser means hot water, pressure and mains power. Only a trained technician should do it. I can help with the other checks.",
+      "power_on": "This check needs the power on. A qualified electrician should do it. I can help with the other checks.",
       "other": "This work isn't safe to guide. Only a trained technician should do it. I can help with the other checks."
     },
     "source": {

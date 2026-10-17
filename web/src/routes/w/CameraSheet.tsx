@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { uploadPhoto } from '@/api/media'
 import type { MediaView } from '@/audio/media'
-import { prepare } from '@/camera/photo'
+import { tryPrepare } from '@/camera/photo'
 import { samplesFor } from '@/camera/samples'
 import { useCamera } from '@/camera/useCamera'
 import { Button } from '@/components/ui/button'
@@ -79,7 +79,12 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
 
   const take = async (photo: Blob | undefined) => {
     if (!photo) return
-    const { jpeg, problem } = await prepare(photo)
+    const prepared = await tryPrepare(photo)
+    if (!prepared) {
+      setPhase('failed')
+      return
+    }
+    const { jpeg, problem } = prepared
     held.current = jpeg
     if (problem) setPhase(problem)
     else await upload(jpeg)

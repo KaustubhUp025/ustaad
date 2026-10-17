@@ -20,3 +20,13 @@ export async function prepare(photo: Blob): Promise<{ jpeg: Blob; problem: Retur
   const jpeg = await full.convertToBlob({ type: 'image/jpeg', quality: QUALITY })
   return { jpeg, problem: photoProblem(measured), measured }
 }
+
+// A photo the browser cannot decode (a broken file, or a gallery format it does not read) rejects in prepare; the
+// sheet shows its failed state instead of an unhandled rejection that leaves it looking ready (PR #44 review).
+export async function tryPrepare(photo: Blob, prep = prepare): Promise<Awaited<ReturnType<typeof prepare>> | null> {
+  try {
+    return await prep(photo)
+  } catch {
+    return null
+  }
+}

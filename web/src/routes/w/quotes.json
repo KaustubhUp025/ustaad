@@ -1,0 +1,50 @@
+{
+  "frame": {
+    "v": 1,
+    "type": "quotes",
+    "quote_request_id": "qr_fixture",
+    "items": [
+      {
+        "quote_id": "q_voice",
+        "vendor": "Fixture Electricals",
+        "distance_km": null,
+        "price_inr": 3400,
+        "available": true,
+        "eta": "45 min",
+        "from_voice": true
+      }
+    ]
+  },
+  "response": {
+    "request": {
+      "id": "qr_fixture",
+      "job_id": "j_fixture",
+      "worker_id": "w_fixture",
+      "part": "PCB",
+      "specs": "",
+      "qty": 1,
+      "vendor_ids": ["v_1"],
+      "status": "open",
+      "approved_quote_id": null,
+      "created_at": "2026-10-17T00:00:00Z",
+      "expires_at": "2026-10-17T00:30:00Z"
+    },
+    "quotes": [
+      {
+        "id": "q_voice",
+        "vendor_id": "v_1",
+        "vendor_name": "Fixture Electricals",
+        "state": "QUOTED",
+        "price_inr": 3400,
+        "available": true,
+        "eta": "45 min",
+        "eta_minutes": 45,
+        "from_voice": true,
+        "raw_text": null,
+        "media_uri": null,
+        "parsed_confidence": 0.9,
+        "updated_at": "2026-10-17T00:00:00Z"
+      }
+    ]
+  }
+}

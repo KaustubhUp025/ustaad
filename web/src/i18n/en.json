@@ -124,5 +124,24 @@
     "importItem": "Import {{number}}",
     "cardsCreatedBadge": "{{count}} cards created",
     "errors": { "pipeline_failed": "Import failed. Try the export again.", "date_order_ambiguous": "The chat dates could not be understood. Export the chat again.", "attachment_failed": "One attachment could not be read and was kept without enrichment.", "thread_failed": "One chat thread could not be read and was skipped." }
+  },
+  "quotes": {
+    "title": "Parts quotes",
+    "waiting": "Waiting for shop replies…",
+    "voiceReply": "Voice reply",
+    "availability": "Availability",
+    "available": "Available",
+    "unavailable": "Not available",
+    "replyPending": "Waiting for reply",
+    "price": "Price",
+    "pricePending": "Price not received",
+    "eta": "ETA",
+    "etaPending": "ETA not received",
+    "distance": "Distance",
+    "distanceValue": "{{distance}} km",
+    "approve": "Approve quote",
+    "approved": "Quote approved",
+    "loadFailed": "Quotes didn't load. Check the network, then try again.",
+    "approvalFailed": "Quote could not be approved. Check the replies, then try again."
   }
 }

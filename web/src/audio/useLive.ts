@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { type LiveConnection, type LiveStatus, type MediaKind, type ServerFrame, openLive } from './liveClient'
 import { mediaReducer, noMedia } from './media'
+import { noQuotes, quotesReducer } from './quotes'
 import { noRepair, repairReducer } from './safety'
 
 export type CaptionLine = { who: 'user' | 'ustaad'; text: string; final: boolean }
@@ -21,6 +22,7 @@ export function useLive(lang: string, jobId: string) {
   const [captions, setCaptions] = useState<CaptionLine[]>([])
   const [repair, setRepair] = useState(noRepair)
   const [media, setMedia] = useState(noMedia)
+  const [quotes, setQuotes] = useState(noQuotes)
   const [talking, setTalking] = useState(false)
   const [micBlocked, setMicBlocked] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -34,6 +36,7 @@ export function useLive(lang: string, jobId: string) {
         if (frame.type === 'caption') setCaptions((lines) => addCaption(lines, frame))
         setRepair((view) => repairReducer(view, frame))
         setMedia((view) => mediaReducer(view, frame))
+        setQuotes((view) => quotesReducer(view, frame))
       },
       setStatus,
     )
@@ -46,6 +49,7 @@ export function useLive(lang: string, jobId: string) {
     captions,
     repair,
     media,
+    quotes,
     talking,
     micBlocked,
     async startTalking() {

@@ -181,3 +181,17 @@ async def test_a_failed_parse_logs_one_fixed_line_and_leaves_the_quote_waiting(w
     # Every logger, not only ours (the test client's own request line is here too).
     for secret in (leak, "9999999999", "f_secret", qrid, quote_of(store, qrid, "v_a").id, "1001", SECRET):
         assert secret not in caplog.text
+
+
+async def test_an_unclear_reply_gets_one_question_then_the_answer_is_read(world):
+    store, bot, parser, qrid = world
+    parser.reply = ParsedReply(price_inr=None, available=True, eta=None, eta_minutes=None, confidence=0.9)
+    await post(message(12, 1001, text="haan hai"))
+    await post(message(13, 1001, text="haan"))
+    assert quote_of(store, qrid, "v_a").state == "CLARIFY"
+    assert [(chat, text.splitlines()[0]) for chat, text, _ in bot.sent] == [(1001, f"Ustaad stock request #{qrid}")]
+    assert "Sorry, we could not read the price" in bot.sent[0][1]
+    parser.reply = QUOTE_250
+    await post(message(14, 1001, text="250, kal tak"))
+    assert (quote_of(store, qrid, "v_a").state, quote_of(store, qrid, "v_a").price_inr) == ("QUOTED", 250)
+    assert len(bot.sent) == 1

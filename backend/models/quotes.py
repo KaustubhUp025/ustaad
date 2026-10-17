@@ -77,3 +77,18 @@ class RequestQuotesOut(BaseModel):
 
     quote_request_id: str | None
     vendors: list[str]
+
+
+class NearbyShop(BaseModel):
+    """A Places shop near the worker; not on the bot, so request_quotes cannot reach it."""
+
+    name: str
+    address: str | None
+    distance_km: float | None
+
+
+class FindVendorsOut(BaseModel):
+    """`saved`: the shops request_quotes reaches; `nearby`: other shops from Places, nearest first."""
+
+    saved: list[str]
+    nearby: list[NearbyShop]

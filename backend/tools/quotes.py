@@ -12,7 +12,7 @@ EXPIRES_AFTER = timedelta(minutes=30)
 # Below this, a parsed price is not trusted and the vendor's next message is read instead.
 MIN_CONFIDENCE = 0.6
 
-Event = Literal["sent", "reply", "available", "quoted", "unclear", "declined", "approved", "expired"]
+Event = Literal["sent", "reply", "available", "quoted", "unclear", "unread", "declined", "approved", "expired"]
 TRANSITIONS: dict[tuple[QuoteState, Event], QuoteState] = {
     ("CREATED", "sent"): "SENT",
     ("SENT", "reply"): "PARSING",
@@ -20,7 +20,9 @@ TRANSITIONS: dict[tuple[QuoteState, Event], QuoteState] = {
     ("SENT", "declined"): "DECLINED",
     ("PARSING", "available"): "PARSING",
     ("PARSING", "quoted"): "QUOTED",
-    ("PARSING", "unclear"): "SENT",
+    ("PARSING", "unclear"): "CLARIFY",
+    # The parser failed, not the vendor: wait for his next message without asking him again.
+    ("PARSING", "unread"): "SENT",
     ("PARSING", "declined"): "DECLINED",
     ("QUOTED", "available"): "QUOTED",
     ("QUOTED", "declined"): "DECLINED",
@@ -28,7 +30,15 @@ TRANSITIONS: dict[tuple[QuoteState, Event], QuoteState] = {
     ("CREATED", "expired"): "EXPIRED",
     ("SENT", "expired"): "EXPIRED",
     ("PARSING", "expired"): "EXPIRED",
+    ("CLARIFY", "reply"): "PARSING",
+    ("CLARIFY", "available"): "CLARIFY",
+    ("CLARIFY", "declined"): "DECLINED",
+    ("CLARIFY", "expired"): "EXPIRED",
 }
+ASK_AGAIN = (
+    "Sorry, we could not read the price. Please reply with the price per piece in Rs and the delivery time, "
+    "for example: 250, kal tak"
+)
 BUTTON_EVENTS: dict[str, Event] = {"avail": "available", "na": "declined"}
 
 
@@ -138,6 +148,25 @@ def parsed(quote: QuoteDoc, reply: ParsedReply, now: datetime) -> QuoteDoc:
     return _move(quote, "unclear", now, available=reply.available or quote.available, **said)
 
 
+def unread(quote: QuoteDoc, now: datetime) -> QuoteDoc:
+    return _move(quote, "unread", now)
+
+
+def ask_again(before: QuoteDoc, after: QuoteDoc) -> bool:
+    """One follow-up question per quote (SPEC §7): only on the first move into CLARIFY."""
+    return after.state == "CLARIFY" and before.state != "CLARIFY"
+
+
+def clarify_text(request: QuoteRequest) -> str:
+    return "\n".join(
+        [
+            f"Ustaad stock request #{request.id}",
+            f"{request.part} x {request.qty}",
+            ASK_AGAIN,
+        ]
+    )
+
+
 def _expired(request: QuoteRequest, now: datetime) -> bool:
     return request.status == "open" and now >= request.expires_at
 
@@ -175,13 +204,13 @@ def match(
     reply_to: int | None = None,
 ) -> tuple[QuoteRequest, QuoteDoc] | None:
     """Which of a vendor's open quotes a message is for: the button's quote, the quote whose request he replied to,
-    else his newest quote still waiting for a reply."""
+    else his newest quote still waiting for a reply (sent, or asked again)."""
     if quote_id is not None:
         return next((c for c in candidates if c[1].id == quote_id), None)
     replied_to = next(
         (c for c in candidates if reply_to is not None and c[1].tg_message_id == reply_to), None
     )
-    waiting = [c for c in candidates if c[1].state == "SENT"]
+    waiting = [c for c in candidates if c[1].state in ("SENT", "CLARIFY")]
     return replied_to or max(waiting, key=lambda c: c[0].created_at, default=None)
 
 

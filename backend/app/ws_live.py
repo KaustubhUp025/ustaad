@@ -25,8 +25,9 @@ from app import admission
 from app.demo_safe import demo_safe
 from app.live_events import to_frames
 from app.session import verify
-from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore, QuoteStore
+from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore, QuoteStore, WorkerStore
 from clients.gemini import read_photo
+from clients.places import places_client
 from clients.storage import object_md5
 from clients.telegram import telegram_bot
 from models.ws import (
@@ -79,6 +80,8 @@ async def live_events(
             InventoryStore(db),
             QuoteStore(db),
             telegram_bot(),
+            WorkerStore(db),
+            places_client(),
             desk,
             _photo_reader(db),
         ),

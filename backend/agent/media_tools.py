@@ -217,8 +217,9 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
         gate_id: GateId | None = None,
     ) -> None:
         """Asks him for a photo (or a video, or with kind "document" a photo of a manual page) when seeing it would
-        change your next step. `target`: what to capture, in his language. `framing_tip`: how, e.g. "Flash on, 20 cm
-        door". A SAFETY_GATE's photo is asked for already; do not ask for it here. You can keep talking while he
+        change your next step. `target`: what to capture. `framing_tip`: how to hold or light it. Both show on his
+        screen beside the app's own words, so write them in his language's own script (Hindi in Devanagari, Telugu
+        in Telugu script), never in Roman letters unless he speaks English. A SAFETY_GATE's photo is asked for already; do not ask for it here. You can keep talking while he
         takes it. The result comes later, once per photo: when `retaking` is true, tell him the `follow_up` reason
         briefly; his retake arrives on its own, so do not ask again with this tool. Otherwise use the findings, or
         do what `follow_up` says."""

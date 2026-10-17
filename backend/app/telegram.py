@@ -32,7 +32,6 @@ QUESTION = (
 )
 # Fixed text: a vendor's reply, chat or quote IDs, the bot token or exception text must never reach the logs.
 PARSE_FAILED = "vendor reply not parsed; the quote waits for the next reply"
-UNREAD = ParsedReply(price_inr=None, available=None, eta=None, eta_minutes=None, confidence=0)
 
 
 class ReplyParser:
@@ -112,7 +111,9 @@ async def _reply(
         )
     except Exception:  # noqa: BLE001 — Flash, ffmpeg or download errors can carry the reply; only PARSE_FAILED is logged
         # Back to waiting, so the vendor's next message is still read.
-        _apply(store, found, lambda q: quotes.parsed(q, UNREAD, datetime.now(UTC)))
+        _apply(store, found, lambda q: quotes.unread(q, datetime.now(UTC)))
         logger.warning(PARSE_FAILED)
         return
-    _apply(store, found, lambda q: quotes.parsed(q, reply, datetime.now(UTC)))
+    after = _apply(store, found, lambda q: quotes.parsed(q, reply, datetime.now(UTC)))
+    if after is not None and quotes.ask_again(found[1], after):
+        await bot.send_message(msg.chat.id, quotes.clarify_text(found[0]))

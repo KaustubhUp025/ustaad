@@ -1,6 +1,6 @@
-"""request_quotes as the Live agent calls it: the job and worker come from session state, never from the model; the
-rules are tools/quotes.py; each saved vendor gets the request on Telegram, and the phone gets the `quotes` frame
-whose quote_request_id the job screen polls."""
+"""request_quotes and find_vendors as the Live agent calls them: the job and worker come from session state, never
+from the model; the rules are tools/quotes.py and tools/vendors.py; each saved vendor gets the request on Telegram,
+and the phone gets the `quotes` frame whose quote_request_id the job screen polls."""
 
 import logging
 from datetime import UTC, datetime
@@ -10,11 +10,12 @@ from google.adk.tools import FunctionTool, ToolContext
 from google.genai import types
 
 from agent.media_tools import MediaDesk
-from clients.firestore import QuoteStore
+from clients.firestore import QuoteStore, WorkerStore
+from clients.places import PlacesClient
 from clients.telegram import TelegramBot
-from models.quotes import RequestQuotesOut
+from models.quotes import FindVendorsOut, RequestQuotesOut
 from models.ws import QuoteItem, Quotes
-from tools import quotes
+from tools import quotes, vendors
 
 logger = logging.getLogger(__name__)
 
@@ -76,4 +77,25 @@ def quote_tools(store: QuoteStore, bot: TelegramBot, desk: MediaDesk) -> list[Fu
     tool = FunctionTool(request_quotes)
     tool.behavior = types.Behavior.NON_BLOCKING
     tool.response_scheduling = types.FunctionResponseScheduling.WHEN_IDLE
+    return [tool]
+
+
+def vendor_tools(store: QuoteStore, workers: WorkerStore, places: PlacesClient) -> list[FunctionTool]:
+    async def find_vendors(tool_context: ToolContext, part: str) -> dict:
+        """Who sells `part` near him: `saved` are his shops that request_quotes reaches; `nearby` are other shops
+        from Google Maps, nearest first, which he can call himself (they get no request from us)."""
+        worker_id = tool_context.state["worker_id"]
+        worker = workers.get(worker_id)
+        home, pincode = (worker.geo, worker.pincode) if worker else (None, None)
+        try:
+            found = await places.search(vendors.search_text(part, home, pincode), home)
+        except RuntimeError:
+            logger.warning("nearby shop search failed")
+            found = []
+        return FindVendorsOut(
+            saved=[v.name for v in store.vendors(worker_id)], nearby=vendors.nearby(found, home)
+        ).model_dump(mode="json")
+
+    tool = FunctionTool(find_vendors)
+    tool.behavior = types.Behavior.BLOCKING
     return [tool]

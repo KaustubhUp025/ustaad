@@ -4,6 +4,7 @@ Created on Mon Oct 12 with the contracts. Every agent and person uses these inst
 | File | Owner | Task | Format |
 | --- | --- | --- | --- |
 | `live_session.jsonl` (+ `_g1`, `_te`) | A | T09 | one `{"t_ms": int, "frame": {server frame}}` per line, hand-written from GOLDEN_PATHS G2 (no audio) |
+| `live_session_general.jsonl` | A | T39 | same format, hand-written from GOLDEN_PATHS G8 (mock only); its one step is the single general step allowed in fixtures (AGENTS.md). Replayed at `/w/job/general` |
 | `fault_cards.json` | B | T10 | array of FaultCard (`source.type: "synthetic"` unless from a real note) |
 | `worker.json` | A | T27 | The seeded demo worker `w_hi_demo` (Worker shape, `demo: true`); seeds `workers/w_hi_demo` for "Try the demo" |
 | `vendors.json`, `quotes.json`, `close_job.json` | B | T10 | REST response shapes from `shared/contracts/rest.md` |

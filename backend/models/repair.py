@@ -23,7 +23,8 @@ MediaKind = Literal["photo", "video", "document"]
 MediaReason = Literal["requested", "side_issue", "manual"]
 Confidence = Annotated[float, Field(ge=0, le=1)]
 # Hard stops (SAFETY.md): a step with one of these is never emitted. The hazard levels above do not change.
-StopReason = Literal["refrigerant", "microwave_hv", "crt", "geyser_open"]
+# `power_on` is for general steps only: a voltage, supply or live test comes only from a fault card or manual.
+StopReason = Literal["refrigerant", "microwave_hv", "crt", "geyser_open", "power_on"]
 
 
 class StepSource(BaseModel):

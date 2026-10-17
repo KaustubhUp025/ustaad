@@ -22,7 +22,7 @@ from models.tools import (
 )
 from models.ws import StepCard
 from tools.gates import EVIDENCE, open_gate
-from tools.hazard_tagger import tag
+from tools.hazard_tagger import needs_power_on, tag
 
 GENERAL = StepSource(kind="general", label="General guidance", audio_uri=None, doc=None, page=None)
 MANUAL_PHOTO = StepSource(kind="manual_photo", label="Photo of manual", audio_uri=None, doc=None, page=None)
@@ -60,6 +60,8 @@ def start_repair(
         hazard, stop = tag(proposed.summary_en, "none")
         if stop:
             return StopRefer(reason=stop), job
+        if source.kind == "general" and needs_power_on(proposed.summary_en):
+            return StopRefer(reason="power_on"), job
         drafts.append((proposed.instruction, proposed.summary_en, hazard, source))
     steps = [
         RepairStep(n=n, instruction=i, instruction_en=e, hazard=h, source=s) for n, (i, e, h, s) in enumerate(drafts, 1)

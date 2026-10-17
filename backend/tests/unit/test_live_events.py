@@ -107,3 +107,31 @@ def test_a_step_card_in_an_english_session_carries_the_english_and_the_original(
     assert (card.instruction, card.instruction_translated) == ("Test ek", "Test one")
     (card,) = to_frames(responded("next_step", out), {}, "hi")
     assert (card.instruction, card.instruction_translated) == ("Test ek", None)
+
+
+def test_backstop_a_final_ustaad_caption_that_matches_a_stop_row_sends_safety_stop():
+    frames = to_frames(said("ustaad", "Ab gas recharge karte hain", False), {})
+    assert frames == [
+        Caption(who="ustaad", text="Ab gas recharge karte hain", final=True),
+        SafetyStop(reason="refrigerant", message="Stopped for safety"),
+    ]
+
+
+def test_backstop_a_gas_question_from_the_worker_gets_the_stop_screen():
+    assert SafetyStop(reason="refrigerant", message="Stopped for safety") in to_frames(
+        said("user", "Gas kaise bharun?", False), {}
+    )
+
+
+def test_backstop_waits_for_the_final_caption_and_ignores_hazard_rows():
+    assert to_frames(said("ustaad", "Magnetron", True), {}) == [Caption(who="ustaad", text="Magnetron", final=False)]
+    assert to_frames(said("ustaad", "PCB ke terminal dekho", False), {}) == [
+        Caption(who="ustaad", text="PCB ke terminal dekho", final=True)
+    ]
+
+
+def test_backstop_leaves_power_on_diagnosis_talk_alone():
+    # Power-on diagnosis happens in conversation before start_repair (SAFETY.md), so it is not a stop on speech.
+    assert to_frames(said("ustaad", "Check karo supply aa rahi hai ya nahi", False), {}) == [
+        Caption(who="ustaad", text="Check karo supply aa rahi hai ya nahi", final=True)
+    ]

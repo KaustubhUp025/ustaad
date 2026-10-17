@@ -166,3 +166,40 @@ def test_the_step_card_translation_is_the_english_only_in_an_english_session(lan
     step = RepairStep(n=1, instruction="Test ek", instruction_en=english, hazard="none", source=GENERAL)
     card = step_card(StepOut(job_id="j_1", of=1, step=step), lang)
     assert (card.instruction, card.instruction_translated) == ("Test ek", shown)
+
+
+@pytest.mark.parametrize(
+    "summary",
+    [
+        "Measure the live voltage at the socket",
+        "Check at the MCB whether supply is coming",
+        "Switch the power on and test the motor",
+        "Use a line tester on the terminal",
+        "Switch on the MCB and measure the supply voltage",
+        "Plug it in and listen to the motor",
+    ],
+)
+def test_a_general_step_that_needs_the_power_on_is_refused_and_never_stored(summary):
+    out, job = start_repair(general("Test step at the air filter", summary), RepairJob(job_id="j_1"), [])
+    assert out.status == "STOP_REFER" and out.reason == "power_on"
+    assert job.steps == []
+
+
+def test_a_card_step_may_still_need_the_power_on():
+    out, job = start_repair(
+        StartRepairIn(card_ids=["fc_HV"]), RepairJob(job_id="j_1"), [card("HV", ["Measure the voltage at the socket"])]
+    )
+    assert out.status == "STARTED" and len(job.steps) == 1
+
+
+@pytest.mark.parametrize(
+    "summary",
+    [
+        "Check the water supply tap is fully open",
+        "Use a continuity tester with the power off to check the fuse",
+        "Check the fuse on the board with the power off",
+    ],
+)
+def test_a_general_step_with_the_power_off_is_stored(summary):
+    out, job = start_repair(general(summary), RepairJob(job_id="j_1"), [])
+    assert out.status == "STARTED" and len(job.steps) == 1

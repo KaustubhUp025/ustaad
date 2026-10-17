@@ -1,0 +1,12 @@
+{"t_ms":0,"frame":{"v":1,"type":"session_ready","session_id":"s_mock_g8","live_model":"gemini-3.8-live","resumable":true}}
+{"t_ms":1500,"frame":{"v":1,"type":"caption","who":"user","text":"वॉशिंग मशीन में पानी नहीं भर रहा, क्या करूँ?","final":true}}
+{"t_ms":3000,"frame":{"v":1,"type":"caption","who":"ustaad","text":"इसका कोई कार्ड या मैनुअल","final":false}}
+{"t_ms":4200,"frame":{"v":1,"type":"caption","who":"ustaad","text":"इसका कोई कार्ड या मैनुअल मेरे पास नहीं है। यह सामान्य सलाह है, किसी पक्के सोर्स से नहीं। पहले मशीन का प्लग निकालो और उसकी फ़ोटो भेजो।","final":true}}
+{"t_ms":4400,"frame":{"v":1,"type":"safety_gate","gate_id":"G_MAINS_OFF","message":"Safety check first","required_evidence":"Plug removed from the socket"}}
+{"t_ms":4500,"frame":{"v":1,"type":"media_request","request_id":"r_g8","kind":"photo","target":"निकला हुआ प्लग","framing_tip":"प्लग और सॉकेट दोनों फ़्रेम में रखो","max_seconds":null}}
+{"t_ms":4700,"frame":{"v":1,"type":"turn_complete"}}
+{"t_ms":11000,"frame":{"v":1,"type":"media_result","request_id":"r_g8","matches_expected":true,"confidence":0.92,"retake_reason":null}}
+{"t_ms":11200,"frame":{"v":1,"type":"gate_result","gate_id":"G_MAINS_OFF","passed":true,"reason":null}}
+{"t_ms":12000,"frame":{"v":1,"type":"step_card","job_id":"j_g8","n":1,"of":1,"instruction":"नल पूरा खुला है और इनलेट पाइप कहीं मुड़ी या दबी नहीं है, यह फ़ोटो में दिखाओ","instruction_translated":null,"hazard":"none","source":{"kind":"general","label":"General guidance","audio_uri":null,"doc":null,"page":null}}}
+{"t_ms":12800,"frame":{"v":1,"type":"caption","who":"ustaad","text":"नल पूरा खुला है और इनलेट पाइप कहीं मुड़ी या दबी नहीं है, यह फ़ोटो में दिखाओ।","final":true}}
+{"t_ms":13000,"frame":{"v":1,"type":"turn_complete"}}

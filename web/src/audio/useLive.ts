@@ -74,6 +74,8 @@ export function useLive(lang: string, jobId: string) {
       if (media.request) conn.current?.mediaCancel(media.request.request_id)
       setMedia(noMedia)
     },
+    // His tap on the step card; the server hands out the next step or gate (ws-events step_done).
+    stepDone: (n: number) => conn.current?.stepDone(n),
     retry: () => setAttempt((n) => n + 1),
   }
 }

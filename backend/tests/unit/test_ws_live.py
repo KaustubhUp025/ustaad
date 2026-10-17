@@ -198,3 +198,21 @@ def test_media_offer_gets_a_media_request_from_the_server(monkeypatch):
         ws.send_json({"v": 1, "type": "media_offer", "kind": "photo"})
         request = ws.receive_json()
         assert (request["type"], request["kind"], request["target"]) == ("media_request", "photo", "")
+
+
+def test_a_step_done_tap_reaches_the_jobs_desk(monkeypatch):
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    taps = []
+
+    async def on_step_done(n):
+        taps.append(n)
+
+    desk = ws_live.MediaDesk("j_tap", "media")
+    desk.on_step_done = on_step_done
+    monkeypatch.setitem(ws_live.DESKS, "j_tap", desk)
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_tap") as ws:
+        ws.receive_json()
+        ws.send_json({"v": 1, "type": "step_done", "n": 3})
+        ws.send_json({"v": 1, "type": "ping"})
+        assert ws.receive_json()["type"] == "pong"
+    assert taps == [3]

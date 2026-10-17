@@ -1,4 +1,4 @@
-import { Camera, Mic } from 'lucide-react'
+import { Camera, Check, Mic } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useParams, useSearchParams } from 'react-router-dom'
@@ -38,6 +38,8 @@ function JobScreen() {
     setGatePhoto(false)
   }
   const sheet = request && (!gate || gatePhoto)
+  // One tap per step: the button waits for the next card, so a double tap cannot skip a step.
+  const [tappedStep, setTappedStep] = useState<number | null>(null)
 
   useEffect(() => {
     void i18n.changeLanguage(lang)
@@ -144,6 +146,17 @@ function JobScreen() {
                 {lines?.original && <p>{lines.original}</p>}
               </div>
               <p className="text-[length:var(--text-caption)]">{lines?.main}</p>
+              <Button
+                className="mt-3 h-(--touch) w-full gap-2 text-[length:var(--text-body)]"
+                disabled={live.status !== 'ready' || tappedStep === step.n}
+                onClick={() => {
+                  setTappedStep(step.n)
+                  live.stepDone(step.n)
+                }}
+              >
+                <Check aria-hidden className="size-6" />
+                {t('repair.stepDone')}
+              </Button>
             </article>
           )}
           <QuotesCard quoteRequestId={live.quotes.quoteRequestId} initialItems={live.quotes.items} />

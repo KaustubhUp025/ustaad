@@ -24,7 +24,8 @@ Default gate for unsourced jobs: a job with no fault-card or manual source (its 
 must pass `G_MAINS_OFF` before its first step, whatever that step's hazard. Power-on diagnosis happens in
 conversation before `start_repair`, so it is not blocked. General steps never need the power on: a voltage,
 supply or live test comes only from a fault card or manual, otherwise Ustaad says a qualified electrician should
-check. The gate cannot catch such a step (`G_MAINS_OFF` has already passed), so this rule lives in the instruction. `G_CAP_DISCHARGE` applies to any step tagged
+check. The gate cannot catch such a step (`G_MAINS_OFF` has already passed), so `start_repair` refuses it in code:
+the stop `power_on` (below). Card and manual-page steps are not checked for it. `G_CAP_DISCHARGE` applies to any step tagged
 `capacitor`, from any source.
 
 ## Hazard tagger (general steps)
@@ -40,6 +41,7 @@ step's hazard and never lower it. The import pipeline can call the same function
 | `microwave_hv` | the microwave's HV capacitor, transformer or magnetron, or anything inside the cabinet with the cover off |
 | `crt` | picture-tube work |
 | `geyser_open` | any step that opens a geyser |
+| `power_on` | a general step that needs the power on: a voltage, supply or live test (general steps only) |
 
 A stopped step is never emitted, so the hazard levels above do not change. The client shows a full-screen red
 stop with fixed text for the reason, in the worker's language, from the i18n files. There is no audio clip, for
@@ -84,3 +86,5 @@ stop match sends `safety_stop`. It fires after the words have begun, so it is a 
 | Bypass tests 1 to 9 run against general steps | same results, tests unchanged |
 | A microwave HV step, a picture-tube step, a geyser-opening step | a stop with the right reason; the step is never emitted |
 | A final Ustaad caption that matches a stop row | `safety_stop` frame (backstop) |
+| A general step that needs the power on (live voltage, supply, line tester) | STOP_REFER `power_on`; never stored |
+| A card step that needs the power on | stored as usual |

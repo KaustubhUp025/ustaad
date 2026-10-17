@@ -1549,7 +1549,7 @@ Worker (during step 3): "yahan wire bhi jala hua lag raha hai"
 Rules:
 1. **Ask, don't switch silently.** The worker decides the order; Ustaad never abandons the open repair on its own.
 2. **Parking is session state, not a new job.** Session state holds `main_step` (job id + step n) and a small `side_issues` list. Resuming re-sends the same `step_card` for the parked step.
-3. **Gates are per job and keep their state.** A gate passed for the main repair stays passed for the side issue in the same job. A side issue that needs mains-powered work (a burnt wire near the PCB is `HV`) still requires `G_MAINS_OFF` if it isn't passed yet. Refrigerant side issues get `STOP_REFRIGERANT` as always.
+3. **Gates hold for one plan (SAFETY.md).** Guiding a side issue "abhi" is a new plan (`start_repair`), so it starts with every gate open, and the parked main plan comes back with its gates open too: power may have been switched back on. "Baad mein" keeps the main plan and its gates. Refrigerant side issues get `STOP_REFRIGERANT` as always. (Changed Oct 17, T36: the earlier "a passed gate stays passed for the side issue" contradicted SAFETY.md.)
 4. **Logged, not lost.** Each side finding is written into the existing `jobs.media[]` entry (`findings`, `confidence`). On `close_job`, Ustaad asks one question ("Wire wala theek kiya?") and, if fixed, drafts a second fault card tagged "found while fixing <code>".
 5. **One side issue at a time.** If the worker raises a third thing, Ustaad notes it and says it will come back to it; no nested parking.
 
@@ -1643,7 +1643,7 @@ Don't touch: backend/agent/callbacks.py; contracts only via the approved contrac
 | Side issue raised at step 3, worker says "baad mein" | finding logged; same step 3 `step_card` re-sent |
 | Worker says "abhi" | main repair parked; side guidance; then step 3 resumes |
 | Side issue is HV, `G_MAINS_OFF` not yet passed | `SAFETY_GATE G_MAINS_OFF` |
-| Side issue is HV, `G_MAINS_OFF` already passed in this job | no second gate request |
+| Side issue "abhi" after `G_MAINS_OFF` passed for the main plan | `SAFETY_GATE G_MAINS_OFF` again (a new plan, SAFETY.md); after resume, an HV main step needs it again too |
 | Side issue mentions gas ("gas leak lag raha hai") | `STOP_REFRIGERANT` |
 | Third issue raised while one is parked | noted, not nested; main flow continues |
 | `close_job` with a logged side issue | asks one question; drafts a second card if fixed |

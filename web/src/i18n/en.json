@@ -96,13 +96,14 @@
     "knowledgeIntro": "Fault cards captured from technician conversations.",
     "synthetic": "Synthetic demo data",
     "filterLabel": "Filter by appliance type",
-    "filters": { "all": "All appliances", "split_ac": "Split AC", "washing_machine": "Washing machine", "fridge": "Fridge" },
+    "filters": { "all": "All appliances", "split_ac": "Split AC", "washing_machine": "Washing machine", "unknown": "Appliance unclear" },
     "faultCards": "Fault cards",
     "appliance": "Appliance",
     "code": "Code",
     "symptom": "Symptom",
     "source": "Source",
     "confidence": "Confidence",
+    "notScored": "Not scored",
     "reviewQueue": "Review queue",
     "reviewIntro": "Check low-confidence cards before technicians use them.",
     "approve": "Approve card",
@@ -116,8 +117,8 @@
     "cardsCreated": "Cards created",
     "needsReview": "Need review",
     "importActivity": "Import activity",
-    "voiceItem": "Voice note {{number}}",
-    "tagsCreated": "{{count}} tags created",
-    "errors": { "pipeline_failed": "Import failed. Try the export again.", "archive_invalid": "This archive could not be read. Export the chat again.", "date_order_ambiguous": "The chat dates could not be understood. Export the chat again." }
+    "importItem": "Import {{number}}",
+    "cardsCreatedBadge": "{{count}} cards created",
+    "errors": { "pipeline_failed": "Import failed. Try the export again.", "date_order_ambiguous": "The chat dates could not be understood. Export the chat again.", "attachment_failed": "One attachment could not be read and was kept without enrichment.", "thread_failed": "One chat thread could not be read and was skipped." }
   }
 }

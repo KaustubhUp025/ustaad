@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { type ApplianceType, dashboardFixture, filterCards, type KnowledgeCard } from '@/api/dashboard'
 import { Button } from '@/components/ui/button'
 
-const FILTERS: ApplianceType[] = ['all', 'split_ac', 'washing_machine', 'fridge']
+const FILTERS: ApplianceType[] = ['all', 'split_ac', 'washing_machine']
 
 export default function Knowledge() {
   const { t } = useTranslation()
@@ -42,9 +42,9 @@ export default function Knowledge() {
 
 function CardRow({ card }: { card: KnowledgeCard }) {
   const { t } = useTranslation()
-  return <li className="grid gap-3 px-3 py-4 md:grid-cols-[130px_100px_minmax(220px,1fr)_180px_100px] md:items-center"><span className="font-semibold">{card.applianceLabel}</span><span className="font-heading text-[length:var(--text-lg)] font-bold">{card.code}</span><CardSummary card={card} compact /><span className="text-[length:var(--text-sm)] text-muted-foreground">{card.source}</span><span className="font-heading tabular-nums">{Math.round(card.confidence * 100)}%</span>{card.image && <figure className="md:col-start-3"><img className="h-24 w-40 rounded-sm border border-border object-cover" src={card.image.src} alt="" /><figcaption className="mt-1 text-[length:var(--text-sm)] text-muted-foreground">{t(`dashboard.image.${card.image.origin}`)}</figcaption></figure>}</li>
+  return <li className="grid gap-3 px-3 py-4 md:grid-cols-[130px_100px_minmax(220px,1fr)_180px_100px] md:items-center"><span className="font-semibold">{card.applianceLabel}</span><span className="font-heading text-[length:var(--text-lg)] font-bold">{card.code || '—'}</span><CardSummary card={card} compact /><span className="text-[length:var(--text-sm)] text-muted-foreground">{card.source}</span><span className="font-heading tabular-nums">{card.confidence === null ? t('dashboard.notScored') : `${Math.round(card.confidence * 100)}%`}</span>{card.image && <figure className="md:col-start-3"><img className="h-24 w-40 rounded-sm border border-border object-cover" src={card.image.src} alt="" /><figcaption className="mt-1 text-[length:var(--text-sm)] text-muted-foreground">{t(`dashboard.image.${card.image.origin}`)}</figcaption></figure>}</li>
 }
 
 function CardSummary({ card, compact = false }: { card: KnowledgeCard; compact?: boolean }) {
-  return <div className="min-w-0"><p>{card.symptom}</p>{!compact && <p className="mt-1 text-[length:var(--text-sm)] text-muted-foreground">{card.brand} · {card.code} · {Math.round(card.confidence * 100)}%</p>}</div>
+  return <div className="min-w-0"><p>{card.symptom}</p>{!compact && <p className="mt-1 text-[length:var(--text-sm)] text-muted-foreground">{card.brand || '—'} · {card.code || '—'}</p>}</div>
 }

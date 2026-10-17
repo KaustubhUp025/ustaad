@@ -8,7 +8,10 @@ test('knowledge cards filter by appliance type and review status', () => {
 })
 
 test('import errors expose only fixed safe messages', () => {
-  expect(safeImportError('pipeline_failed')).toBe('pipeline_failed')
+  expect(safeImportError('The chat import could not be processed.')).toBe('pipeline_failed')
+  expect(safeImportError('One chat attachment could not be read, so it was kept without enrichment.')).toBe(
+    'attachment_failed',
+  )
   expect(safeImportError('gs://bucket/private.zip token=secret')).toBe('pipeline_failed')
 })
 

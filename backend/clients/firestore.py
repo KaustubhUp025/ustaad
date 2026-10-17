@@ -10,6 +10,7 @@ from google.cloud.firestore_v1.vector import Vector
 from models.fault_card import FaultCard
 from models.inventory import InventoryItem
 from models.repair import RepairJob
+from models.worker import Worker
 
 REPAIR_FIELDS = {"steps", "gates", "current_step", "media"}
 DISTANCE = "distance"
@@ -112,3 +113,30 @@ class InventoryStore:
             return out
 
         return run(self._db.transaction())
+
+
+class DemoCacheStore:
+    """`demo_cache/{hash}`: real model answers recorded for the demo-safe fallback (app/demo_safe.py)."""
+
+    def __init__(self, db: firestore.Client) -> None:
+        self._db = db
+
+    def get(self, key: str) -> dict | None:
+        doc = self._db.collection("demo_cache").document(key).get()
+        return doc.to_dict()["response"] if doc.exists else None
+
+    def put(self, key: str, response: dict, model: str) -> None:
+        self._db.collection("demo_cache").document(key).set(
+            {"request_hash": key, "response": response, "model": model, "created_at": firestore.SERVER_TIMESTAMP}
+        )
+
+
+class WorkerStore:
+    """`workers/{wid}`."""
+
+    def __init__(self, db: firestore.Client) -> None:
+        self._db = db
+
+    def get(self, worker_id: str) -> Worker | None:
+        doc = self._db.collection("workers").document(worker_id).get()
+        return Worker.model_validate(doc.to_dict() | {"id": worker_id}) if doc.exists else None

@@ -1,12 +1,27 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { useHealth } from '@/api/health'
+import { startDemo } from '@/api/session'
 import { Button } from '@/components/ui/button'
 
 export default function Home() {
   const { t } = useTranslation()
   const health = useHealth()
+  const navigate = useNavigate()
+  const [demo, setDemo] = useState<'idle' | 'starting' | 'failed'>('idle')
+
+  // No login: a demo session for the seeded worker, then a new job in the worker's language.
+  const tryDemo = async () => {
+    setDemo('starting')
+    try {
+      const { worker } = await startDemo()
+      navigate(`/w/job/j_${crypto.randomUUID().slice(0, 8)}?lang=${worker.lang}`)
+    } catch {
+      setDemo('failed')
+    }
+  }
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col">
@@ -15,6 +30,18 @@ export default function Home() {
       </header>
       <section className="flex flex-col items-start gap-4 px-4 py-6">
         <p className="text-[length:var(--text-caption)]">{t('app.tagline')}</p>
+        <Button
+          className="h-(--touch) w-full text-[length:var(--text-body)]"
+          disabled={demo === 'starting'}
+          onClick={() => void tryDemo()}
+        >
+          {demo === 'starting' ? t('demo.starting') : t('demo.try')}
+        </Button>
+        {demo === 'failed' && (
+          <p role="alert" className="border-l-4 border-l-destructive pl-3">
+            {t('demo.failed')}
+          </p>
+        )}
         <div
           role="status"
           className="w-full rounded-sm border-l-4 bg-card px-4 py-3 data-[state=error]:border-l-destructive data-[state=ok]:border-l-ok"

@@ -1,14 +1,20 @@
 import os
+import re
 from typing import Annotated, Protocol
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.session import require_session
 from clients.storage import SignedUpload, StorageUploadClient
 from models.errors import ErrorResponse
-from models.media import MediaUploadRequest, MediaUploadResponse
+from models.media import AudioUrlRequest, AudioUrlResponse, MediaUploadRequest, MediaUploadResponse
 
 UPLOAD_URL_EXPIRES_IN = 900
+AUDIO_URL_EXPIRES_IN = 900
+# The only objects audio-url signs: the import job's FLAC of a voice note (rest.md). The name has no "/", so it
+# cannot leave the derived folder.
+VOICE_NOTE = re.compile(r"imports/i_[A-Za-z0-9][A-Za-z0-9_-]*/derived/[A-Za-z0-9][A-Za-z0-9._:-]*\.flac")
 UPLOAD_RULES = {
     "photo": ({"image/jpeg", "image/png"}, 15_728_640),
     "video": ({"video/mp4"}, 52_428_800),
@@ -22,7 +28,10 @@ router = APIRouter(prefix="/api/media")
 
 
 class StorageSigner(Protocol):
+    bucket_name: str
+
     def sign_put(self, object_name: str, headers: dict[str, str], expires_in: int) -> SignedUpload: ...
+    def sign_get(self, object_name: str, expires_in: int) -> str: ...
 
 
 async def get_storage_client() -> StorageUploadClient:
@@ -73,3 +82,14 @@ async def create_media_upload_url(
         expires_in=UPLOAD_URL_EXPIRES_IN,
         headers=signed.headers,
     )
+
+
+@router.post("/audio-url", response_model=AudioUrlResponse, dependencies=[Depends(require_session)])
+async def create_audio_url(
+    request: AudioUrlRequest, storage_client: Annotated[StorageSigner, Depends(get_storage_client)]
+) -> AudioUrlResponse:
+    bucket, _, name = request.uri.removeprefix("gs://").partition("/")
+    if not request.uri.startswith("gs://") or bucket != storage_client.bucket_name or not VOICE_NOTE.fullmatch(name):
+        raise HTTPException(status_code=404)
+    url = storage_client.sign_get(object_name=name, expires_in=AUDIO_URL_EXPIRES_IN)
+    return AudioUrlResponse(url=url, expires_in=AUDIO_URL_EXPIRES_IN)

@@ -1,0 +1,24 @@
+{
+  "id": "w_hi_demo",
+  "name": "Raju (demo)",
+  "lang": "hi",
+  "trades": [
+    "ac",
+    "washing_machine"
+  ],
+  "brands": [
+    "Voltas",
+    "LG",
+    "Daikin"
+  ],
+  "pincode": "201301",
+  "geo": {
+    "lat": 28.5706,
+    "lng": 77.3272
+  },
+  "experience_yrs": 8,
+  "onboarding_done": true,
+  "skill_gaps": [],
+  "demo": true,
+  "created_at": "2026-10-16T00:00:00Z"
+}

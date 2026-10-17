@@ -1,6 +1,74 @@
 {
   "components": {
     "schemas": {
+      "AudioUrlRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "uri": {
+            "title": "Uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uri"
+        ],
+        "title": "AudioUrlRequest",
+        "type": "object"
+      },
+      "AudioUrlResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "expires_in": {
+            "const": 900,
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expires_in"
+        ],
+        "title": "AudioUrlResponse",
+        "type": "object"
+      },
+      "DemoSessionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "worker_id": {
+            "default": "w_hi_demo",
+            "title": "Worker Id",
+            "type": "string"
+          }
+        },
+        "title": "DemoSessionRequest",
+        "type": "object"
+      },
+      "DemoSessionResponse": {
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "worker": {
+            "$ref": "#/components/schemas/Worker"
+          },
+          "ws_url": {
+            "title": "Ws Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "worker",
+          "ws_url"
+        ],
+        "title": "DemoSessionResponse",
+        "type": "object"
+      },
       "ErrorDetail": {
         "additionalProperties": false,
         "properties": {
@@ -42,6 +110,25 @@
           "error"
         ],
         "title": "ErrorResponse",
+        "type": "object"
+      },
+      "Geo": {
+        "additionalProperties": false,
+        "properties": {
+          "lat": {
+            "title": "Lat",
+            "type": "number"
+          },
+          "lng": {
+            "title": "Lng",
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "title": "Geo",
         "type": "object"
       },
       "InventoryDelta": {
@@ -303,6 +390,131 @@
         ],
         "title": "MediaUploadResponse",
         "type": "object"
+      },
+      "Worker": {
+        "additionalProperties": false,
+        "properties": {
+          "brands": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Brands",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "demo": {
+            "title": "Demo",
+            "type": "boolean"
+          },
+          "experience_yrs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Experience Yrs"
+          },
+          "geo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Geo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "pattern": "^w_\\S+$",
+            "title": "Id",
+            "type": "string"
+          },
+          "lang": {
+            "enum": [
+              "hi",
+              "te",
+              "ta",
+              "bn",
+              "en"
+            ],
+            "title": "Lang",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "onboarding_done": {
+            "title": "Onboarding Done",
+            "type": "boolean"
+          },
+          "pincode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pincode"
+          },
+          "skill_gaps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Skill Gaps",
+            "type": "array"
+          },
+          "trades": {
+            "items": {
+              "enum": [
+                "ac",
+                "fridge",
+                "washing_machine",
+                "led_tv",
+                "microwave",
+                "geyser",
+                "fan_cooler",
+                "other"
+              ],
+              "type": "string"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Trades",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "lang",
+          "trades",
+          "brands",
+          "pincode",
+          "geo",
+          "experience_yrs",
+          "onboarding_done",
+          "skill_gaps",
+          "demo",
+          "created_at"
+        ],
+        "title": "Worker",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
       }
     }
   },
@@ -312,6 +524,121 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/demo/session": {
+      "post": {
+        "operationId": "demo_session_api_demo_session_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/DemoSessionRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoSessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Demo Session"
+      }
+    },
     "/api/healthz": {
       "get": {
         "operationId": "healthz_api_healthz_get",
@@ -614,6 +941,119 @@
           }
         },
         "summary": "Update Inventory"
+      }
+    },
+    "/api/media/audio-url": {
+      "post": {
+        "operationId": "create_audio_url_api_media_audio_url_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioUrlRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioUrlResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Audio Url"
       }
     },
     "/api/media/upload-url": {

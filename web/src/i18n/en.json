@@ -36,6 +36,11 @@
     "stop": {
       "refrigerant": "Gas work is only for a certified gas technician. I can help with the other checks.",
       "other": "This work isn't safe to guide. Only a trained technician should do it. I can help with the other checks."
+    },
+    "source": {
+      "play": "Play the voice note: {{label}}",
+      "stop": "Stop the voice note: {{label}}",
+      "failed": "The voice note didn't play. Check the network, then tap it again."
     }
   },
   "camera": {
@@ -44,6 +49,7 @@
     "notNow": "Not now",
     "sending": "Sending photo…",
     "checking": "Ustaad is looking at the photo…",
+    "stillChecking": "Still checking the photo, it's taking longer than usual…",
     "failed": "Photo didn't send. Check the network, then take it again.",
     "sendGatePhoto": "Send photo",
     "flash": "Flash",
@@ -67,5 +73,17 @@
     "more": "One more {{name}}",
     "inStock": "{{qty}} in stock",
     "saveFailed": "The count didn't change. Check your network, then try again."
+  },
+  "demo": {
+    "try": "Try the demo",
+    "starting": "Starting the demo…",
+    "failed": "The demo didn't start. Check your network, then try again."
+  },
+  "samples": {
+    "title": "No appliance with you? Send a sample photo:",
+    "send": "Send sample photo: {{name}}",
+    "displayE6": "Voltas display showing E6",
+    "voltasLabel": "Voltas energy label",
+    "publicPost": "Image from a public post"
   }
 }

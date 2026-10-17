@@ -33,7 +33,7 @@ def build_ustaad(
         instruction=INSTRUCTION,
         tools=identify_tools(desk, read_photo)
         + search_tools(cards, embed)
-        + repair_tools(jobs)
+        + repair_tools(jobs, desk)
         + media_tools(desk, jobs, read_photo)
         + inventory_tools(inventory, desk),
         before_tool_callback=gate_guard(jobs.load),

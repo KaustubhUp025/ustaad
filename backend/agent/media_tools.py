@@ -21,6 +21,7 @@ from models.repair import GateId, MediaKind
 from models.tools import (
     ConfirmSafetyIn,
     GateCheck,
+    ManualPage,
     MediaCheck,
     RepairDone,
     RequestMediaIn,
@@ -86,6 +87,10 @@ class MediaDesk:
         self._send: Send | None = None
         self._queue: LiveRequestQueue | None = None
         self.lang = "hi"
+        # The identified appliance's brand (identify_appliance): a manual page of another brand is not used.
+        self.brand: str | None = None
+        # Checked manual pages by request ID, for start_repair; held for this connection's session only.
+        self.pages: dict[str, ManualPage] = {}
         self.on_photo: Callable[[OpenRequest, str], Awaitable[None]] | None = None
         self.tasks: set[asyncio.Task] = set()
 
@@ -246,8 +251,12 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
         await desk.open(OpenRequest(request_id, tool_context.function_call_id, inp, tool_context.state["lang"]))
 
     async def on_photo(request: OpenRequest, uri: str) -> None:
-        schema = GateCheck if request.inp.gate_id else MediaCheck
-        question = QUESTIONS[request.inp.gate_id] if request.inp.gate_id else rules.question(request.inp)
+        if request.inp.gate_id:
+            schema, question = GateCheck, QUESTIONS[request.inp.gate_id]
+        elif request.inp.kind == "document":
+            schema, question = ManualPage, rules.PAGE_QUESTION
+        else:
+            schema, question = MediaCheck, rules.question(request.inp)
         try:
             check = await asyncio.wait_for(read_photo(question, uri, schema), VISION_TIMEOUT_S)
         except Exception:  # quota, network or a hung call: the request stays open and he sends the photo again
@@ -263,6 +272,8 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             return
         if request.inp.gate_id:
             await _gate_photo(request, uri, check)
+        elif request.inp.kind == "document":
+            await _page(request, uri, check)
         else:
             await _photo(request, uri, check)
 
@@ -286,6 +297,34 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
         # His own photo: Ustaad hears only the final result; the phone shows the retake reasons.
         notice = None if retake or not own else _own_photo_note(out)
         desk.answer(request, out.model_dump(mode="json"), done=not retake, notice=notice)
+
+    async def _page(request: OpenRequest, uri: str, page: ManualPage) -> None:
+        out, retake = rules.judge_page(page, uri, request.retakes, request.lang, desk.brand)
+        request.retakes += retake
+        await desk.show(
+            MediaResult(
+                request_id=request.request_id,
+                matches_expected=out.matches_expected,
+                confidence=out.confidence,
+                retake_reason=out.follow_up if retake else None,
+            )
+        )
+        if retake:
+            desk.answer(request, out.model_dump(mode="json"), done=False, notice=None)
+            return
+        reason = "requested" if request.inp.target else "manual"
+        jobs.update(desk.job_id, lambda job: (None, _record(job, request, uri, out.findings, out.confidence, reason)))
+        if out.matches_expected:
+            desk.pages[request.request_id] = page
+            # The steps' text stays out: like a card's, a step is said only once next_step hands it out.
+            # Every printed code, not just the findings: those keep only the surest few.
+            codes = "; ".join(f"{c.code}: {c.meaning}" for c in page.error_codes) or "none"
+            out.follow_up = (
+                f"His manual page, copied from the photo: error codes {codes}; {len(page.steps)} printed steps. Cite "
+                "it as his manual's page. To guide its steps, call start_repair with "
+                f'manual_request_id="{request.request_id}".'
+            )
+        desk.answer(request, out.model_dump(mode="json"), done=True, notice=f"[Photo of his manual page] {out.follow_up}")
 
     async def _gate_photo(request: OpenRequest, uri: str, check: GateCheck) -> None:
         """The gate check alone judges a gate photo, with no retake limit: the gate stays locked until one passes."""

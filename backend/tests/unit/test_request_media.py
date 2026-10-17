@@ -8,7 +8,7 @@ from google.genai import types
 
 from agent.media_tools import PHOTO_ARRIVED, MediaDesk, media_tools
 from models.repair import RepairJob, RepairStep
-from models.tools import GateCheck, MediaCheck, RequestMediaIn
+from models.tools import GateCheck, ManualPage, MediaCheck, RequestMediaIn
 from models.ws import GateResult, MediaCancel, MediaReady, MediaRequest, MediaResult, SafetyGate, StepCard
 from tools.gates import EVIDENCE
 from tools.request_media import CANCELLED, GATE_RETAKE, MAX_RETAKES, NOT_CHECKED, RETAKE, judge, record
@@ -111,12 +111,12 @@ class Phone:
         return [f for f in self.frames if isinstance(f, kind)]
 
 
-def session(checks=(), gate_checks=(), job=None):
+def session(checks=(), gate_checks=(), job=None, pages=()):
     """A desk attached to one phone connection, with the tool built around recorded vision answers (an exception in
     the list is raised, as a failed vision call would)."""
     desk, phone, queue, jobs = MediaDesk("j_1", "media"), Phone(), FakeQueue(), FakeJobs(job)
     desk.attach(phone.send, queue, "hi")
-    answers = {MediaCheck: iter(checks), GateCheck: iter(gate_checks)}
+    answers = {MediaCheck: iter(checks), GateCheck: iter(gate_checks), ManualPage: iter(pages)}
 
     async def vision(question, uri, schema):
         answer = next(answers[schema])
@@ -446,7 +446,11 @@ async def test_his_own_photo_opens_a_server_request_and_ustaad_gets_the_findings
 
 
 async def test_his_manual_page_is_recorded_as_manual():
-    desk, phone, _, jobs, _ = session(checks=[CLEAR])
+    # T37: a document is read as a manual page, so its recorded vision answer is one (was CLEAR).
+    page = ManualPage(
+        legible=True, confidence=0.9, brand=None, model=None, page_title=None, error_codes=[], steps=[], warnings=[]
+    )
+    desk, phone, _, jobs, _ = session(pages=[page])
     await desk.offer("document")
     request = phone.of(MediaRequest)[0]
     assert request.kind == "document"

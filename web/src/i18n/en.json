@@ -39,6 +39,7 @@
       "other": "This work isn't safe to guide. Only a trained technician should do it. I can help with the other checks."
     },
     "source": {
+      "manualPhoto": "Photo of manual",
       "play": "Play the voice note: {{label}}",
       "stop": "Stop the voice note: {{label}}",
       "failed": "The voice note didn't play. Check the network, then tap it again."
@@ -60,6 +61,8 @@
     "blurry": "Photo is blurry. Hold the phone still and move a little closer.",
     "ownTitle": "Take a photo of what you want to show",
     "pickFromPhone": "Choose from phone",
+    "manualPhoto": "Manual photo",
+    "manualTitle": "Take a photo of the manual page or the wiring sticker",
     "zoom": "Zoom {{n}} times"
   },
   "stock": {

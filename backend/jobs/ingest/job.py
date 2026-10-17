@@ -136,7 +136,6 @@ async def run_ingest_job(import_id: str, media_bucket: str, deps: ImportJobDepen
     if record["status"] == "done":
         return True
 
-    existing_errors = record.get("errors", [])
     workspace = deps.workspace / import_id
     try:
         workspace.mkdir(parents=True, exist_ok=True)
@@ -163,6 +162,7 @@ async def run_ingest_job(import_id: str, media_bucket: str, deps: ImportJobDepen
                 fields = {"status": status.value}
                 if status is ImportLifecycle.PARSING:
                     fields |= {
+                        "errors": [],
                         "files_total": 1 + len(intake.attachment_basenames),
                         "started_at": deps.now(),
                     }
@@ -185,12 +185,12 @@ async def run_ingest_job(import_id: str, media_bucket: str, deps: ImportJobDepen
         deps.imports.update(
             import_id,
             status="failed",
-            errors=_fixed_errors(existing_errors, [IMPORT_FAILED]),
+            errors=_fixed_errors([], [IMPORT_FAILED]),
             finished_at=deps.now(),
         )
         return False
 
-    errors = _fixed_errors(existing_errors, result.errors)
+    errors = _fixed_errors([], result.errors)
     if result.status is ImportLifecycle.FAILED:
         deps.imports.update(import_id, status="failed", errors=errors, finished_at=deps.now())
         return False

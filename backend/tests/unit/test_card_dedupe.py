@@ -64,6 +64,20 @@ def test_merge_lists_a_message_once():
     assert merge(card(ids=("m1", "m2")), card(cid="fc_new", ids=("m2", "n1"))).source.message_ids == ["m1", "m2", "n1"]
 
 
+def test_duplicate_retry_does_not_inflate_verified_count():
+    old = card(ids=("m1", "m2"))
+    old = old.model_copy(update={"verified_count": 3})
+
+    assert merge(old, card(cid="fc_retry", ids=("m1", "m2"))).verified_count == 3
+
+
+def test_genuinely_new_message_evidence_increments_verified_count():
+    old = card(ids=("m1", "m2"))
+    old = old.model_copy(update={"verified_count": 3})
+
+    assert merge(old, card(cid="fc_new", ids=("m2", "m3"))).verified_count == 4
+
+
 def test_a_voice_source_replaces_a_first_card_without_audio():
     text = card()
     text = text.model_copy(update={"source": text.source.model_copy(update={"type": "whatsapp_text"})})

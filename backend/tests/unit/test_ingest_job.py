@@ -72,8 +72,8 @@ def draft(message_id):
     )
 
 
-async def test_complete_offline_job_persists_lifecycle_counts_and_generated_audio_uri(tmp_path):
-    imports = FakeImports()
+async def test_successful_retry_replaces_old_failure_errors_and_completes_offline_job(tmp_path):
+    imports = FakeImports(status="failed", errors=[IMPORT_FAILED])
     storage = FakeStorage()
     cards = FakeCards()
     chat = b"16/10/26, 9:00 am - Asha: voice.opus (file attached)"
@@ -124,6 +124,7 @@ async def test_complete_offline_job_persists_lifecycle_counts_and_generated_audi
         "extracting",
         "done",
     ]
+    assert imports.updates[0]["errors"] == []
     assert imports.updates[-1] == {
         "status": "done",
         "audio_total": 1,

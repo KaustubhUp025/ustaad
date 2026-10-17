@@ -84,6 +84,8 @@
     "send": "सैंपल फ़ोटो भेजो: {{name}}",
     "displayE6": "Voltas डिस्प्ले पर E6",
     "voltasLabel": "Voltas एनर्जी लेबल",
-    "publicPost": "पब्लिक पोस्ट से ली गई फ़ोटो"
+    "mcbOff": "OFF पर MCB",
+    "publicPost": "पब्लिक पोस्ट से ली गई फ़ोटो",
+    "ownPhoto": "हमारी अपनी फ़ोटो"
   }
 }

@@ -84,6 +84,8 @@
     "send": "Send sample photo: {{name}}",
     "displayE6": "Voltas display showing E6",
     "voltasLabel": "Voltas energy label",
-    "publicPost": "Image from a public post"
+    "mcbOff": "MCB in the OFF position",
+    "publicPost": "Image from a public post",
+    "ownPhoto": "Our own photo"
   }
 }

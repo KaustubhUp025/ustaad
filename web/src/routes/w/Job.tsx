@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 
 import { CameraSheet } from './CameraSheet'
 import { SourceChip } from './SourceChip'
+import { QuotesCard } from './QuotesCard'
 
 // The job screen: live captions, the current step card, the safety gate and stop screens, the camera sheet, and the
 // push-to-talk mic.
@@ -145,6 +146,7 @@ function JobScreen() {
               <p className="text-[length:var(--text-caption)]">{lines?.main}</p>
             </article>
           )}
+          <QuotesCard quoteRequestId={live.quotes.quoteRequestId} initialItems={live.quotes.items} />
         </>
       )}
 

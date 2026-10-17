@@ -91,5 +91,24 @@
     "mcbOff": "OFF पर MCB",
     "publicPost": "पब्लिक पोस्ट से ली गई फ़ोटो",
     "ownPhoto": "हमारी अपनी फ़ोटो"
+  },
+  "quotes": {
+    "title": "पार्ट्स के भाव",
+    "waiting": "दुकान के जवाब का इंतज़ार है…",
+    "voiceReply": "वॉइस जवाब",
+    "availability": "उपलब्धता",
+    "available": "उपलब्ध",
+    "unavailable": "उपलब्ध नहीं",
+    "replyPending": "जवाब का इंतज़ार है",
+    "price": "कीमत",
+    "pricePending": "कीमत नहीं मिली",
+    "eta": "पहुंचने का समय",
+    "etaPending": "समय नहीं मिला",
+    "distance": "दूरी",
+    "distanceValue": "{{distance}} किमी",
+    "approve": "भाव मंज़ूर करें",
+    "approved": "भाव मंज़ूर हुआ",
+    "loadFailed": "भाव नहीं खुले। नेटवर्क जाँचें, फिर कोशिश करें।",
+    "approvalFailed": "भाव मंज़ूर नहीं हुआ। जवाब जाँचें, फिर कोशिश करें।"
   }
 }

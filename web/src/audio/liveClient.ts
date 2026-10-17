@@ -17,6 +17,15 @@ export type StepSource = {
   doc: string | null
   page: number | null
 }
+export type QuoteItem = {
+  quote_id: string
+  vendor: string
+  distance_km: number | null
+  price_inr: number | null
+  available: boolean | null
+  eta: string | null
+  from_voice: boolean
+}
 
 // Frames this module and the job screen read; the other server frames arrive with their own tasks.
 export type ServerFrame =
@@ -42,6 +51,7 @@ export type ServerFrame =
       max_seconds: number | null
     }
   | { v: 1; type: 'media_result'; request_id: string; matches_expected: boolean; confidence: number; retake_reason: string | null }
+  | { v: 1; type: 'quotes'; quote_request_id: string; items: QuoteItem[] }
 
 export type LiveStatus = 'connecting' | 'ready' | 'reconnecting' | 'failed' | 'busy'
 

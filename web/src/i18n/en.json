@@ -49,6 +49,7 @@
     "retake": "Take photo again",
     "notNow": "Not now",
     "sending": "Sending photo…",
+    "sent": "Photo sent",
     "checking": "Ustaad is looking at the photo…",
     "stillChecking": "Still checking the photo, it's taking longer than usual…",
     "failed": "Photo didn't send. Check the network, then take it again.",

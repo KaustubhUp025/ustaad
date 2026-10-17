@@ -1,4 +1,4 @@
-import { Camera, Flashlight, X } from 'lucide-react'
+import { Camera, Check, Flashlight, LoaderCircle, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -50,7 +50,13 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
     }
   }, [phase])
 
+  // While it is checked he sees the photo he sent under a scan line, not a live camera that looks like nothing is
+  // happening (phone test, Oct 17: 4-5 s felt broken).
+  const [sent, setSent] = useState<string | null>(null)
+  useEffect(() => () => void (sent && URL.revokeObjectURL(sent)), [sent])
+
   const upload = async (jpeg: Blob) => {
+    setSent(URL.createObjectURL(jpeg))
     setPhase('sending')
     try {
       onSent(await uploadPhoto(jpeg, jobId, request.request_id))
@@ -120,6 +126,12 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
       <div className="relative min-h-[240px] flex-1">
       <div className="absolute inset-y-0 left-1/2 flex aspect-[3/4] h-full max-w-full -translate-x-1/2 items-center justify-center overflow-hidden rounded-lg bg-graphite text-center text-housing">
         <video ref={camera.video} muted playsInline aria-hidden className={live ? 'absolute inset-0 size-full object-cover' : 'hidden'} />
+        {busy && sent && (
+          <>
+            <img src={sent} alt="" className="absolute inset-0 size-full object-cover" />
+            <span aria-hidden className="absolute inset-x-0 h-1 animate-scan bg-primary motion-reduce:hidden" />
+          </>
+        )}
         {['top-3 left-3 border-t-4 border-l-4', 'top-3 right-3 border-t-4 border-r-4', 'bottom-16 left-3 border-b-4 border-l-4', 'right-3 bottom-16 border-r-4 border-b-4'].map(
           (corner) => (
             <span key={corner} aria-hidden className={`absolute size-8 border-primary ${corner}`} />
@@ -150,7 +162,20 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
       </div>
       </div>
 
-      {message && (
+      {busy ? (
+        <ol role="status" className="flex flex-col gap-1 text-[length:var(--text-body)]">
+          <li className="flex items-center gap-2">
+            {phase === 'sending' ? <LoaderCircle aria-hidden className="size-5 animate-spin motion-reduce:animate-none" /> : <Check aria-hidden className="size-5 text-ok" />}
+            {t(phase === 'sending' ? 'camera.sending' : 'camera.sent')}
+          </li>
+          {phase === 'checking' && (
+            <li className="flex items-center gap-2">
+              <LoaderCircle aria-hidden className="size-5 animate-spin motion-reduce:animate-none" />
+              {message}
+            </li>
+          )}
+        </ol>
+      ) : message && (
         <p
           role={warn ? 'alert' : 'status'}
           className={warn ? 'border-l-4 border-destructive pl-3 text-[length:var(--text-body)]' : 'text-[length:var(--text-body)]'}

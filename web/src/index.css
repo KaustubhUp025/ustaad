@@ -4,6 +4,12 @@
 
 /* Tailwind and shadcn names map onto tokens.css; colours and fonts are defined only there. */
 @theme inline {
+  /* The scan line over a photo while Ustaad checks it (camera sheet). */
+  --animate-scan: scan 1.6s ease-in-out infinite alternate;
+  @keyframes scan {
+    from { top: 0; }
+    to { top: calc(100% - 4px); }
+  }
   --font-sans: var(--font-body);
   --font-heading: var(--font-display);
   --font-code: var(--font-code);

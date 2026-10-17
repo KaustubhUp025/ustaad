@@ -13,6 +13,7 @@ The client connects straight to Cloud Run (Firebase Hosting rewrites don't carry
 | `media_cancel` | `{"v":1,"type":"media_cancel","request_id":"r_1"}` |
 | `media_offer` | `{"v":1,"type":"media_offer","kind":"photo"}` (`kind`: `photo`\|`document`): the worker starts a photo himself ("Photo bhejo"). The server answers with a `media_request`: the open safety-gate request if there is one, else the open request from Ustaad, else a new one |
 | `text` | `{"v":1,"type":"text","text":"PCB nahi hai"}` (typed fallback) |
+| `step_done` | `{"v":1,"type":"step_done","n":3}`: the worker taps "done" on step card `n`. Accepted only while step `n` is the last step handed out (`jobs.current_step` = `n`); a stale or repeated tap is ignored. The server then hands out what `next_step` would: a `step_card` for the next step, or a `safety_gate` (with its `media_request`) when a gate stands before it, or nothing after the last step. It tells Ustaad in a text turn what the phone now shows (or that every step was given), so he says it instead of calling `next_step` again |
 | `ping` | `{"v":1,"type":"ping"}` every 20 s |
 
 ## Server → client

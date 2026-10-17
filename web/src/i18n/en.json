@@ -59,6 +59,7 @@
     "dark": "Photo is too dark. Turn the flash on and take it again.",
     "blurry": "Photo is blurry. Hold the phone still and move a little closer.",
     "ownTitle": "Take a photo of what you want to show",
+    "pickFromPhone": "Choose from phone",
     "zoom": "Zoom {{n}} times"
   },
   "stock": {

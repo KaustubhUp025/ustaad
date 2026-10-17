@@ -90,6 +90,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/quotes/{qid}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Quote */
+        post: operations["approve_quote_api_quotes__qid__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/quotes/{qrid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Quotes */
+        get: operations["get_quotes_api_quotes__qrid__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -101,6 +135,23 @@ export interface paths {
         get: operations["healthz_healthz_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/webhook/telegram": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Telegram Webhook */
+        post: operations["telegram_webhook_webhook_telegram_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -125,6 +176,19 @@ export interface components {
             expires_in: 900;
             /** Url */
             url: string;
+        };
+        /** CallbackQuery */
+        CallbackQuery: {
+            /** Data */
+            data?: string | null;
+            /** Id */
+            id: string;
+            message?: components["schemas"]["Message"] | null;
+        };
+        /** Chat */
+        Chat: {
+            /** Id */
+            id: number;
         };
         /** DemoSessionRequest */
         DemoSessionRequest: {
@@ -244,6 +308,103 @@ export interface components {
             upload_url: string;
             /** Uri */
             uri: string;
+        };
+        /** Message */
+        Message: {
+            chat: components["schemas"]["Chat"];
+            /** Message Id */
+            message_id: number;
+            reply_to_message?: components["schemas"]["Message"] | null;
+            /** Text */
+            text?: string | null;
+            voice?: components["schemas"]["Voice"] | null;
+        };
+        /** Quote */
+        Quote: {
+            /** Available */
+            available: boolean | null;
+            /** Eta */
+            eta: string | null;
+            /** Eta Minutes */
+            eta_minutes: number | null;
+            /** From Voice */
+            from_voice: boolean;
+            /** Id */
+            id: string;
+            /** Media Uri */
+            media_uri: string | null;
+            /** Parsed Confidence */
+            parsed_confidence: number | null;
+            /** Price Inr */
+            price_inr: number | null;
+            /** Raw Text */
+            raw_text: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "CREATED" | "SENT" | "PARSING" | "CLARIFY" | "QUOTED" | "CONFIRMED" | "DECLINED" | "EXPIRED";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Vendor Id */
+            vendor_id: string;
+            /** Vendor Name */
+            vendor_name: string;
+        };
+        /** QuoteRequest */
+        QuoteRequest: {
+            /** Approved Quote Id */
+            approved_quote_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Id */
+            id: string;
+            /** Job Id */
+            job_id: string;
+            /** Part */
+            part: string;
+            /** Qty */
+            qty: number;
+            /** Specs */
+            specs: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "approved" | "expired";
+            /** Vendor Ids */
+            vendor_ids: string[];
+            /** Worker Id */
+            worker_id: string;
+        };
+        /** QuotesResponse */
+        QuotesResponse: {
+            /** Quotes */
+            quotes: components["schemas"]["Quote"][];
+            request: components["schemas"]["QuoteRequest"];
+        };
+        /** Update */
+        Update: {
+            callback_query?: components["schemas"]["CallbackQuery"] | null;
+            message?: components["schemas"]["Message"] | null;
+            /** Update Id */
+            update_id: number;
+        };
+        /** Voice */
+        Voice: {
+            /** File Id */
+            file_id: string;
         };
         /** Worker */
         Worker: {
@@ -856,6 +1017,194 @@ export interface operations {
             };
         };
     };
+    approve_quote_api_quotes__qid__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                qid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuotesResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_quotes_api_quotes__qrid__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                qrid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuotesResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     healthz_healthz_get: {
         parameters: {
             query?: never;
@@ -864,6 +1213,106 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    telegram_webhook_webhook_telegram_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Telegram-Bot-Api-Secret-Token"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Update"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

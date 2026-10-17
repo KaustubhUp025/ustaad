@@ -48,9 +48,9 @@ gcloud iam service-accounts add-iam-policy-binding "$RUN_SA" \
 gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
   --member="serviceAccount:${RUN_SA}" --role=roles/storage.objectAdmin >/dev/null
 
-# Secrets with a placeholder version so the first deploy works; replace values in T06:
-#   printf '%s' "$VALUE" | gcloud secrets versions add wa-token --data-file=-
-for s in wa-token wa-verify-token wa-app-secret places-api-key; do
+# Secrets with a placeholder version so the first deploy works; replace the bot token from @BotFather (README):
+#   read -rs T && printf '%s' "$T" | gcloud secrets versions add tg-bot-token --data-file=-
+for s in tg-bot-token places-api-key; do
   if ! gcloud secrets describe "$s" >/dev/null 2>&1; then
     gcloud secrets create "$s" --replication-policy=automatic
     printf 'placeholder' | gcloud secrets versions add "$s" --data-file=-
@@ -61,6 +61,12 @@ done
 if ! gcloud secrets describe session-secret >/dev/null 2>&1; then
   gcloud secrets create session-secret --replication-policy=automatic
   openssl rand -base64 32 | tr -d '\n' | gcloud secrets versions add session-secret --data-file=-
+fi
+
+# Telegram sends it back in X-Telegram-Bot-Api-Secret-Token on every webhook call (only A-Z a-z 0-9 _ - allowed).
+if ! gcloud secrets describe tg-webhook-secret >/dev/null 2>&1; then
+  gcloud secrets create tg-webhook-secret --replication-policy=automatic
+  openssl rand -hex 32 | tr -d '\n' | gcloud secrets versions add tg-webhook-secret --data-file=-
 fi
 
 # Firebase on the same project (Hosting)

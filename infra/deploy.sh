@@ -15,7 +15,7 @@ ENVVARS="^@^GOOGLE_CLOUD_PROJECT=${PROJECT_ID}@GOOGLE_CLOUD_LOCATION=global@GOOG
 ENVVARS+="@FIRESTORE_DB=${DB}@FLASH_MODEL=${FLASH_MODEL:-gemini-3.8-flash}@LIVE_MODEL=${LIVE_MODEL}"
 ENVVARS+="@TTS_MODEL=${TTS_MODEL:-gemini-3.8-flash-tts}@EMBED_MODEL=${EMBED_MODEL:-gemini-embedding-001}@EMBED_DIM=768"
 ENVVARS+="@TRANSCRIBE_MODEL=${TRANSCRIBE_MODEL:-}@MEDIA_BUCKET=${MEDIA_BUCKET}@AGENT_ENGINE_ID=${AGENT_ENGINE_ID:-}"
-ENVVARS+="@LIVE_LOCATION=${LIVE_LOCATION:-us-central1}@AGENT_SEARCH_DATASTORE=${AGENT_SEARCH_DATASTORE:-}@WA_PHONE_ID=${WA_PHONE_ID:-}@ALLOWED_ORIGINS=${ALLOWED_ORIGINS}"
+ENVVARS+="@LIVE_LOCATION=${LIVE_LOCATION:-us-central1}@AGENT_SEARCH_DATASTORE=${AGENT_SEARCH_DATASTORE:-}@ALLOWED_ORIGINS=${ALLOWED_ORIGINS}"
 ENVVARS+="@DEMO_SAFE=${DEMO_SAFE}"
 
 gcloud run deploy "$SERVICE" \
@@ -29,4 +29,4 @@ gcloud run deploy "$SERVICE" \
   --max-instances 4 \
   --allow-unauthenticated \
   --set-env-vars "$ENVVARS" \
-  --set-secrets "WA_TOKEN=wa-token:latest,WA_VERIFY_TOKEN=wa-verify-token:latest,WA_APP_SECRET=wa-app-secret:latest,PLACES_API_KEY=places-api-key:latest,SESSION_SECRET=session-secret:latest"
+  --set-secrets "TG_BOT_TOKEN=tg-bot-token:latest,TG_WEBHOOK_SECRET=tg-webhook-secret:latest,PLACES_API_KEY=places-api-key:latest,SESSION_SECRET=session-secret:latest"

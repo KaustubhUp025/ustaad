@@ -9,10 +9,12 @@ from agent.callbacks import gate_guard
 from agent.identify_tools import identify_tools
 from agent.inventory_tools import inventory_tools
 from agent.media_tools import MediaDesk, ReadPhoto, media_tools
+from agent.quote_tools import quote_tools
 from agent.repair_tools import repair_tools
 from agent.search_tools import search_tools
-from clients.firestore import CardStore, InventoryStore, JobStore
+from clients.firestore import CardStore, InventoryStore, JobStore, QuoteStore
 from clients.gemini import embed
+from clients.telegram import TelegramBot
 
 INSTRUCTION = (Path(__file__).parent / "instruction.md").read_text(encoding="utf-8")
 
@@ -23,6 +25,8 @@ def build_ustaad(
     jobs: JobStore,
     cards: CardStore,
     inventory: InventoryStore,
+    quotes: QuoteStore,
+    bot: TelegramBot,
     desk: MediaDesk,
     read_photo: ReadPhoto,
 ) -> Agent:
@@ -35,6 +39,7 @@ def build_ustaad(
         + search_tools(cards, embed)
         + repair_tools(jobs)
         + media_tools(desk, jobs, read_photo)
-        + inventory_tools(inventory, desk),
+        + inventory_tools(inventory, desk)
+        + quote_tools(quotes, bot, desk),
         before_tool_callback=gate_guard(jobs.load),
     )

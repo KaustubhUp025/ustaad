@@ -12,13 +12,13 @@ Submission: **Sat Oct 17, 2026, 21:00 IST**. Feature freeze: **Thu Oct 15, 18:00
 | Theme | Future of Work & Enterprise Productivity |
 | Languages | Hindi + Telugu polished (in the video); Tamil + Bengali work, labelled beta; English as a fifth profile language (spoken and UI) |
 | Surfaces | One Vite + React PWA: worker app `/w`, team dashboard `/d`. No native app. |
-| Backend | One FastAPI service on Cloud Run (asia-south1): ADK agent, REST, Live WebSocket, WhatsApp webhook. Batch = Cloud Run Jobs. |
+| Backend | One FastAPI service on Cloud Run (asia-south1): ADK agent, REST, Live WebSocket, Telegram vendor webhook. Batch = Cloud Run Jobs. |
 | Models | Vertex / Agent Platform only. `FLASH_MODEL=gemini-3.8-flash`. `LIVE_MODEL=gemini-3.8-live` if the Day-1 smoke test passes on Agent Platform, else `gemini-live-2.5-flash-native-audio`. |
 | Transcription | ffmpeg → 16 kHz mono FLAC → Flash `generateContent` (MIME `audio/flac`). `gemini-3.5-transcribe` optional (preview, Interactions API). |
 | Knowledge | Fault cards in Firestore, 768-dim vectors (`gemini-embedding-001` with `output_dimensionality=768`; default is 3072). Manuals in Agent Search (₹95.7k credit). |
 | Memory | Memory Bank via an empty Agent Engine instance (`AGENT_ENGINE_ID`); Firestore for structured data |
 | Camera | Snapshots and ≤15 s clips requested by the agent. No continuous video stream. |
-| Vendors | WhatsApp Cloud API test number, 5 registered team phones as vendors |
+| Vendors | A Telegram bot; team phones that pressed Start on it are the saved vendors (WhatsApp Cloud API blocked by Meta business verification, DECISIONS Oct 17; it is the production path once verified) |
 | Payments | None (at most a `upi://` link) |
 | Repo | Public GitHub, Apache-2.0, English docs, created Oct 11 |
 | Ops | Services stay live through Nov 6 (evaluation Oct 19 – Nov 6) |
@@ -41,7 +41,7 @@ theme named. Rules don't mention AI coding assistants. Source: https://aibuilder
 | M5 | Safety gates | Hazardous step hidden until a photo passes; refrigerant → "certified gas technician needed"; skip attempts fail. A job with no card or manual source needs the mains-off photo before its first step; microwave high-voltage, picture-tube and geyser-opening work stop with a red screen. |
 | M6 | WhatsApp import | Demo export (zip or loose files) → ≥20 fault cards with speaker, date, audio link, arriving live on the dashboard |
 | M7 | Stock | "Do capacitor use kiye" decrements; repair checks stock first; low-stock badge |
-| M8 | Parts quotes | Missing part → 3 vendor phones on WhatsApp → text/voice replies parsed and ranked → approve sends confirmations; < 2 min |
+| M8 | Parts quotes | Missing part → 3 vendor phones on Telegram → button/text/voice replies parsed and ranked → approve sends confirmations; < 2 min |
 | M9 | Close job | "Ho gaya" → job log + new fault card with photo; stock updated |
 | M10 | Judge-ready demo | "Try the demo": seeded worker, sample photos, cached golden paths; works in incognito on phone and laptop |
 
@@ -79,7 +79,7 @@ No API reads groups. Use WhatsApp "Export chat → Include media".
 PWA (Firebase Hosting, `/api/**` rewritten to Cloud Run) · Live voice opens `wss://` **directly** to the Cloud Run
 URL (Hosting rewrites don't carry WebSockets; `--timeout=3600`, session affinity, origin check) · `ustaad-api`
 (FastAPI + ADK) · Jobs `ingest-whatsapp`, `compute-clusters` · Agent Platform (Live, Flash, TTS, embeddings,
-Memory Bank) · Agent Search (manuals) · Firestore + Storage · Places API (New) · WhatsApp Cloud API.
+Memory Bank) · Agent Search (manuals) · Firestore + Storage · Places API (New) · Telegram Bot API.
 
 Credits: ₹95.7k GenAI App Builder → Agent Search only (reportedly). ₹14.3k (≈Oct 24) and ₹1.5k (≈Oct 20) →
 Gemini, Cloud Run, Firestore, Storage, Memory Bank. Card + alerts (₹500/2,000/5,000) after that.
@@ -88,7 +88,7 @@ Rate limits: 20 req/min per IP on `/api/chat` and `/ws/live`, 3 concurrent Live 
 Env: `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION=global`, `GOOGLE_GENAI_USE_ENTERPRISE=TRUE`,
 `GOOGLE_GENAI_USE_VERTEXAI=TRUE`, `FLASH_MODEL`, `LIVE_MODEL`, `LIVE_LOCATION` (region for the Live client; the smoke test uses the same value), `TTS_MODEL=gemini-3.8-flash-tts`,
 `EMBED_MODEL=gemini-embedding-001`, `TRANSCRIBE_MODEL` (empty = Flash), `AGENT_ENGINE_ID`,
-`AGENT_SEARCH_DATASTORE`, `WA_TOKEN`, `WA_PHONE_ID`, `WA_VERIFY_TOKEN`, `WA_APP_SECRET`, `PLACES_API_KEY`,
+`AGENT_SEARCH_DATASTORE`, `TG_BOT_TOKEN`, `TG_WEBHOOK_SECRET`, `PLACES_API_KEY`,
 `DEMO_SAFE`, `MEDIA_BUCKET`, `ALLOWED_ORIGINS`.
 
 ## 6. Agent
@@ -107,7 +107,7 @@ Tools are framework-free functions in `backend/tools/` (fallback: raw `google-ge
 | confirm_safety | (not a model tool) runs on each photo of a `request_media` with `gate_id` | passed, reason | — |
 | check_inventory / update_inventory | part / [{part, delta}] | stock + low flags | BLOCKING / SILENT |
 | find_vendors | part, pincode | saved + Places results | BLOCKING |
-| request_quotes | job_id, part, specs, vendor_ids | quote_request_id | NON_BLOCKING |
+| request_quotes | part, specs, qty (job and worker from session state; every saved vendor) | quote_request_id, vendor names | NON_BLOCKING, WHEN_IDLE |
 | get_quotes / approve_quote | ids | ranked quotes / confirmation | BLOCKING |
 | close_job | job_id, outcome, parts_used, fix_summary | job log + draft card id | BLOCKING |
 | get_nudges / get_area_alerts | worker_id / pincode | nudges / clusters | BLOCKING |
@@ -143,17 +143,17 @@ Memory: Memory Bank (soft facts, end of session; PreloadMemoryTool) · Firestore
 
 ## 7. Contracts (frozen Mon Oct 12, 12:00)
 Firestore: `workers/{wid}` (+ `inventory`, `vendors`), `jobs`, `fault_cards`, `imports`, `quote_requests`, `quotes`,
-`clusters`, `wa_messages` (dedupe), `demo_cache`. Field lists: `shared/contracts/firestore.md`. Fault card schema: `shared/contracts/fault_card.schema.json`.
+`clusters`, `tg_updates` (dedupe), `demo_cache`. Field lists: `shared/contracts/firestore.md`. Fault card schema: `shared/contracts/fault_card.schema.json`.
 REST request/response shapes: `shared/contracts/rest.md`. Changes: `shared/contracts/CHANGELOG.md`.
 Vector index: `infra/firestore.sh`.
 REST: `POST /api/demo/session` · `POST /api/chat` · `POST /api/media/upload-url` · `GET/POST /api/jobs`,
 `GET /api/jobs/{id}` · `GET /api/fault-cards`, `GET/PATCH /api/fault-cards/{id}` · `GET/PATCH /api/inventory` ·
 `GET/POST /api/vendors` · `POST /api/quotes/request`, `GET /api/quotes/{qrid}`, `POST /api/quotes/{qid}/approve` ·
 `POST /api/imports`, `GET /api/imports/{id}` · `GET /api/clusters`, `/api/nudges`, `/api/dashboard/summary` ·
-`GET/POST /webhook/whatsapp` · `GET /healthz`.
+`POST /webhook/telegram` · `GET /healthz`.
 WebSocket events: `shared/contracts/ws-events.md`.
 Quotes per vendor: CREATED → SENT → PARSING → QUOTED → CONFIRMED; CLARIFY (one follow-up); EXPIRED (30 min);
-DECLINED. Vendor phones send "hi" before demos (24-hour window); `hello_world` template fallback.
+DECLINED. Each vendor presses Start on the bot once before demos (a bot can only message chats that started it).
 
 ## 8. Frontend
 See `docs/DESIGN.md` (tokens, type, layout, words). Routes: `/w/start`, `/w/onboard`, `/w`, `/w/job/:id`,

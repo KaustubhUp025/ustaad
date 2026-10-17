@@ -32,6 +32,17 @@ async def ask_json[M: BaseModel](prompt: str, schema: type[M]) -> M:
     return schema.model_validate_json(response.text)
 
 
+async def hear_json[M: BaseModel](question: str, flac: bytes, schema: type[M]) -> M:
+    """Asks Flash one question about a FLAC recording and parses the answer into `schema`."""
+    client = genai.Client()
+    response = await client.aio.models.generate_content(
+        model=os.environ["FLASH_MODEL"],
+        contents=[types.Part.from_bytes(data=flac, mime_type="audio/flac"), question],
+        config=types.GenerateContentConfig(response_mime_type="application/json", response_schema=schema),
+    )
+    return schema.model_validate_json(response.text)
+
+
 def embed(texts: list[str], task_type: str) -> list[list[float]]:
     """EMBED_DIM must match the Firestore vector index (infra/firestore.sh), or search silently finds nothing."""
     client = genai.Client()

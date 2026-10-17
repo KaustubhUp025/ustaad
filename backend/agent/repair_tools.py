@@ -5,12 +5,14 @@ judged on its own server-issued request (agent/media_tools.py), so there is no t
 from google.adk.tools import FunctionTool, ToolContext
 from google.genai import types
 
+from agent.media_tools import MediaDesk
 from clients.firestore import JobStore
 from models.tools import ProposedStep, StartRepairIn
 from tools import repair
+from tools.gates import open_gate
 
 
-def repair_tools(jobs: JobStore) -> list[FunctionTool]:
+def repair_tools(jobs: JobStore, desk: MediaDesk) -> list[FunctionTool]:
     def start_repair(
         tool_context: ToolContext, card_ids: list[str] | None = None, steps: list[ProposedStep] | None = None
     ) -> dict:
@@ -22,6 +24,11 @@ def repair_tools(jobs: JobStore) -> list[FunctionTool]:
         inp = StartRepairIn(card_ids=card_ids or [], steps=steps or [])
         cards = jobs.fault_cards(inp.card_ids)
         out = jobs.update(tool_context.state["job_id"], lambda job: repair.start_repair(inp, job, cards))
+        # Ustaad often says the first step without calling next_step (phone test, Oct 17), so a gate before it is
+        # shown now, by the server, not left to him.
+        gate = out.status == "STARTED" and open_gate(jobs.load(tool_context.state["job_id"]))
+        if gate:
+            desk.spawn(desk.show_gate(gate))
         return out.model_dump(mode="json")
 
     def next_step(tool_context: ToolContext, observation: str) -> dict:

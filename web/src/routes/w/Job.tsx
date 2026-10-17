@@ -26,7 +26,7 @@ function JobScreen() {
   const lang = useSearchParams()[0].get('lang') ?? i18n.language
   const { id = '' } = useParams()
   const live = useLive(lang, id)
-  const { step, gate, failReason, stop } = live.repair
+  const { step, gate, failReason, stop, closed } = live.repair
   const lines = step && stepLines(step)
   const { request } = live.media
   // While a gate shows, he first reads what to switch off; the gate's photo button then opens the sheet.
@@ -126,6 +126,12 @@ function JobScreen() {
               </p>
             ))}
           </section>
+
+          {closed && (
+            <p role="status" className="mx-4 rounded-sm border-l-4 border-l-ok bg-card px-4 py-3 text-[length:var(--text-body)]">
+              {t('repair.closed')}
+            </p>
+          )}
 
           {step && (
             // A service tag: 4px radius and one punched-hole notch at the left (DESIGN.md).

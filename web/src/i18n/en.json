@@ -22,6 +22,7 @@
     "ustaad": "Ustaad"
   },
   "repair": {
+    "closed": "Job closed and saved as a card for review.",
     "step": "Step {{n}} of {{of}}",
     "gateTitle": "Safety check first",
     "gate": {
@@ -48,6 +49,7 @@
     "retake": "Take photo again",
     "notNow": "Not now",
     "sending": "Sending photo…",
+    "sent": "Photo sent",
     "checking": "Ustaad is looking at the photo…",
     "stillChecking": "Still checking the photo, it's taking longer than usual…",
     "failed": "Photo didn't send. Check the network, then take it again.",
@@ -57,6 +59,7 @@
     "dark": "Photo is too dark. Turn the flash on and take it again.",
     "blurry": "Photo is blurry. Hold the phone still and move a little closer.",
     "ownTitle": "Take a photo of what you want to show",
+    "pickFromPhone": "Choose from phone",
     "zoom": "Zoom {{n}} times"
   },
   "stock": {
@@ -75,7 +78,8 @@
     "saveFailed": "The count didn't change. Check your network, then try again."
   },
   "demo": {
-    "try": "Try the demo",
+    "tryEn": "Try in English",
+    "tryHi": "हिंदी में आज़माएँ",
     "starting": "Starting the demo…",
     "failed": "The demo didn't start. Check your network, then try again."
   },

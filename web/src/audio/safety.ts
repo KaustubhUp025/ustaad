@@ -9,6 +9,8 @@ export type RepairView = {
   gate: Of<'safety_gate'> | null
   failReason: string | null
   stop: Of<'safety_stop'> | null
+  // The job was closed and saved as a card; a new step (the next job) clears it.
+  closed: boolean
 }
 
 // The step in the session language when the server translated it, with the original words kept small beside ▶.
@@ -18,7 +20,7 @@ export function stepLines(step: Of<'step_card'>): { main: string; original: stri
   return { main: translated, original: step.instruction }
 }
 
-export const noRepair: RepairView = { step: null, gate: null, failReason: null, stop: null }
+export const noRepair: RepairView = { step: null, gate: null, failReason: null, stop: null, closed: false }
 
 export function repairReducer(view: RepairView, frame: ServerFrame): RepairView {
   switch (frame.type) {
@@ -31,7 +33,9 @@ export function repairReducer(view: RepairView, frame: ServerFrame): RepairView 
       return { ...view, stop: frame }
     case 'step_card':
       if (view.gate && frame.hazard !== 'none') return view
-      return { ...view, step: frame, stop: null }
+      return { ...view, step: frame, stop: null, closed: false }
+    case 'job_closed':
+      return { ...noRepair, closed: true }
     default:
       return view
   }

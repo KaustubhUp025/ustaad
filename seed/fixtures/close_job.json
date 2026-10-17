@@ -1,0 +1,26 @@
+{
+  "_note": "G4 (T22): a repair whose gate has passed, closed with the worker's answers. Placeholder text only: no real error-code meanings or repair steps.",
+  "job": {
+    "job_id": "j_g4",
+    "steps": [
+      {"n": 1, "instruction": "Test step at the capacitor", "hazard": "capacitor",
+       "source": {"kind": "whatsapp_voice", "label": "Test senior · Oct 2026", "audio_uri": null, "doc": null, "page": null}}
+    ],
+    "gates": {"G_MAINS_OFF": "passed", "G_CAP_DISCHARGE": "passed"},
+    "current_step": 1,
+    "media": [
+      {"request_id": "r_gate", "uri": "gs://media/jobs/j_g4/r_gate/a.jpg", "kind": "photo", "findings": [], "confidence": 0.95, "reason": "requested"},
+      {"request_id": "r_part", "uri": "gs://media/jobs/j_g4/r_part/b.jpg", "kind": "photo",
+       "findings": [{"label": "test part", "value": "visible", "confidence": 0.9}], "confidence": 0.9, "reason": "requested"}
+    ]
+  },
+  "close": {
+    "brand": "lg",
+    "error_code": null,
+    "appliance_type": "split_ac",
+    "symptom": "Test symptom said by the worker",
+    "outcome": "Test cause said by the worker",
+    "fix_summary": "Test fix said by the worker",
+    "parts_used": [{"part": "capacitor", "qty": 1}]
+  }
+}

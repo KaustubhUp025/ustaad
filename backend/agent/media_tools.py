@@ -49,6 +49,13 @@ logger = logging.getLogger(__name__)
 VISION_TIMEOUT_S = 30
 
 
+# Said at once when a photo arrives: its check takes several seconds, and silence felt broken (phone test, Oct 17).
+PHOTO_ARRIVED = (
+    "[His photo arrived and is being checked; that takes a few seconds. In one short sentence, in the language he "
+    "last spoke, tell him you got it and are looking at it. Do not guess what it shows and do not say any step.]"
+)
+
+
 @dataclass
 class OpenRequest:
     request_id: str
@@ -125,6 +132,12 @@ class MediaDesk:
         inp = RequestMediaIn(kind="photo", target=EVIDENCE[gate_id], reason="safety gate", framing_tip="", gate_id=gate_id)
         await self.open(OpenRequest(f"r_{uuid4().hex[:8]}", None, inp, self.lang))
 
+    async def show_gate(self, gate_id: GateId) -> None:
+        """Shows a gate the model has not shown (via next_step), then its photo request. The gate goes first: with
+        only the request, the phone skips the gate screen (phone test, Oct 17)."""
+        await self.show(SafetyGate(gate_id=gate_id, message="Safety check first", required_evidence=EVIDENCE[gate_id]))
+        await self.open_gate(gate_id)
+
     async def offer(self, kind: Literal["photo", "document"]) -> None:
         """He wants to send a photo himself. An open gate request takes it first, then a request from Ustaad (the
         phone gets that request again); otherwise a new request with no target, judged only for readability."""
@@ -149,6 +162,7 @@ class MediaDesk:
         # Only this request's folder: a photo uploaded for an earlier request cannot answer it (PR #25 review).
         if not request or request.inp.kind != frame.kind or not frame.uri.startswith(f"{self._prefix}{request.request_id}/"):
             return False
+        self._tell(types.Content(role="user", parts=[types.Part(text=PHOTO_ARRIVED)]))
         self.spawn(self.on_photo(request, frame.uri))
         return True
 
@@ -182,6 +196,9 @@ class MediaDesk:
             content = types.Content(role="user", parts=[types.Part(text=notice)])
         else:
             return
+        self._tell(content)
+
+    def _tell(self, content: types.Content) -> None:
         if self._queue:
             self._queue.send_content(content)
         else:
@@ -324,15 +341,10 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
         return rules.record(job, request.request_id, request.inp.kind, uri, findings, confidence, reason)
 
     desk.on_photo = on_photo
-    async def reopen_gate(gate_id: GateId) -> None:
-        # The gate first: with only the request, the phone skips the gate screen (phone test, Oct 17).
-        await desk.show(SafetyGate(gate_id=gate_id, message="Safety check first", required_evidence=EVIDENCE[gate_id]))
-        await desk.open_gate(gate_id)
-
     # After a reconnect, possibly on another instance: a gate before the next step needs its photo request again.
     gate = open_gate(jobs.load(desk.job_id))
     if gate:
-        desk.spawn(reopen_gate(gate))
+        desk.spawn(desk.show_gate(gate))
     tool = FunctionTool(request_media)
     tool.behavior = types.Behavior.NON_BLOCKING
     tool.response_scheduling = types.FunctionResponseScheduling.WHEN_IDLE

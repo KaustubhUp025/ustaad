@@ -1,10 +1,10 @@
-import { Camera, Flashlight, X } from 'lucide-react'
+import { Camera, Check, Flashlight, ImageUp, LoaderCircle, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { uploadPhoto } from '@/api/media'
 import type { MediaView } from '@/audio/media'
-import { prepare } from '@/camera/photo'
+import { tryPrepare } from '@/camera/photo'
 import { samplesFor } from '@/camera/samples'
 import { useCamera } from '@/camera/useCamera'
 import { Button } from '@/components/ui/button'
@@ -32,6 +32,7 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
   const samples = samplesFor(gateId)
   const camera = useCamera()
   const fallback = useRef<HTMLInputElement>(null)
+  const picker = useRef<HTMLInputElement>(null)
   const [phase, setPhase] = useState<Phase>('ready')
   // Each server answer unlocks the sheet, even a second retake with the same reason (found on the phone, Oct 15).
   const [answersSeen, setAnswersSeen] = useState(answers)
@@ -50,7 +51,13 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
     }
   }, [phase])
 
+  // While it is checked he sees the photo he sent under a scan line, not a live camera that looks like nothing is
+  // happening (phone test, Oct 17: 4-5 s felt broken).
+  const [sent, setSent] = useState<string | null>(null)
+  useEffect(() => () => void (sent && URL.revokeObjectURL(sent)), [sent])
+
   const upload = async (jpeg: Blob) => {
+    setSent(URL.createObjectURL(jpeg))
     setPhase('sending')
     try {
       onSent(await uploadPhoto(jpeg, jobId, request.request_id))
@@ -72,7 +79,12 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
 
   const take = async (photo: Blob | undefined) => {
     if (!photo) return
-    const { jpeg, problem } = await prepare(photo)
+    const prepared = await tryPrepare(photo)
+    if (!prepared) {
+      setPhase('failed')
+      return
+    }
+    const { jpeg, problem } = prepared
     held.current = jpeg
     if (problem) setPhase(problem)
     else await upload(jpeg)
@@ -120,6 +132,12 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
       <div className="relative min-h-[240px] flex-1">
       <div className="absolute inset-y-0 left-1/2 flex aspect-[3/4] h-full max-w-full -translate-x-1/2 items-center justify-center overflow-hidden rounded-lg bg-graphite text-center text-housing">
         <video ref={camera.video} muted playsInline aria-hidden className={live ? 'absolute inset-0 size-full object-cover' : 'hidden'} />
+        {busy && sent && (
+          <>
+            <img src={sent} alt="" className="absolute inset-0 size-full object-cover" />
+            <span aria-hidden className="absolute inset-x-0 h-1 animate-scan bg-primary motion-reduce:hidden" />
+          </>
+        )}
         {['top-3 left-3 border-t-4 border-l-4', 'top-3 right-3 border-t-4 border-r-4', 'bottom-16 left-3 border-b-4 border-l-4', 'right-3 bottom-16 border-r-4 border-b-4'].map(
           (corner) => (
             <span key={corner} aria-hidden className={`absolute size-8 border-primary ${corner}`} />
@@ -150,7 +168,20 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
       </div>
       </div>
 
-      {message && (
+      {busy ? (
+        <ol role="status" className="flex flex-col gap-1 text-[length:var(--text-body)]">
+          <li className="flex items-center gap-2">
+            {phase === 'sending' ? <LoaderCircle aria-hidden className="size-5 animate-spin motion-reduce:animate-none" /> : <Check aria-hidden className="size-5 text-ok" />}
+            {t(phase === 'sending' ? 'camera.sending' : 'camera.sent')}
+          </li>
+          {phase === 'checking' && (
+            <li className="flex items-center gap-2">
+              <LoaderCircle aria-hidden className="size-5 animate-spin motion-reduce:animate-none" />
+              {message}
+            </li>
+          )}
+        </ol>
+      ) : message && (
         <p
           role={warn ? 'alert' : 'status'}
           className={warn ? 'border-l-4 border-destructive pl-3 text-[length:var(--text-body)]' : 'text-[length:var(--text-body)]'}
@@ -182,6 +213,20 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
         </div>
       )}
 
+      {/* A photo or screenshot already on the phone (a manual page, a sticker, an earlier job). Never at a gate:
+          an old photo cannot show the power is off now. */}
+      <input
+        ref={picker}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        onChange={(e) => {
+          void take(e.target.files?.[0])
+          e.target.value = ''
+        }}
+      />
       <input
         ref={fallback}
         type="file"
@@ -204,6 +249,17 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
           <Camera aria-hidden className="size-6" />
           {t(phase === 'ready' && !retakeReason ? 'camera.take' : 'camera.retake')}
         </Button>
+        {!gateId && phase !== 'dark' && phase !== 'blurry' && (
+          <Button
+            variant="outline"
+            className="h-(--touch) gap-2 text-[length:var(--text-body)]"
+            disabled={busy}
+            onClick={() => picker.current?.click()}
+          >
+            <ImageUp aria-hidden className="size-6" />
+            {t('camera.pickFromPhone')}
+          </Button>
+        )}
         {(phase === 'dark' || phase === 'blurry') && (
           <Button variant="outline" className="h-(--touch) text-[length:var(--text-body)]" onClick={() => void upload(held.current!)}>
             {t('camera.sendAnyway')}

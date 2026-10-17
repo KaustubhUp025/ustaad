@@ -12,12 +12,13 @@ export default function Home() {
   const navigate = useNavigate()
   const [demo, setDemo] = useState<'idle' | 'starting' | 'failed'>('idle')
 
-  // No login: a demo session for the seeded worker, then a new job in the worker's language.
-  const tryDemo = async () => {
+  // No login: a demo session for the seeded worker, then a new job in the language picked here. English comes first
+  // so a judge who speaks no Hindi can follow; Ustaad still cites the senior's Hindi voice note (phone test, Oct 17).
+  const tryDemo = async (lang: 'en' | 'hi') => {
     setDemo('starting')
     try {
-      const { worker } = await startDemo()
-      navigate(`/w/job/j_${crypto.randomUUID().slice(0, 8)}?lang=${worker.lang}`)
+      await startDemo()
+      navigate(`/w/job/j_${crypto.randomUUID().slice(0, 8)}?lang=${lang}`)
     } catch {
       setDemo('failed')
     }
@@ -33,9 +34,18 @@ export default function Home() {
         <Button
           className="h-(--touch) w-full text-[length:var(--text-body)]"
           disabled={demo === 'starting'}
-          onClick={() => void tryDemo()}
+          onClick={() => void tryDemo('en')}
         >
-          {demo === 'starting' ? t('demo.starting') : t('demo.try')}
+          {demo === 'starting' ? t('demo.starting') : t('demo.tryEn')}
+        </Button>
+        <Button
+          variant="outline"
+          lang="hi"
+          className="h-(--touch) w-full text-[length:var(--text-body)]"
+          disabled={demo === 'starting'}
+          onClick={() => void tryDemo('hi')}
+        >
+          {t('demo.tryHi')}
         </Button>
         {demo === 'failed' && (
           <p role="alert" className="border-l-4 border-l-destructive pl-3">

@@ -69,19 +69,23 @@ def next_step(job: RepairJob) -> tuple[StepOut | SafetyGateOut | RepairDone, Rep
         return SafetyGateOut(gate_id=gate, required_evidence=EVIDENCE[gate]), job
     # The only place a step's instruction leaves the server.
     step = job.steps[job.current_step]
-    return StepOut(job_id=job.job_id, of=len(job.steps), step=step), job.model_copy(
+    out = StepOut(job_id=job.job_id, of=len(job.steps), step=step, translation_lang=job.translation_lang)
+    return out, job.model_copy(
         update={"current_step": job.current_step + 1}
     )
 
 
 def step_card(out: StepOut, lang: str) -> StepCard:
-    """The phone's card for a handed-out step: the original words, and the English for an English session. Other
-    languages get no translation yet, so the phone shows the original."""
+    """The phone's card for a handed-out step: the original words, plus the English for an English session or the
+    stored translation when it is in the session's language (a Telugu translation never shows in a Tamil session).
+    Hindi shows the original."""
     step = out.step
-    translated = step.instruction_en if lang == "en" else None
-    return StepCard(
-        job_id=out.job_id, of=out.of, **step.model_dump(exclude={"instruction_en"}), instruction_translated=translated
-    )
+    if lang == "en":
+        translated = step.instruction_en
+    else:
+        translated = step.instruction_translated if out.translation_lang == lang else None
+    shown = step.model_dump(exclude={"instruction_en", "instruction_translated"})
+    return StepCard(job_id=out.job_id, of=out.of, **shown, instruction_translated=translated)
 
 
 def confirm_safety(inp: ConfirmSafetyIn, job: RepairJob, check: GateCheck) -> tuple[ConfirmSafetyOut, RepairJob]:

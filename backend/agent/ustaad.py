@@ -6,6 +6,7 @@ from google.adk.agents import Agent
 from google.adk.models import Gemini
 
 from agent.callbacks import gate_guard
+from agent.close_tools import close_tools
 from agent.identify_tools import identify_tools
 from agent.inventory_tools import inventory_tools
 from agent.media_tools import MediaDesk, ReadPhoto, media_tools
@@ -37,9 +38,10 @@ def build_ustaad(
         instruction=INSTRUCTION,
         tools=identify_tools(desk, read_photo)
         + search_tools(cards, embed)
-        + repair_tools(jobs)
+        + repair_tools(jobs, desk)
         + media_tools(desk, jobs, read_photo)
         + inventory_tools(inventory, desk)
+        + close_tools(jobs, cards, inventory, desk, embed)
         + quote_tools(quotes, bot, desk),
         before_tool_callback=gate_guard(jobs.load),
     )

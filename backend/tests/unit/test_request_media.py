@@ -505,3 +505,16 @@ async def test_ustaads_own_gate_call_also_gets_the_handed_out_step():
     await photo(desk, phone.of(MediaRequest)[0].request_id)
     assert queue.answers[0].response["next"]["status"] == "STEP"
     assert len(phone.of(StepCard)) == 1
+
+
+async def test_after_a_gate_ustaad_is_told_the_english_and_an_english_phone_shows_it():
+    english = "Test step at the PCB"
+    step = RepairStep(n=1, instruction="Test PCB par step", instruction_en=english, hazard="HV", source=GENERAL)
+    desk, phone, queue, _, _ = session(gate_checks=[MCB_OFF], job=RepairJob(job_id="j_1", steps=[step]))
+    desk.lang = "en"
+    await desk.open_gate("G_MAINS_OFF")
+    await photo(desk, phone.of(MediaRequest)[0].request_id)
+    (card,) = phone.of(StepCard)
+    assert (card.instruction, card.instruction_translated) == ("Test PCB par step", english)
+    (notice,) = queue.notices
+    assert english in notice and "Test PCB par step" not in notice

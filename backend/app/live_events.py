@@ -4,6 +4,7 @@ from typing import Any
 
 from google.adk.events import Event
 
+from models.tools import StepOut
 from models.ws import (
     Caption,
     Frame,
@@ -12,18 +13,17 @@ from models.ws import (
     ResumeHandle,
     SafetyGate,
     SafetyStop,
-    StepCard,
     TurnComplete,
 )
+from tools.repair import step_card
 
 
-def _tool_frame(name: str, result: dict[str, Any]) -> Frame | None:
+def _tool_frame(name: str, result: dict[str, Any], lang: str) -> Frame | None:
     """The repair screens follow the tools' results, including a result the gate callback put in a tool's place.
     The phone shows its own text for each gate and stop, so `message` is only a short English label."""
     status = result.get("status")
     if status == "STEP":
-        step = result["step"]
-        return StepCard(job_id=result["job_id"], of=result["of"], **step)
+        return step_card(StepOut.model_validate(result), lang)
     if status == "SAFETY_GATE":
         return SafetyGate(
             gate_id=result["gate_id"], message="Safety check first", required_evidence=result["required_evidence"]
@@ -35,7 +35,7 @@ def _tool_frame(name: str, result: dict[str, Any]) -> Frame | None:
     return None
 
 
-def to_frames(event: Event, partials: dict[str, str]) -> list[Frame | bytes]:
+def to_frames(event: Event, partials: dict[str, str], lang: str = "hi") -> list[Frame | bytes]:
     """`partials` holds each speaker's caption so far: ADK sends partial transcripts as fragments,
     while the contract wants every partial caption to replace the one before it."""
     out: list[Frame | bytes] = []
@@ -43,7 +43,7 @@ def to_frames(event: Event, partials: dict[str, str]) -> list[Frame | bytes]:
         if part.inline_data and part.inline_data.data:
             out.append(part.inline_data.data)
         if part.function_response and part.function_response.response is not None:
-            frame = _tool_frame(part.function_response.name, part.function_response.response)
+            frame = _tool_frame(part.function_response.name, part.function_response.response, lang)
             if frame:
                 out.append(frame)
     for who, said in (("user", event.input_transcription), ("ustaad", event.output_transcription)):

@@ -46,6 +46,8 @@ class RepairStep(BaseModel):
     model_config = ConfigDict(extra="forbid")
     n: Annotated[int, Field(ge=1)]
     instruction: str
+    # Display-only English of `instruction`; never decides hazard, gates or order.
+    instruction_en: str | None = None
     hazard: Hazard
     source: StepSource
 

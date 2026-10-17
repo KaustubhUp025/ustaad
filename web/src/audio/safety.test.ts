@@ -3,7 +3,9 @@
 import { expect, test } from '@playwright/test'
 
 import type { ServerFrame } from './liveClient'
-import { type RepairView, noRepair, repairReducer } from './safety'
+import { type RepairView, noRepair, repairReducer, stepLines } from './safety'
+
+type Of = Extract<ServerFrame, { type: 'step_card' }>
 
 const source = { kind: 'general', label: 'General guidance', audio_uri: null, doc: null, page: null } as const
 const gate: ServerFrame = {
@@ -66,4 +68,12 @@ test('a safety_stop shows the stop until a later step arrives', () => {
   const stop: ServerFrame = { v: 1, type: 'safety_stop', reason: 'refrigerant', message: 'Stopped for safety' }
   expect(run(step('none'), stop).stop?.reason).toBe('refrigerant')
   expect(run(stop, step('none', 2)).stop).toBeNull()
+})
+
+test('the step card shows the translation with the original small, and only the original when there is none', () => {
+  const card = (instruction_translated: string | null) => ({ ...(step('none') as Of), instruction_translated })
+  expect(stepLines(card('Test translated'))).toEqual({ main: 'Test translated', original: 'Test step 1' })
+  expect(stepLines(card(null))).toEqual({ main: 'Test step 1', original: null })
+  expect(stepLines(step('none') as Of)).toEqual({ main: 'Test step 1', original: null })
+  expect(stepLines(card('Test step 1'))).toEqual({ main: 'Test step 1', original: null })
 })

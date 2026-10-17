@@ -98,3 +98,12 @@ def test_a_gate_check_becomes_a_gate_result():
 def test_other_tool_results_send_no_frame():
     assert to_frames(responded("start_repair", {"status": "STARTED", "of": 2, "steps": []}), {}) == []
     assert to_frames(responded("next_step", {"status": "DONE"}), {}) == []
+
+
+def test_a_step_card_in_an_english_session_carries_the_english_and_the_original():
+    step = {"n": 1, "instruction": "Test ek", "instruction_en": "Test one", "hazard": "none", "source": SOURCE}
+    out = {"status": "STEP", "job_id": "j_1", "of": 1, "step": step}
+    (card,) = to_frames(responded("next_step", out), {}, "en")
+    assert (card.instruction, card.instruction_translated) == ("Test ek", "Test one")
+    (card,) = to_frames(responded("next_step", out), {}, "hi")
+    assert (card.instruction, card.instruction_translated) == ("Test ek", None)

@@ -44,6 +44,8 @@ class CardDraft(BaseModel):
     error_code: str | None
     symptom: str | None
     root_cause: str | None
+    symptom_en: str | None = None
+    root_cause_en: str | None = None
     steps: list[DraftStep]
     parts: list[FaultCardPart]
     # The message that states the fix; its speaker is credited.

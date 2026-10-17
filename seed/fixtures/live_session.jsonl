@@ -3,7 +3,7 @@
 {"t_ms":3200,"frame":{"v":1,"type":"identified","brand":"Voltas","model":"183V CZQ","error_code":"E6","confidence":0.9}}
 {"t_ms":4200,"frame":{"v":1,"type":"caption","who":"ustaad","text":"Ramesh ne May 2025 mein","final":false}}
 {"t_ms":5200,"frame":{"v":1,"type":"caption","who":"ustaad","text":"Ramesh ne May 2025 mein yahi code dekha tha. Pehle outdoor unit ka PCB dikhao.","final":true}}
-{"t_ms":5400,"frame":{"v":1,"type":"step_card","job_id":"j_1","n":1,"of":2,"instruction":"Outdoor unit ka PCB dikhao","hazard":"none","source":{"kind":"whatsapp_voice","label":"Ramesh · May 2025","audio_uri":"gs://…/PTT-20250512-WA0003.flac","doc":null,"page":null}}}
+{"t_ms":5400,"frame":{"v":1,"type":"step_card","job_id":"j_1","n":1,"of":2,"instruction":"Outdoor unit ka PCB dikhao","instruction_translated":null,"hazard":"none","source":{"kind":"whatsapp_voice","label":"Ramesh · May 2025","audio_uri":"gs://…/PTT-20250512-WA0003.flac","doc":null,"page":null}}}
 {"t_ms":5600,"frame":{"v":1,"type":"turn_complete"}}
 {"t_ms":6500,"frame":{"v":1,"type":"media_request","request_id":"r_1","kind":"photo","target":"Outdoor PCB, capacitor ke paas","framing_tip":"Flash on, 20 cm door","max_seconds":null}}
 {"t_ms":11000,"frame":{"v":1,"type":"media_result","request_id":"r_1","matches_expected":false,"confidence":0.41,"retake_reason":"Photo dhundhli hai, thoda paas se"}}
@@ -14,6 +14,6 @@
 {"t_ms":18800,"frame":{"v":1,"type":"caption","who":"ustaad","text":"Pehle MCB band karo","final":true}}
 {"t_ms":19000,"frame":{"v":1,"type":"turn_complete"}}
 {"t_ms":25000,"frame":{"v":1,"type":"gate_result","gate_id":"G_MAINS_OFF","passed":true,"reason":null}}
-{"t_ms":26000,"frame":{"v":1,"type":"step_card","job_id":"j_1","n":2,"of":2,"instruction":"Outdoor PCB ke terminal aur wiring dekho","hazard":"HV","source":{"kind":"whatsapp_voice","label":"Ramesh · May 2025","audio_uri":"gs://…/PTT-20250512-WA0003.flac","doc":null,"page":null}}}
+{"t_ms":26000,"frame":{"v":1,"type":"step_card","job_id":"j_1","n":2,"of":2,"instruction":"Outdoor PCB ke terminal aur wiring dekho","instruction_translated":null,"hazard":"HV","source":{"kind":"whatsapp_voice","label":"Ramesh · May 2025","audio_uri":"gs://…/PTT-20250512-WA0003.flac","doc":null,"page":null}}}
 {"t_ms":26800,"frame":{"v":1,"type":"caption","who":"ustaad","text":"Outdoor PCB ke terminal aur wiring dekho","final":true}}
 {"t_ms":27000,"frame":{"v":1,"type":"turn_complete"}}

@@ -27,7 +27,7 @@ export type ServerFrame =
   | { v: 1; type: 'resume_handle'; handle: string }
   | { v: 1; type: 'error'; code: 'live_unavailable' | 'rate_limited' | 'auth' | 'bad_request'; message: string }
   | { v: 1; type: 'pong' }
-  | { v: 1; type: 'step_card'; job_id: string; n: number; of: number; instruction: string; hazard: Hazard; source: StepSource }
+  | { v: 1; type: 'step_card'; job_id: string; n: number; of: number; instruction: string; instruction_translated?: string | null; hazard: Hazard; source: StepSource }
   | { v: 1; type: 'safety_gate'; gate_id: GateId; message: string; required_evidence: string }
   | { v: 1; type: 'gate_result'; gate_id: GateId; passed: boolean; reason: string | null }
   | { v: 1; type: 'safety_stop'; reason: string; message: string }

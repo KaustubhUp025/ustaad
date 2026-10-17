@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-from jobs.ingest.cards import EXTRACTION_FAILED, card_from_draft, import_cards
+from jobs.ingest.cards import EXTRACTION_FAILED, card_from_draft, card_text, import_cards
 from models.imports import CardDraft, ThreadMessage
 from tests.unit.fake_cards import FakeCardStore, embed
 
@@ -229,3 +229,51 @@ def test_only_a_voice_message_carries_audio():
                           audio_uri="gs://b/a.flac")
     voice = ThreadMessage(id="m9", speaker="Samyak Jain", ts="2026-10-16T10:00:00+05:30", kind="voice", text="Test")
     assert voice.audio_uri is None
+
+
+def test_the_card_keeps_the_drafts_english_beside_the_words_as_said():
+    steps = [
+        {"text": "Test pehla step", "summary_en": "Test first step", "hazard": "none"},
+        {"text": "Test doosra step", "summary_en": "Test second step", "hazard": "none"},
+    ]
+    english = draft(steps=steps, symptom_en="Test symptom en", root_cause_en="Test cause en")
+    card = card_from_draft(english, THREAD, "fc_1", NOW)
+    assert card.fix_steps == ["Test pehla step", "Test doosra step"]
+    assert card.fix_steps_en == ["Test first step", "Test second step"]
+    assert (card.symptom, card.symptom_en, card.root_cause_en) == ("Test symptom", "Test symptom en", "Test cause en")
+
+
+def test_a_draft_without_english_symptom_leaves_it_unset():
+    public = card_from_draft(draft(), THREAD, "fc_1", NOW).to_public_dict()
+    assert "symptom_en" not in public and "root_cause_en" not in public
+
+
+ENGLISH = {"symptom_en": "Test English symptom", "root_cause_en": "Test English cause", "fix_steps_en": ["Test en"]}
+
+
+def test_the_stored_english_never_changes_the_embedded_text():
+    card = card_from_draft(draft(), THREAD, "fc_1", NOW)
+    for changed in ({k: None for k in ENGLISH}, ENGLISH, {"fix_steps_en": ["Test capacitor gas brazing"]}):
+        assert card_text(card.model_copy(update=changed)) == card_text(card)
+
+
+@pytest.mark.parametrize(
+    ("changes", "stripped"),
+    [
+        ({"steps": [{"text": "Test step one", "summary_en": " ", "hazard": "none"}]}, {"fix_steps_en"}),
+        ({"symptom_en": "", "root_cause_en": "Test English cause"}, {"symptom_en"}),
+        ({"symptom_en": "Test English symptom", "root_cause_en": "  "}, {"root_cause_en"}),
+    ],
+)
+async def test_an_unusable_english_line_strips_only_that_english_and_the_card_is_still_saved(changes, stripped):
+    async def ask(prompt: str, schema: type) -> CardDraft:
+        return draft(**{"symptom_en": "Test English symptom", "root_cause_en": "Test English cause"} | changes)
+
+    store = FakeCardStore()
+    counts = await import_cards([THREAD], ask, embed, store, NOW)
+    ((card, _),) = store.cards.values()
+    assert counts.cards_created == 1
+    assert (card.symptom, card.root_cause, card.fix_steps) == ("Test symptom", "Test cause", ["Test step one"])
+    public = card.to_public_dict()
+    assert stripped.isdisjoint(public) and (set(ENGLISH) - stripped) <= set(public)
+    assert (card.hazard, card.review_status) == (card_from_draft(draft(), THREAD, "fc_2", NOW).hazard, "auto")

@@ -4,7 +4,7 @@ from datetime import date as Date
 from datetime import datetime, timedelta
 from typing import Annotated, Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from models.repair import ApplianceType, Hazard
 
@@ -66,6 +66,10 @@ class FaultCard(BaseModel):
     symptom: StrictString
     root_cause: StrictString = None
     fix_steps: list[StrictString] = Field(strict=True, min_length=1)
+    # Display-only English beside the words as said; never read by hazard, gate or step-order code.
+    symptom_en: StrictString = None
+    root_cause_en: StrictString = None
+    fix_steps_en: list[StrictString] = Field(default=None, strict=True)
     parts: list[FaultCardPart] = Field(default=None, strict=True)
     hazard: Hazard
     source: FaultCardSource
@@ -73,6 +77,12 @@ class FaultCard(BaseModel):
     verified_count: int = Field(default=1, strict=True, ge=0)
     language: StrictString = None
     review_status: ReviewStatus = None
+
+    @model_validator(mode="after")
+    def english_step_for_each_step(self) -> "FaultCard":
+        if self.fix_steps_en is not None and len(self.fix_steps_en) != len(self.fix_steps):
+            raise ValueError("fix_steps_en must have exactly one item per fix_steps item")
+        return self
 
     def to_public_dict(self) -> dict[str, object]:
         return self.model_dump(mode="json", exclude_unset=True, exclude_none=True)

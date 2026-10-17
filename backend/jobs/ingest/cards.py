@@ -39,6 +39,7 @@ RULES: 1 A card exists only if a fix or conclusion is stated. Unanswered questio
        8 brand: as said or shown in the thread, else null; never guess the brand from the code or other threads.
        9 appliance_type: one of the allowed values, from what is said or shown. If the thread does not make the
          appliance clear, null; do not assume an AC because most threads are about ACs.
+       10 symptom_en, root_cause_en: one line of English each, or null when the original is null.
 THREAD:
 """
 
@@ -58,6 +59,16 @@ def prompt(thread: list[ThreadMessage]) -> str:
 def _set(**fields) -> dict:
     # The contract models take a missing optional field as unset, not None.
     return {k: v for k, v in fields.items() if v is not None}
+
+
+def _usable(english: str | None) -> str | None:
+    return (english.strip() or None) if english else None
+
+
+def _usable_steps(english: list[str]) -> list[str] | None:
+    # All or nothing, so item i still translates fix_steps[i].
+    lines = [_usable(line) for line in english]
+    return None if None in lines else lines
 
 
 def card_text(card: FaultCard) -> str:
@@ -108,6 +119,10 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
             symptom=draft.symptom,
             root_cause=draft.root_cause,
             fix_steps=[s.text for s in draft.steps],
+            # Display-only: an unusable English line is dropped and the card is saved without it.
+            symptom_en=_usable(draft.symptom_en),
+            root_cause_en=_usable(draft.root_cause_en),
+            fix_steps_en=_usable_steps([s.summary_en for s in draft.steps]),
             parts=draft.parts,
             hazard=hazard,
             source=source,

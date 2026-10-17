@@ -8,6 +8,11 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
+# Vertex answers Flash with transient 429s even at one call at a time (Oct 17 dev import lost 8 of 19 attachments and
+# the thread grouping to them). The SDK only retries when asked; its defaults retry 408, 429 and 5xx 5 times with
+# 1-8 s backoff. Not on read_photo: a live gate check fails fast and the worker retakes.
+RETRY = types.HttpOptions(retry_options=types.HttpRetryOptions())
+
 
 async def read_photo[M: BaseModel](question: str, media_uri: str, schema: type[M]) -> M:
     """Asks Flash one question about a photo in Cloud Storage and parses the answer into `schema`."""
@@ -24,7 +29,7 @@ async def read_photo[M: BaseModel](question: str, media_uri: str, schema: type[M
 
 async def ask_json[M: BaseModel](prompt: str, schema: type[M]) -> M:
     """Asks Flash a text-only question and parses the answer into `schema`."""
-    client = genai.Client()
+    client = genai.Client(http_options=RETRY)
     response = await client.aio.models.generate_content(
         model=os.environ["FLASH_MODEL"],
         contents=prompt,
@@ -46,7 +51,7 @@ async def hear_json[M: BaseModel](question: str, flac: bytes, schema: type[M]) -
 
 def embed(texts: list[str], task_type: str) -> list[list[float]]:
     """EMBED_DIM must match the Firestore vector index (infra/firestore.sh), or search silently finds nothing."""
-    client = genai.Client()
+    client = genai.Client(http_options=RETRY)
     response = client.models.embed_content(
         model=os.environ["EMBED_MODEL"],
         contents=texts,
@@ -56,7 +61,7 @@ def embed(texts: list[str], task_type: str) -> list[list[float]]:
 
 
 async def transcribe_import_audio(source: Path) -> str:
-    client = genai.Client()
+    client = genai.Client(http_options=RETRY)
     response = await client.aio.models.generate_content(
         model=os.getenv("TRANSCRIBE_MODEL") or os.environ["FLASH_MODEL"],
         contents=[
@@ -68,7 +73,7 @@ async def transcribe_import_audio(source: Path) -> str:
 
 
 async def describe_import_photo(source: Path) -> str:
-    client = genai.Client()
+    client = genai.Client(http_options=RETRY)
     mime = mimetypes.guess_type(source.name)[0] or "image/jpeg"
     response = await client.aio.models.generate_content(
         model=os.environ["FLASH_MODEL"],

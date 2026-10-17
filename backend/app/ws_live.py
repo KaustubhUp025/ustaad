@@ -149,7 +149,7 @@ async def _downstream(
     partials: dict[str, str] = {}
     try:
         async for event in live_events(queue, lang, resume, job_id, desk, worker_id):
-            for item in to_frames(event, partials):
+            for item in to_frames(event, partials, lang):
                 if isinstance(item, bytes):
                     await ws.send_bytes(item)
                 else:

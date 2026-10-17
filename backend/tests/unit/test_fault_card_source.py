@@ -173,3 +173,20 @@ def test_utc_timestamps_serialize_as_z():
     data["created_at"] = "2026-10-14T12:00:00+00:00"
     card = FaultCard.model_validate(data)
     assert card.to_public_dict()["created_at"] == "2026-10-14T12:00:00Z"
+
+
+# Display-only English (CHANGELOG 2026-10-17): fix_steps_en, when present, translates fix_steps item by item.
+
+
+def test_english_fields_are_optional_and_kept_when_present():
+    steps = fixture_card()["fix_steps"]
+    english = {"symptom_en": "Test symptom", "root_cause_en": "Test cause", "fix_steps_en": ["Test"] * len(steps)}
+    assert FaultCard.model_validate(fixture_card() | english).to_public_dict()["symptom_en"] == "Test symptom"
+    assert "fix_steps_en" not in FaultCard.model_validate(fixture_card()).to_public_dict()
+
+
+@pytest.mark.parametrize("extra", [-1, 1])
+def test_fix_steps_en_of_another_length_is_rejected(extra):
+    english = ["Test"] * (len(fixture_card()["fix_steps"]) + extra)
+    with pytest.raises(ValidationError, match="one item per fix_steps item"):
+        FaultCard.model_validate(fixture_card() | {"fix_steps_en": english})

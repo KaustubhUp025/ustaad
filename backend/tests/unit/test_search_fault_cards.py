@@ -120,3 +120,13 @@ def test_a_general_cards_code_gets_no_priority_since_codes_differ_by_brand():
     store.save(general, embed(["E1 unrelated general test symptom"], "RETRIEVAL_DOCUMENT")[0])
     inp = SearchFaultCardsIn(brand="Voltas", error_code="E1", symptom="burning smell from fan blade")
     assert [c.card_id for c in search_fault_cards(inp, embed, store.nearest).cards] == ["fc_e1"]
+
+
+def test_the_symptom_and_cause_reach_ustaad_in_english_when_the_card_has_it():
+    english = card("fc_en", "E6", "Test Hinglish symptom").model_copy(
+        update={"symptom_en": "Test English symptom", "root_cause": "Test vajah", "root_cause_en": "Test cause"}
+    )
+    store = FakeCardStore()
+    store.save(english, embed(["Test English symptom"], "RETRIEVAL_DOCUMENT")[0])
+    (hit,) = search_fault_cards(SearchFaultCardsIn(brand="Voltas", error_code="E6"), embed, store.nearest).cards
+    assert (hit.symptom, hit.root_cause) == ("Test English symptom", "Test cause")

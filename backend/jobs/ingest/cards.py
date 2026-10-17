@@ -39,6 +39,7 @@ RULES: 1 A card exists only if a fix or conclusion is stated. Unanswered questio
        8 brand: as said or shown in the thread, else null; never guess the brand from the code or other threads.
        9 appliance_type: one of the allowed values, from what is said or shown. If the thread does not make the
          appliance clear, null; do not assume an AC because most threads are about ACs.
+       10 symptom_en, root_cause_en: one line of English each, or null when the original is null.
 THREAD:
 """
 
@@ -108,6 +109,9 @@ def card_from_draft(draft: CardDraft, thread: list[ThreadMessage], card_id: str,
             symptom=draft.symptom,
             root_cause=draft.root_cause,
             fix_steps=[s.text for s in draft.steps],
+            symptom_en=draft.symptom_en,
+            root_cause_en=draft.root_cause_en,
+            fix_steps_en=[s.summary_en for s in draft.steps],
             parts=draft.parts,
             hazard=hazard,
             source=source,

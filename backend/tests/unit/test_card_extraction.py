@@ -229,3 +229,20 @@ def test_only_a_voice_message_carries_audio():
                           audio_uri="gs://b/a.flac")
     voice = ThreadMessage(id="m9", speaker="Samyak Jain", ts="2026-10-16T10:00:00+05:30", kind="voice", text="Test")
     assert voice.audio_uri is None
+
+
+def test_the_card_keeps_the_drafts_english_beside_the_words_as_said():
+    steps = [
+        {"text": "Test pehla step", "summary_en": "Test first step", "hazard": "none"},
+        {"text": "Test doosra step", "summary_en": "Test second step", "hazard": "none"},
+    ]
+    english = draft(steps=steps, symptom_en="Test symptom en", root_cause_en="Test cause en")
+    card = card_from_draft(english, THREAD, "fc_1", NOW)
+    assert card.fix_steps == ["Test pehla step", "Test doosra step"]
+    assert card.fix_steps_en == ["Test first step", "Test second step"]
+    assert (card.symptom, card.symptom_en, card.root_cause_en) == ("Test symptom", "Test symptom en", "Test cause en")
+
+
+def test_a_draft_without_english_symptom_leaves_it_unset():
+    public = card_from_draft(draft(), THREAD, "fc_1", NOW).to_public_dict()
+    assert "symptom_en" not in public and "root_cause_en" not in public

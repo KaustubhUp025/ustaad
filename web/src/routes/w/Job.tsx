@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Navigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { demoSession } from '@/api/session'
+import { stepLines } from '@/audio/safety'
 import { useLive } from '@/audio/useLive'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -26,6 +27,7 @@ function JobScreen() {
   const { id = '' } = useParams()
   const live = useLive(lang, id)
   const { step, gate, failReason, stop } = live.repair
+  const lines = step && stepLines(step)
   const { request } = live.media
   // While a gate shows, he first reads what to switch off; the gate's photo button then opens the sheet.
   const [gatePhoto, setGatePhoto] = useState(false)
@@ -132,8 +134,9 @@ function JobScreen() {
               <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('repair.step', { n: step.n, of: step.of })}</p>
               <div className="text-[length:var(--text-sm)] text-muted-foreground">
                 <SourceChip label={step.source.label} audioUri={step.source.audio_uri} />
+                {lines?.original && <p>{lines.original}</p>}
               </div>
-              <p className="text-[length:var(--text-caption)]">{step.instruction}</p>
+              <p className="text-[length:var(--text-caption)]">{lines?.main}</p>
             </article>
           )}
         </>

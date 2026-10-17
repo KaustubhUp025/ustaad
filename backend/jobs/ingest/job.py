@@ -14,6 +14,7 @@ from zipfile import ZipFile
 from google.cloud import firestore
 from pydantic import TypeAdapter, ValidationError
 
+from clients.audio import to_flac
 from clients.firestore import CardStore, ImportStore
 from clients.gemini import ask_json, describe_import_photo, embed, transcribe_import_audio
 from clients.storage import ImportStorageClient
@@ -79,24 +80,7 @@ def materialize_root_attachments(
 
 
 async def convert_to_flac(source: Path, destination: Path) -> None:
-    process = await asyncio.create_subprocess_exec(
-        "ffmpeg",
-        "-nostdin",
-        "-loglevel",
-        "error",
-        "-y",
-        "-i",
-        source,
-        "-ac",
-        "1",
-        "-ar",
-        "16000",
-        destination,
-        stdout=asyncio.subprocess.DEVNULL,
-        stderr=asyncio.subprocess.DEVNULL,
-    )
-    if await process.wait() != 0:
-        raise RuntimeError("audio conversion failed")
+    destination.write_bytes(await to_flac(source.read_bytes()))
 
 
 @dataclass

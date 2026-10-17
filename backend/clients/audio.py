@@ -1,4 +1,5 @@
-"""ffmpeg: a voice note (Telegram's Ogg/Opus) to 16 kHz mono FLAC, the audio Flash reads (DECISIONS, Oct 11)."""
+"""ffmpeg: a voice note (a Telegram reply or an imported WhatsApp note) to 16 kHz mono FLAC, the audio Flash reads
+(DECISIONS, Oct 11). The one converter: the Telegram webhook and the import job (T13) both use it."""
 
 import asyncio
 

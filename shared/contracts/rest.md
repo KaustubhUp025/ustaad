@@ -12,7 +12,7 @@ numbers, exception text, request-validation details, tracebacks, credentials, se
 
 | Method + path | Request | Response |
 | --- | --- | --- |
-| `POST /api/demo/session` | `{"worker_id": "w_hi_demo"}` (optional; default Hindi demo worker), or `{"onboarding": true, "lang": "te"}`: a new demo worker for this visitor (id `w_onb_…`, `demo` true, `onboarding_done` false, empty profile in that language) | `{"token": "…", "worker": Worker, "ws_url": "wss://…/ws/live"}` — token is a signed, 24 h demo token |
+| `POST /api/demo/session` | `{"worker_id": "w_hi_demo"}` (optional; default Hindi demo worker), or `{"onboarding": true, "lang": "te"}`: a new demo worker for this visitor (id `w_onb_…`, `demo` true, `onboarding_done` false, empty profile in that language; `lang` one of `hi`\|`te`\|`ta`\|`bn`\|`en`; `onboarding` with `worker_id` is a 422) | `{"token": "…", "worker": Worker, "ws_url": "wss://…/ws/live"}` — token is a signed, 24 h demo token |
 | `POST /api/chat` | `{"job_id": "j_1", "text": "…"}` or `{"job_id", "audio_uri": "gs://…"}` | `{"text": "…", "events": [WsServerFrame], "tts_url": "https://… signed" or null}` — same events as the WebSocket |
 | `POST /api/media/upload-url` | `{"kind": "photo"\|"video"\|"import", "content_type": "image/jpeg", "job_id"?: "j_1", "import_id"?: "i_1", "request_id"?: "r_1", "filename"?: "x.zip"}` | `{"upload_url": "https://… signed PUT", "uri": "gs://…", "expires_in": 900, "headers": {"Content-Type": "image/jpeg", "x-goog-content-length-range": "0,15728640"}}` |
 | `POST /api/media/audio-url` | `{"uri": "gs://<media bucket>/imports/{import_id}/derived/{message_id}.flac"}` | `{"url": "https://… signed GET", "expires_in": 900}` — a fault card source's voice note, so the source chip can play it |

@@ -9,12 +9,14 @@ from agent.callbacks import gate_guard
 from agent.close_tools import close_tools
 from agent.identify_tools import identify_tools
 from agent.inventory_tools import inventory_tools
+from agent.manual_tools import manual_tools
 from agent.media_tools import MediaDesk, ReadPhoto, media_tools
 from agent.quote_tools import quote_tools, vendor_tools
 from agent.repair_tools import repair_tools
 from agent.search_tools import search_tools
 from clients.firestore import CardStore, InventoryStore, JobStore, QuoteStore, WorkerStore
 from clients.gemini import embed
+from clients.manual_search import ManualSearchClient, UnavailableManualSearch
 from clients.places import PlacesClient
 from clients.telegram import TelegramBot
 
@@ -33,6 +35,7 @@ def build_ustaad(
     places: PlacesClient,
     desk: MediaDesk,
     read_photo: ReadPhoto,
+    manuals: ManualSearchClient | None = None,
 ) -> Agent:
     # The Live model is served from a different region than the rest of the app (DECISIONS, Oct 13).
     return Agent(
@@ -41,6 +44,7 @@ def build_ustaad(
         instruction=INSTRUCTION,
         tools=identify_tools(desk, read_photo)
         + search_tools(cards, embed)
+        + manual_tools(manuals or UnavailableManualSearch())
         + repair_tools(jobs, desk)
         + media_tools(desk, jobs, read_photo)
         + inventory_tools(inventory, desk)

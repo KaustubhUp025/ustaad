@@ -7,7 +7,7 @@ chatty model reply cannot flood the agent's context."""
 
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, computed_field, model_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, computed_field, model_validator
 
 from models.repair import (
     ApplianceType,
@@ -266,6 +266,28 @@ class CardHit(BaseModel):
 
 class SearchFaultCardsOut(BaseModel):
     cards: list[CardHit]
+
+
+class SearchManualsIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    query: str
+    brand: str
+    model: str | None = None
+
+
+class ManualSnippet(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str
+    doc: str
+    page: int
+
+
+class SearchManualsOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    snippets: list[ManualSnippet]
 
 
 StockErrorReason = Literal["unknown_part", "ambiguous_part", "below_zero"]

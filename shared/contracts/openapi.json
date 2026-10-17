@@ -82,6 +82,38 @@
         "title": "Chat",
         "type": "object"
       },
+      "DashboardSummary": {
+        "properties": {
+          "cards": {
+            "minimum": 0.0,
+            "title": "Cards",
+            "type": "integer"
+          },
+          "cards_needing_review": {
+            "minimum": 0.0,
+            "title": "Cards Needing Review",
+            "type": "integer"
+          },
+          "imports": {
+            "minimum": 0.0,
+            "title": "Imports",
+            "type": "integer"
+          },
+          "jobs_7d": {
+            "minimum": 0.0,
+            "title": "Jobs 7D",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cards",
+          "cards_needing_review",
+          "jobs_7d",
+          "imports"
+        ],
+        "title": "DashboardSummary",
+        "type": "object"
+      },
       "DemoSessionRequest": {
         "additionalProperties": false,
         "properties": {
@@ -176,6 +208,252 @@
         "title": "ErrorResponse",
         "type": "object"
       },
+      "FaultCard": {
+        "additionalProperties": false,
+        "description": "Public REST entity; Firestore's server-only embedding is deliberately absent.",
+        "properties": {
+          "appliance_type": {
+            "enum": [
+              "split_ac",
+              "window_ac",
+              "fridge",
+              "washing_machine",
+              "led_tv",
+              "microwave",
+              "geyser",
+              "fan_cooler",
+              "other"
+            ],
+            "title": "Appliance Type",
+            "type": "string"
+          },
+          "brand": {
+            "title": "Brand",
+            "type": "string"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error_code": {
+            "title": "Error Code",
+            "type": "string"
+          },
+          "fix_steps": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Fix Steps",
+            "type": "array"
+          },
+          "fix_steps_en": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fix Steps En",
+            "type": "array"
+          },
+          "hazard": {
+            "enum": [
+              "none",
+              "HV",
+              "capacitor",
+              "refrigerant"
+            ],
+            "title": "Hazard",
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^fc_\\S+$",
+            "title": "Id",
+            "type": "string"
+          },
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "parts": {
+            "items": {
+              "$ref": "#/components/schemas/FaultCardPart"
+            },
+            "title": "Parts",
+            "type": "array"
+          },
+          "photo_uri": {
+            "title": "Photo Uri",
+            "type": "string"
+          },
+          "review_status": {
+            "enum": [
+              "auto",
+              "needs_review",
+              "approved",
+              "rejected"
+            ],
+            "title": "Review Status",
+            "type": "string"
+          },
+          "root_cause": {
+            "title": "Root Cause",
+            "type": "string"
+          },
+          "root_cause_en": {
+            "title": "Root Cause En",
+            "type": "string"
+          },
+          "series": {
+            "title": "Series",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/FaultCardSource"
+          },
+          "symptom": {
+            "title": "Symptom",
+            "type": "string"
+          },
+          "symptom_en": {
+            "title": "Symptom En",
+            "type": "string"
+          },
+          "verified_count": {
+            "default": 1,
+            "minimum": 0.0,
+            "title": "Verified Count",
+            "type": "integer"
+          },
+          "worker_id": {
+            "title": "Worker Id",
+            "type": "string"
+          },
+          "year_range": {
+            "title": "Year Range",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "brand",
+          "error_code",
+          "symptom",
+          "fix_steps",
+          "hazard",
+          "source",
+          "confidence"
+        ],
+        "title": "FaultCard",
+        "type": "object"
+      },
+      "FaultCardListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FaultCard"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          }
+        },
+        "required": [
+          "items",
+          "next"
+        ],
+        "title": "FaultCardListResponse",
+        "type": "object"
+      },
+      "FaultCardPart": {
+        "additionalProperties": true,
+        "description": "One entry of FaultCard.parts from fault_card.schema.json.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "part_no": {
+            "title": "Part No",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "FaultCardPart",
+        "type": "object"
+      },
+      "FaultCardSource": {
+        "additionalProperties": false,
+        "description": "The source object from fault_card.schema.json, distinct from repair StepSource.",
+        "properties": {
+          "audio_uri": {
+            "title": "Audio Uri",
+            "type": "string"
+          },
+          "author": {
+            "title": "Author",
+            "type": "string"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "doc": {
+            "title": "Doc",
+            "type": "string"
+          },
+          "message_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Message Ids",
+            "type": "array"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "type": {
+            "enum": [
+              "whatsapp_voice",
+              "whatsapp_text",
+              "manual",
+              "job",
+              "synthetic"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "title": "FaultCardSource",
+        "type": "object"
+      },
       "Geo": {
         "additionalProperties": false,
         "properties": {
@@ -193,6 +471,120 @@
           "lng"
         ],
         "title": "Geo",
+        "type": "object"
+      },
+      "Import": {
+        "description": "The public `imports/{id}` document (rest.md, firestore.md).",
+        "properties": {
+          "audio_done": {
+            "minimum": 0.0,
+            "title": "Audio Done",
+            "type": "integer"
+          },
+          "audio_total": {
+            "minimum": 0.0,
+            "title": "Audio Total",
+            "type": "integer"
+          },
+          "cards_created": {
+            "minimum": 0.0,
+            "title": "Cards Created",
+            "type": "integer"
+          },
+          "cards_needing_review": {
+            "minimum": 0.0,
+            "title": "Cards Needing Review",
+            "type": "integer"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "files_total": {
+            "minimum": 0.0,
+            "title": "Files Total",
+            "type": "integer"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "group_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group Name"
+          },
+          "id": {
+            "pattern": "^i_\\S+$",
+            "title": "Id",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "parsing",
+              "transcribing",
+              "extracting",
+              "done",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threads": {
+            "minimum": 0.0,
+            "title": "Threads",
+            "type": "integer"
+          },
+          "worker_id": {
+            "title": "Worker Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "worker_id",
+          "status",
+          "files_total",
+          "audio_total",
+          "audio_done",
+          "threads",
+          "cards_created",
+          "cards_needing_review",
+          "errors",
+          "started_at",
+          "finished_at"
+        ],
+        "title": "Import",
         "type": "object"
       },
       "InventoryDelta": {
@@ -915,6 +1307,109 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/dashboard/summary": {
+      "get": {
+        "operationId": "get_summary_api_dashboard_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Summary"
+      }
+    },
     "/api/demo/session": {
       "post": {
         "operationId": "demo_session_api_demo_session_post",
@@ -1030,6 +1525,208 @@
         "summary": "Demo Session"
       }
     },
+    "/api/fault-cards": {
+      "get": {
+        "operationId": "list_fault_cards_api_fault_cards_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "brand",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Brand"
+            }
+          },
+          {
+            "in": "query",
+            "name": "code",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Code"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "auto",
+                    "needs_review",
+                    "approved",
+                    "rejected"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "appliance_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "split_ac",
+                    "window_ac",
+                    "fridge",
+                    "washing_machine",
+                    "led_tv",
+                    "microwave",
+                    "geyser",
+                    "fan_cooler",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Appliance Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaultCardListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Fault Cards"
+      }
+    },
     "/api/healthz": {
       "get": {
         "operationId": "healthz_api_healthz_get",
@@ -1128,6 +1825,120 @@
           }
         },
         "summary": "Healthz"
+      }
+    },
+    "/api/imports/{import_id}": {
+      "get": {
+        "operationId": "get_import_api_imports__import_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "import_id",
+            "required": true,
+            "schema": {
+              "title": "Import Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Import"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Import"
       }
     },
     "/api/inventory": {

@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/dashboard/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Summary */
+        get: operations["get_summary_api_dashboard_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/demo/session": {
         parameters: {
             query?: never;
@@ -21,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/fault-cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Fault Cards */
+        get: operations["list_fault_cards_api_fault_cards_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/healthz": {
         parameters: {
             query?: never;
@@ -30,6 +64,23 @@ export interface paths {
         };
         /** Healthz */
         get: operations["healthz_api_healthz_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/imports/{import_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Import */
+        get: operations["get_import_api_imports__import_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -190,6 +241,17 @@ export interface components {
             /** Id */
             id: number;
         };
+        /** DashboardSummary */
+        DashboardSummary: {
+            /** Cards */
+            cards: number;
+            /** Cards Needing Review */
+            cards_needing_review: number;
+            /** Imports */
+            imports: number;
+            /** Jobs 7D */
+            jobs_7d: number;
+        };
         /** DemoSessionRequest */
         DemoSessionRequest: {
             /**
@@ -231,12 +293,158 @@ export interface components {
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
         };
+        /**
+         * FaultCard
+         * @description Public REST entity; Firestore's server-only embedding is deliberately absent.
+         */
+        FaultCard: {
+            /**
+             * Appliance Type
+             * @enum {string}
+             */
+            appliance_type?: "split_ac" | "window_ac" | "fridge" | "washing_machine" | "led_tv" | "microwave" | "geyser" | "fan_cooler" | "other";
+            /** Brand */
+            brand: string;
+            /** Confidence */
+            confidence: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error Code */
+            error_code: string;
+            /** Fix Steps */
+            fix_steps: string[];
+            /** Fix Steps En */
+            fix_steps_en?: string[];
+            /**
+             * Hazard
+             * @enum {string}
+             */
+            hazard: "none" | "HV" | "capacitor" | "refrigerant";
+            /** Id */
+            id: string;
+            /** Language */
+            language?: string;
+            /** Model */
+            model?: string;
+            /** Parts */
+            parts?: components["schemas"]["FaultCardPart"][];
+            /** Photo Uri */
+            photo_uri?: string;
+            /**
+             * Review Status
+             * @enum {string}
+             */
+            review_status?: "auto" | "needs_review" | "approved" | "rejected";
+            /** Root Cause */
+            root_cause?: string;
+            /** Root Cause En */
+            root_cause_en?: string;
+            /** Series */
+            series?: string;
+            source: components["schemas"]["FaultCardSource"];
+            /** Symptom */
+            symptom: string;
+            /** Symptom En */
+            symptom_en?: string;
+            /**
+             * Verified Count
+             * @default 1
+             */
+            verified_count: number;
+            /** Worker Id */
+            worker_id?: string;
+            /** Year Range */
+            year_range?: string;
+        };
+        /** FaultCardListResponse */
+        FaultCardListResponse: {
+            /** Items */
+            items: components["schemas"]["FaultCard"][];
+            /** Next */
+            next: string | null;
+        };
+        /**
+         * FaultCardPart
+         * @description One entry of FaultCard.parts from fault_card.schema.json.
+         */
+        FaultCardPart: {
+            /** Name */
+            name: string;
+            /** Part No */
+            part_no?: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * FaultCardSource
+         * @description The source object from fault_card.schema.json, distinct from repair StepSource.
+         */
+        FaultCardSource: {
+            /** Audio Uri */
+            audio_uri?: string;
+            /** Author */
+            author?: string;
+            /**
+             * Date
+             * Format: date
+             */
+            date?: string;
+            /** Doc */
+            doc?: string;
+            /** Message Ids */
+            message_ids?: string[];
+            /** Page */
+            page?: number;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "whatsapp_voice" | "whatsapp_text" | "manual" | "job" | "synthetic";
+        };
         /** Geo */
         Geo: {
             /** Lat */
             lat: number;
             /** Lng */
             lng: number;
+        };
+        /**
+         * Import
+         * @description The public `imports/{id}` document (rest.md, firestore.md).
+         */
+        Import: {
+            /** Audio Done */
+            audio_done: number;
+            /** Audio Total */
+            audio_total: number;
+            /** Cards Created */
+            cards_created: number;
+            /** Cards Needing Review */
+            cards_needing_review: number;
+            /** Errors */
+            errors: string[];
+            /** Files Total */
+            files_total: number;
+            /** Finished At */
+            finished_at: string | null;
+            /** Group Name */
+            group_name?: string | null;
+            /** Id */
+            id: string;
+            /** Started At */
+            started_at: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "parsing" | "transcribing" | "extracting" | "done" | "failed";
+            /** Threads */
+            threads: number;
+            /** Worker Id */
+            worker_id: string;
         };
         /** InventoryDelta */
         InventoryDelta: {
@@ -458,6 +666,98 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_summary_api_dashboard_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardSummary"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     demo_session_api_demo_session_post: {
         parameters: {
             query?: never;
@@ -554,6 +854,104 @@ export interface operations {
             };
         };
     };
+    list_fault_cards_api_fault_cards_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                brand?: string | null;
+                code?: string | null;
+                status?: ("auto" | "needs_review" | "approved" | "rejected") | null;
+                appliance_type?: ("split_ac" | "window_ac" | "fridge" | "washing_machine" | "led_tv" | "microwave" | "geyser" | "fan_cooler" | "other") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FaultCardListResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     healthz_api_healthz_get: {
         parameters: {
             query?: never;
@@ -572,6 +970,100 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_import_api_imports__import_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                import_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Import"];
                 };
             };
             /** @description Bad Request */

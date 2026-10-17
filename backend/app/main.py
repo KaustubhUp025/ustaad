@@ -6,8 +6,11 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.dashboard import router as dashboard_router
 from app.demo_session import router as demo_session_router
 from app.errors import HTTP_ERRORS, install_error_handlers
+from app.fault_cards import router as fault_cards_router
+from app.imports import router as imports_router
 from app.inventory import router as inventory_router
 from app.media import router as media_router
 from app.quotes import router as quotes_router
@@ -30,6 +33,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(demo_session_router)
+app.include_router(dashboard_router)
+app.include_router(fault_cards_router)
+app.include_router(imports_router)
 app.include_router(media_router)
 app.include_router(inventory_router)
 app.include_router(quotes_router)

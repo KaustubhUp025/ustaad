@@ -1,7 +1,7 @@
 """Firestore access for the repair tools: a job's repair fields and the fault cards it uses (firestore.md)."""
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import ClassVar
 
 from google.api_core.exceptions import Conflict
@@ -10,7 +10,9 @@ from google.cloud.firestore_v1 import FieldFilter
 from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
 from google.cloud.firestore_v1.vector import Vector
 
+from models.dashboard import DashboardSummary
 from models.fault_card import FaultCard
+from models.imports import Import
 from models.inventory import InventoryItem
 from models.quotes import QuoteDoc, QuoteRequest, Vendor
 from models.repair import RepairJob
@@ -81,6 +83,9 @@ class CardStore:
         data = {k: v for k, v in card.to_public_dict().items() if k != "id"}
         self._db.collection("fault_cards").document(card.id).set(data | {"embedding": Vector(vector)})
 
+    def list(self) -> list[FaultCard]:
+        return [_fault_card(doc.id, doc.to_dict()) for doc in self._db.collection("fault_cards").stream()]
+
 
 class ImportStore:
     """Contracted lifecycle fields for `imports/{id}`."""
@@ -108,10 +113,41 @@ class ImportStore:
         data = snapshot.to_dict() or {}
         return {"status": data.get("status"), "errors": data.get("errors", [])}
 
+    def get(self, import_id: str) -> Import | None:
+        snapshot = self._db.collection("imports").document(import_id).get()
+        if not snapshot.exists:
+            return None
+        return Import.model_validate((snapshot.to_dict() or {}) | {"id": import_id})
+
     def update(self, import_id: str, **fields) -> None:
         if not fields.keys() <= self.ALLOWED_FIELDS:
             raise ValueError("unsupported import fields")
         self._db.collection("imports").document(import_id).set(fields, merge=True)
+
+
+class DashboardStore:
+    """Read-only counts from the documented dashboard collections."""
+
+    def __init__(self, db: firestore.Client) -> None:
+        self._db = db
+
+    def summary(self, worker_id: str, now: datetime) -> DashboardSummary:
+        cards = list(self._db.collection("fault_cards").stream())
+        jobs = list(
+            self._db.collection("jobs")
+            .where(filter=FieldFilter("worker_id", "==", worker_id))
+            .where(filter=FieldFilter("created_at", ">=", now - timedelta(days=7)))
+            .stream()
+        )
+        imports = list(
+            self._db.collection("imports").where(filter=FieldFilter("worker_id", "==", worker_id)).stream()
+        )
+        return DashboardSummary(
+            cards=len(cards),
+            cards_needing_review=sum((card.to_dict() or {}).get("review_status") == "needs_review" for card in cards),
+            jobs_7d=len(jobs),
+            imports=len(imports),
+        )
 
 
 def _inventory_item(snapshot: firestore.DocumentSnapshot) -> InventoryItem:

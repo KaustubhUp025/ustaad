@@ -2,6 +2,7 @@
 
 import mimetypes
 import os
+from pathlib import Path
 
 from google import genai
 from google.genai import types
@@ -41,3 +42,28 @@ def embed(texts: list[str], task_type: str) -> list[list[float]]:
         config=types.EmbedContentConfig(task_type=task_type, output_dimensionality=int(os.environ["EMBED_DIM"])),
     )
     return [e.values for e in response.embeddings]
+
+
+async def transcribe_import_audio(source: Path) -> str:
+    client = genai.Client()
+    response = await client.aio.models.generate_content(
+        model=os.getenv("TRANSCRIBE_MODEL") or os.environ["FLASH_MODEL"],
+        contents=[
+            "Transcribe exactly. Keep Hinglish, error codes and part numbers verbatim.",
+            types.Part.from_bytes(data=source.read_bytes(), mime_type="audio/flac"),
+        ],
+    )
+    return response.text or ""
+
+
+async def describe_import_photo(source: Path) -> str:
+    client = genai.Client()
+    mime = mimetypes.guess_type(source.name)[0] or "image/jpeg"
+    response = await client.aio.models.generate_content(
+        model=os.environ["FLASH_MODEL"],
+        contents=[
+            "Describe only visible appliance, model, code, component and condition details.",
+            types.Part.from_bytes(data=source.read_bytes(), mime_type=mime),
+        ],
+    )
+    return response.text or ""

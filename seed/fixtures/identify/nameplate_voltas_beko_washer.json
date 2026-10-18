@@ -1,0 +1,35 @@
+{
+  "brand": "VOLTAS.beko",
+  "model": "WTT60UNX/2024",
+  "series": null,
+  "type": "washing_machine",
+  "error_code": null,
+  "confidence": 0.95,
+  "observations": [
+    {
+      "label": "Appliance Type",
+      "value": "Semi Automatic",
+      "confidence": 0.95
+    },
+    {
+      "label": "Load Capacity",
+      "value": "6.0 kg",
+      "confidence": 0.95
+    },
+    {
+      "label": "Energy Consumption",
+      "value": "0.0107 kWh/kg/cycle",
+      "confidence": 0.9
+    },
+    {
+      "label": "Water Consumption",
+      "value": "19 L/kg/cycle",
+      "confidence": 0.9
+    },
+    {
+      "label": "Star Rating",
+      "value": "5 Star",
+      "confidence": 0.95
+    }
+  ]
+}

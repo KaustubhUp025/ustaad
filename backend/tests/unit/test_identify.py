@@ -159,3 +159,33 @@ async def test_a_failed_vision_call_logs_only_a_fixed_message(caplog):
     assert [r.getMessage() for r in caplog.records] == ["identify failed (RuntimeError)"]
     assert all(r.exc_info is None and r.exc_text is None for r in caplog.records)
     assert "SYNTHETIC_TOKEN" not in caplog.text and "gs://" not in caplog.text
+
+
+# Our own photos (Pixel 8, Oct 18; metadata-free copies), expected answers written before Flash's answers were recorded.
+# model None = not checked (faded or tiny print). Brands as `identify` spells them for the cards.
+OWN = {
+    "nameplate_voltas_window": ({"Voltas"}, None, "window_ac"),
+    "nameplate_marq_split": ({"Flipkart Marq", "Marq"}, None, "split_ac"),
+    "nameplate_voltas_beko_washer": ({"Voltas Beko"}, "WTT60UNX", "washing_machine"),
+    "display_lg_window": ({"LG"}, None, "window_ac"),
+}
+
+
+@pytest.mark.parametrize("name", OWN)
+def test_own_golden_photo(name):
+    brands, model, kind = OWN[name]
+    out = identify(recorded(name))
+    assert out.brand in brands
+    assert (out.type, out.error_code) == (kind, None)
+    if model:
+        assert out.model.replace(" ", "").upper().startswith(model)
+    assert out.confidence >= MIN_CONFIDENCE
+
+
+def test_own_blurred_label_invents_no_model_or_code():
+    # The outdoor unit's energy label is motion-blurred; only the "marq Inverter" logo is legible. Expected beforehand:
+    # brand from the logo and model null. Recorded: model and code null (nothing invented) but the brand was NOT read
+    # either, so only the no-invention half is asserted; the missed brand is a known gap, not a pass.
+    out = identify(recorded("nameplate_marq_hard"))
+    assert (out.model, out.error_code) == (None, None)
+    assert out.type == "split_ac"

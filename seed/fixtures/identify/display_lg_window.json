@@ -1,0 +1,25 @@
+{
+  "brand": "LG",
+  "model": null,
+  "series": "BLISS",
+  "type": "window_ac",
+  "error_code": null,
+  "confidence": 0.95,
+  "observations": [
+    {
+      "label": "temperature_display",
+      "value": "22",
+      "confidence": 0.98
+    },
+    {
+      "label": "active_mode",
+      "value": "COOL",
+      "confidence": 0.95
+    },
+    {
+      "label": "physical_condition",
+      "value": "Discolored/aged plastic housing with graffiti scribbles on display panel",
+      "confidence": 0.9
+    }
+  ]
+}

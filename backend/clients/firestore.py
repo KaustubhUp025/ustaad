@@ -1,7 +1,7 @@
 """Firestore access for the repair tools: a job's repair fields and the fault cards it uses (firestore.md)."""
 
 from collections.abc import Callable
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import ClassVar
 
 from google.api_core.exceptions import Conflict
@@ -20,6 +20,15 @@ from models.worker import Worker
 
 REPAIR_FIELDS = {"steps", "gates", "current_step", "media", "status", "outcome", "parts_used", "closed_at", "translation_lang"}
 DISTANCE = "distance"
+PUBLIC_FAULT_CARD_FIELDS = (
+    "worker_id", "created_at", "photo_uri", "brand", "model", "series", "year_range", "appliance_type",
+    "error_code", "symptom", "root_cause", "fix_steps", "symptom_en", "root_cause_en", "fix_steps_en",
+    "parts", "hazard", "source", "confidence", "verified_count", "language", "review_status",
+)
+PUBLIC_IMPORT_FIELDS = (
+    "worker_id", "group_name", "status", "files_total", "audio_total", "audio_done", "threads",
+    "cards_created", "cards_needing_review", "errors", "started_at", "finished_at",
+)
 
 
 def _fault_card(cid: str, data: dict) -> FaultCard:
@@ -32,6 +41,11 @@ def _job(snapshot: firestore.DocumentSnapshot, job_id: str) -> RepairJob:
     return RepairJob(job_id=job_id, **{k: v for k, v in data.items() if k in REPAIR_FIELDS})
 
 
+def _count(query) -> int:
+    """Firestore's count aggregation returns one named aggregation result."""
+    return int(query.count().get()[0][0].value)
+
+
 class JobStore:
     def __init__(self, db: firestore.Client) -> None:
         self._db = db
@@ -39,6 +53,13 @@ class JobStore:
     def load(self, job_id: str) -> RepairJob:
         """A job with no repair started yet loads with no steps and all gates open."""
         return _job(self._db.collection("jobs").document(job_id).get(), job_id)
+
+    def create(self, job_id: str, worker_id: str, created_at: datetime) -> None:
+        """Create the documented worker-scoped job once; reconnects retain its original timestamp."""
+        try:
+            self._db.collection("jobs").document(job_id).create({"worker_id": worker_id, "created_at": created_at})
+        except Conflict:
+            pass
 
     def update[T](self, job_id: str, change: Callable[[RepairJob], tuple[T, RepairJob]]) -> T:
         """Runs `change` on the job in a transaction, so two quick calls cannot both hand out the same step."""
@@ -84,7 +105,10 @@ class CardStore:
         self._db.collection("fault_cards").document(card.id).set(data | {"embedding": Vector(vector)})
 
     def list(self) -> list[FaultCard]:
-        return [_fault_card(doc.id, doc.to_dict()) for doc in self._db.collection("fault_cards").stream()]
+        return [
+            _fault_card(doc.id, doc.to_dict())
+            for doc in self._db.collection("fault_cards").select(PUBLIC_FAULT_CARD_FIELDS).stream()
+        ]
 
 
 class ImportStore:
@@ -119,6 +143,16 @@ class ImportStore:
             return None
         return Import.model_validate((snapshot.to_dict() or {}) | {"id": import_id})
 
+    def list(self, worker_id: str, limit: int = 20) -> list[Import]:
+        """Recent imports for one worker, sorted locally so this needs no composite Firestore index."""
+        query = self._db.collection("imports").where(filter=FieldFilter("worker_id", "==", worker_id))
+        records = [
+            Import.model_validate((snapshot.to_dict() or {}) | {"id": snapshot.id})
+            for snapshot in query.select(PUBLIC_IMPORT_FIELDS).stream()
+        ]
+        oldest = datetime.min.replace(tzinfo=UTC)
+        return sorted(records, key=lambda record: record.started_at or oldest, reverse=True)[:limit]
+
     def update(self, import_id: str, **fields) -> None:
         if not fields.keys() <= self.ALLOWED_FIELDS:
             raise ValueError("unsupported import fields")
@@ -132,20 +166,29 @@ class DashboardStore:
         self._db = db
 
     def summary(self, worker_id: str, now: datetime) -> DashboardSummary:
-        cards = list(self._db.collection("fault_cards").stream())
+        cards = self._db.collection("fault_cards")
+        cards_needing_review = cards.where(filter=FieldFilter("review_status", "==", "needs_review"))
         jobs = list(
             self._db.collection("jobs")
             .where(filter=FieldFilter("worker_id", "==", worker_id))
-            .where(filter=FieldFilter("created_at", ">=", now - timedelta(days=7)))
+            .select(["created_at"])
             .stream()
         )
         imports = list(
-            self._db.collection("imports").where(filter=FieldFilter("worker_id", "==", worker_id)).stream()
+            self._db.collection("imports")
+            .where(filter=FieldFilter("worker_id", "==", worker_id))
+            .select(["worker_id"])
+            .stream()
         )
+        window_start = now - timedelta(days=7)
         return DashboardSummary(
-            cards=len(cards),
-            cards_needing_review=sum((card.to_dict() or {}).get("review_status") == "needs_review" for card in cards),
-            jobs_7d=len(jobs),
+            cards=_count(cards),
+            cards_needing_review=_count(cards_needing_review),
+            jobs_7d=sum(
+                (job.to_dict() or {}).get("created_at") >= window_start
+                for job in jobs
+                if (job.to_dict() or {}).get("created_at") is not None
+            ),
             imports=len(imports),
         )
 

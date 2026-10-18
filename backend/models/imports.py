@@ -29,6 +29,12 @@ class Import(BaseModel):
     finished_at: AwareDatetime | None
 
 
+class ImportListResponse(BaseModel):
+    """The signed-in worker's recent import records (rest.md)."""
+
+    items: list[Import]
+
+
 class ThreadMessage(BaseModel):
     """One eligible message of a thread (BUILD-GUIDE T13 step 4)."""
 

@@ -9,7 +9,7 @@ from google.cloud import firestore
 
 from app.session import require_session
 from clients.firestore import ImportStore
-from models.imports import Import
+from models.imports import Import, ImportListResponse
 
 router = APIRouter(prefix="/api/imports")
 
@@ -21,6 +21,11 @@ def import_store() -> ImportStore:
 
 Store = Annotated[ImportStore, Depends(import_store)]
 WorkerId = Annotated[str, Depends(require_session)]
+
+
+@router.get("", response_model=ImportListResponse)
+def list_imports(store: Store, worker_id: WorkerId) -> ImportListResponse:
+    return ImportListResponse(items=store.list(worker_id))
 
 
 @router.get("/{import_id}", response_model=Import)

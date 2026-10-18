@@ -92,6 +92,7 @@ async def live_events(
     speech_code = LANGS[lang][0]
     db = firestore.Client(database=os.environ["FIRESTORE_DB"])
     jobs, workers = JobStore(db), WorkerStore(db)
+    jobs.create(job_id, worker_id, datetime.now(UTC))
     user_id = memory_user(os.environ["FIRESTORE_DB"], worker_id, token)
     memory = (
         VertexAiMemoryBankService(

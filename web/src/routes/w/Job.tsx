@@ -242,7 +242,7 @@ function JobScreen() {
                         <button
                           key={key}
                           type="button"
-                          lang="hi"
+                          lang={lang}
                           disabled={live.status !== 'ready'}
                           onClick={() => live.sendText(t(`live.${key}`))}
                           className="min-h-(--touch) rounded-lg border border-border bg-card px-4 py-3 text-left text-[length:var(--text-body)] outline-none hover:border-primary focus-visible:ring-4 focus-visible:ring-ring disabled:opacity-50"

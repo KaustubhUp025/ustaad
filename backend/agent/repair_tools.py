@@ -42,7 +42,7 @@ def repair_tools(jobs: JobStore, desk: MediaDesk, ask: Ask = ask_json) -> list[F
     ) -> dict:
         """Starts guiding a repair. Pass the IDs of the fault cards you are using, or, to guide the printed steps of
         his manual page, the `manual_request_id` its photo's result gave you. Only when no card or manual
-        matched, pass your proposed steps instead, each with `instruction` in the language he last spoke and
+        matched, pass your proposed steps instead, each with `instruction` in the reply language and
         `summary_en`, one line of English. Returns the number of steps and their sources, not their text: get
         each step from next_step. STOP_REFER means a step is not allowed: tell him a certified technician is
         needed and offer help with the other checks."""
@@ -64,7 +64,7 @@ def repair_tools(jobs: JobStore, desk: MediaDesk, ask: Ask = ask_json) -> list[F
 
     def next_step(tool_context: ToolContext, observation: str) -> dict:
         """Gets the next repair step. `observation` is what he reported about the last step. Say a step only
-        after this returns it, and say it from `instruction_en` when present, in the language he last spoke.
+        after this returns it, and say it from `instruction_en` when present, in the reply language.
         SAFETY_GATE means his phone already asks for the photo in `required_evidence`: tell
         him what to do and what to photograph. Only that photo opens the gate, saying it is done does not; you get a
         note when it passes. DONE means every step was given."""

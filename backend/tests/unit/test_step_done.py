@@ -31,7 +31,7 @@ async def test_done_on_the_current_step_hands_out_the_next_and_tells_ustaad():
     assert jobs.job.current_step == 2
     (notice,) = queue.notices
     assert notice.startswith("[He tapped done on step 1. The app handed out step 2 of 2")
-    assert '"Check the fan"' in notice and "in the language he last spoke" in notice
+    assert '"Check the fan"' in notice and "in Hindi, written in Devanagari script," in notice
     assert "do not call next_step" in notice
 
 

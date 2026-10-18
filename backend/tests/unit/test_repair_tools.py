@@ -27,11 +27,11 @@ async def test_a_repair_whose_first_step_is_gated_shows_the_gate_at_once():
     assert phone.of(SafetyGate)[0].gate_id == "G_MAINS_OFF"
 
 
-def test_proposed_steps_are_written_in_the_language_he_last_spoke():
+def test_proposed_steps_are_written_in_the_reply_language():
     # Phone test (Oct 18): in an English session Ustaad wrote the steps in Hindi ("his language"), then said the
     # handed-out step in Hindi after the MCB gate passed.
     from agent.ustaad import INSTRUCTION
 
     start_repair = repair_tools(CardlessJobs(), MediaDesk("j_1", "media"))[0]
     for text in (start_repair.func.__doc__, INSTRUCTION):
-        assert "`instruction` in the language he last spoke" in " ".join(text.split())
+        assert "`instruction` in the reply language" in " ".join(text.split())

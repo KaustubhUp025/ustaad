@@ -31,7 +31,7 @@ def test_check_is_blocking_and_update_returns_when_idle_with_acknowledgement_gui
     assert (update.name, update.behavior) == ("update_inventory", types.Behavior.NON_BLOCKING)
     assert update.response_scheduling == types.FunctionResponseScheduling.WHEN_IDLE
     description = " ".join(update.description.split())
-    assert "After UPDATED, confirm each changed part and its resulting quantity in the language the worker last spoke." in description
+    assert "After UPDATED, confirm each changed part and its resulting quantity in the reply language." in description
     assert "After NOT_UPDATED, explain its safe reason in that language; do not claim an update happened." in description
 
 

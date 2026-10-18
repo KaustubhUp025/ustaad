@@ -9,6 +9,7 @@ from agent.callbacks import gate_guard
 from agent.close_tools import close_tools
 from agent.identify_tools import identify_tools
 from agent.inventory_tools import inventory_tools
+from agent.language_tools import language_tools
 from agent.manual_tools import manual_tools
 from agent.media_tools import MediaDesk, ReadPhoto, media_tools
 from agent.profile_tools import profile_tools
@@ -52,6 +53,7 @@ def build_ustaad(
         + close_tools(jobs, cards, inventory, desk, embed)
         + quote_tools(quotes, bot, desk)
         + vendor_tools(quotes, workers, places)
-        + profile_tools(workers, inventory, desk),
+        + profile_tools(workers, inventory, desk)
+        + language_tools(desk),
         before_tool_callback=gate_guard(jobs.load),
     )

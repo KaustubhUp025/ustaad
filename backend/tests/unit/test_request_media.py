@@ -105,7 +105,7 @@ class FakeQueue:
         part = content.parts[0]
         if part.function_response:
             self.answers.append(part.function_response)
-        elif part.text == PHOTO_ARRIVED:
+        elif part.text.startswith("[His photo arrived"):
             self.arrived.append(part.text)
         else:
             self.notices.append(part.text)
@@ -365,7 +365,7 @@ async def test_ustaad_hears_the_photo_arrived_before_its_check_ends():
     desk.attach(phone.send, SimpleNamespace(send_content=lambda c: said.append(c.parts[0].text)), "hi")
     await desk.open_gate("G_MAINS_OFF")
     await photo(desk, phone.of(MediaRequest)[0].request_id)
-    assert said[0] == PHOTO_ARRIVED and "G_MAINS_OFF passed" in said[1]
+    assert said[0] == PHOTO_ARRIVED.format(language="Hindi, written in Devanagari script") and "G_MAINS_OFF passed" in said[1]
 
 
 async def test_the_handed_out_step_is_said_in_his_language_not_read_out():
@@ -373,7 +373,7 @@ async def test_the_handed_out_step_is_said_in_his_language_not_read_out():
     desk, phone, queue, _, _ = session(gate_checks=[MCB_OFF], job=gated_job())
     await desk.open_gate("G_MAINS_OFF")
     await photo(desk, phone.of(MediaRequest)[0].request_id)
-    assert "in the language he last spoke" in queue.notices[-1]
+    assert "in Hindi, written in Devanagari script," in queue.notices[-1]
 
 
 async def test_ustaads_own_gate_request_joins_the_open_one_and_gets_the_answer():

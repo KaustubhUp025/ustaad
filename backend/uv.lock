@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = "==3.12.*"
 
 [[package]]
@@ -369,6 +369,23 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/55/71/d6081acadf55d4233271c39860f0d140ef61fbdb4bceb2075e9c2905d947/google_cloud_core-2.8.0.tar.gz", hash = "sha256:365f8e4518ae81c8101b8dea5fc1c32a960badedb8b511f19db2843cbbd285d2", size = 36605, upload-time = "2026-09-29T19:25:59.275Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/12/ed/1b09640a565e5d34d4e517463f65a67a11f9dcdeb6b6e8220f2d06aaf489/google_cloud_core-2.8.0-py3-none-any.whl", hash = "sha256:e235b0952f7ffe7b9c71a4cf96b506d9cfb557e22557c412f0df9b7068b5d007", size = 31048, upload-time = "2026-09-29T19:25:35.361Z" },
+]
+
+[[package]]
+name = "google-cloud-discoveryengine"
+version = "0.20.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core", extra = ["grpc"] },
+    { name = "google-auth" },
+    { name = "grpc-google-iam-v1" },
+    { name = "grpcio" },
+    { name = "proto-plus" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/67/a6/b3fd926fc79b4e02d9bda3ff30b764abe17a100c3a39e934f0d519bbaf76/google_cloud_discoveryengine-0.20.5.tar.gz", hash = "sha256:cd78028180f32a43aa586ab97d0074949f6326ad46b41058a773b2baa9f525d8", size = 3991015, upload-time = "2026-10-01T18:16:16.9Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ea/12/002adb43105aee5c45907a23f09bdac9f4f77b26b43323abc8ac202f901a/google_cloud_discoveryengine-0.20.5-py3-none-any.whl", hash = "sha256:0d4072845f02100e0244ac0c69f6ac5d68f561793d7c3bd5dee2c93d3090a368", size = 3711486, upload-time = "2026-10-01T18:09:56.619Z" },
 ]
 
 [[package]]
@@ -1070,6 +1087,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "google-adk" },
     { name = "google-cloud-aiplatform" },
+    { name = "google-cloud-discoveryengine" },
     { name = "google-cloud-firestore" },
     { name = "google-cloud-storage" },
     { name = "google-genai" },
@@ -1090,6 +1108,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
     { name = "google-adk" },
     { name = "google-cloud-aiplatform" },
+    { name = "google-cloud-discoveryengine" },
     { name = "google-cloud-firestore" },
     { name = "google-cloud-storage" },
     { name = "google-genai" },

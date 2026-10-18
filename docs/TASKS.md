@@ -26,7 +26,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | T11 | P0 | A | Live bridge (ADK `run_live`), PCM worklets, push-to-talk, captions, barge-in — Hindi end to end (M3) | SPEC §6 Live, contracts/ws-events.md | phone ↔ Ustaad in Hindi with captions on dev | T05, T09 | done |
 | T12 | P1 | A | `identify_appliance` + 6 golden photos (M2); `type` normalised to the `appliance_type` values, and the one mapping constant from a `trades` value to card types (T38) | SPEC §6, GOLDEN_PATHS | 6/6 golden photos correct in unit test with recorded responses; normalisation and mapping tests | T09 | done (PR #30): 6/6 on recorded answers from the provisional photos; re-record when our own photos exist |
 | T13 | P0 | B | Ingest job: parse Android/iOS, ffmpeg, transcribe, threads (M6) | SPEC §4, contracts/firestore.md (imports) | small export fixture → messages + transcripts in test | T08, T10 | doing: job merged (#45, #47); Oct 17 dev runs lost attachments, grouping and threads to Vertex 429s, so Flash calls now retry (SDK defaults); scored dev run next |
-| T14 | P2 | B | Agent Search store with 3 brands' manuals (S1) | SPEC §5 | query returns a page-cited snippet | T03 | doing: offline manual-search boundary and tool |
+| T14 | P2 | B | Agent Search store with 3 brands' manuals (S1) | SPEC §5 | query returns a page-cited snippet | T03 | doing: private data store and injected Agent Search adapter; deploy/query verification pending |
 
 ## Tue Oct 13 — features
 | ID | P | Owner | Task | Read | Done when | Needs | Status |

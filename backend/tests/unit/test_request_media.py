@@ -4,6 +4,7 @@ calls it. No model is called: vision answers are recorded checks, the job store 
 import asyncio
 from types import SimpleNamespace
 
+import pytest
 from google.genai import types
 
 from agent.media_tools import PHOTO_ARRIVED, MediaDesk, media_tools
@@ -38,6 +39,16 @@ def test_a_confident_photo_of_something_else_is_also_retaken():
     out, retake = judge(WALL, URI, 0, "te")
     assert retake
     assert out.follow_up == RETAKE["te"]["not_visible"]
+
+
+@pytest.mark.parametrize("problem", ["blurry", "dark", "not_visible"])
+def test_a_confident_match_that_flash_itself_calls_poor_is_still_retaken(problem):
+    # Dev, Oct 18 (gemini-3.5-flash, the blurred PCB sample): Flash answered matches_expected=True, confidence 0.9,
+    # problem="blurry", and the photo was accepted because only `matches_expected` was read.
+    check = MediaCheck(matches_expected=True, confidence=0.9, problem=problem, findings=[])
+    out, retake = judge(check, URI, 0, "en")
+    assert retake and out.retaking and not out.matches_expected
+    assert out.follow_up == RETAKE["en"][problem]
 
 
 def test_after_the_last_retake_it_stops_asking_and_continues_with_a_note():

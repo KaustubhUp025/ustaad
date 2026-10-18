@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/svg/ustaad-lockup-dark.svg">
+    <img alt="Ustaad" src="docs/brand/svg/ustaad-lockup-light.svg" height="96">
+  </picture>
+</p>
+
 # Ustaad — the senior technician in every repair worker's pocket
 
 Ustaad is a voice-first assistant for Indian AC and appliance repair technicians. It turns a technician group's

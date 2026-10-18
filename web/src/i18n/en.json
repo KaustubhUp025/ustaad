@@ -2,6 +2,9 @@
   "app": {
     "tagline": "Repair help you can talk to"
   },
+  "brand": {
+    "name": "Ustaad"
+  },
   "health": {
     "checking": "Checking the server…",
     "ok": "Server connected",

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { useHealth } from '@/api/health'
 import { startDemo } from '@/api/session'
+import { UstaadLogo } from '@/components/brand/UstaadLogo'
 import { Button } from '@/components/ui/button'
 
 type Lang = 'hi' | 'te' | 'ta' | 'bn' | 'en'
@@ -32,7 +33,7 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col">
       <header className="bg-graphite px-4 py-4 text-housing">
-        <h1 className="font-heading text-[length:var(--text-xl)] font-bold">Ustaad</h1>
+        <h1><UstaadLogo variant="lockup" on="dark" height={32} /></h1>
       </header>
       <section className="flex flex-col items-start gap-4 px-4 py-6">
         <p className="text-[length:var(--text-caption)]">{t('app.tagline')}</p>

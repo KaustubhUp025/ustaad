@@ -10,6 +10,7 @@ dependencies = [
   "google-genai",
   "google-adk",
   "google-cloud-aiplatform",
+  "google-cloud-discoveryengine",
   "google-cloud-firestore",
   "google-cloud-storage",
   "httpx>=0.27",

@@ -65,6 +65,7 @@ export interface LiveConnection {
   mediaCancel(requestId: string): void
   stepDone(n: number): void
   sendText(text: string): void
+  playClip(url: string): Promise<boolean>
   close(): void
 }
 
@@ -259,6 +260,15 @@ export function openLive(
     sendText(text) {
       openSpeakerOnce()
       sendFrame({ type: 'text', text })
+    },
+    // A fixed recorded clip (the gate's text) through the same speaker; false when it cannot be fetched.
+    async playClip(url) {
+      openSpeakerOnce()
+      const res = await fetch(url)
+      if (!res.ok) return false
+      toSpeaker('clear')
+      toSpeaker(await res.arrayBuffer())
+      return true
     },
     close() {
       closed = true

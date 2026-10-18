@@ -1,6 +1,6 @@
 # One command set for every person and every coding agent (see AGENTS.md).
 # Local env comes from backend/.env (copy .env.example) and web/.env.local (copy web/.env.example).
-.PHONY: help setup test test-web lint typecheck build check types golden dev-api dev-web mock \
+.PHONY: help setup test test-web lint typecheck build check types golden gate-clips dev-api dev-web mock \
         agent-engine smoke-live deploy-dev deploy-demo deploy-hosting
 
 WEB := $(wildcard web/package.json)
@@ -52,6 +52,9 @@ dev-web:         ## run the PWA locally with web/.env.local
 
 agent-engine:    ## create the empty Agent Engine instance for Memory Bank (once)
 	cd backend && uv run $(UVENV) python ../infra/agent_engine.py
+
+gate-clips:      ## record the safety gates' fixed text as audio clips with TTS_MODEL (once, after gate text changes)
+	cd backend && uv run $(UVENV) python ../infra/gate_clips.py
 
 smoke-live:      ## T05: Live API check in hi/te/ta/bn; LIVE_MODEL=... required
 	cd backend && uv run $(UVENV) python ../infra/smoke_live.py

@@ -92,6 +92,7 @@ export function useLive(lang: string, jobId: string) {
     },
     // His tap on the step card; the server hands out the next step or gate (ws-events step_done).
     stepDone: (n: number) => conn.current?.stepDone(n),
+    playClip: async (url: string) => (await conn.current?.playClip(url)) ?? false,
     retry: () => setAttempt((n) => n + 1),
   }
 }

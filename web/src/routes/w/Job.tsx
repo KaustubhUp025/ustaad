@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { demoSession } from '@/api/session'
+import gateClips from '@/audio/gateClips.json'
 import { hasProfile } from '@/audio/profile'
 import { stepLines } from '@/audio/safety'
 import { speak } from '@/audio/speak'
@@ -52,10 +53,17 @@ function JobScreen() {
     document.documentElement.lang = lang
   }, [i18n, lang])
 
-  // The gate's fixed text, read aloud once when it opens (see audio/speak.ts); "Hear it again" repeats it.
+  // The gate's fixed text, played once when it opens and again on "Hear it again": the recorded clip through Ustaad's
+  // speaker (`make gate-clips`), or the browser voice where there is no clip (see audio/speak.ts).
   const gateText = gate ? `${t(`repair.gate.${gate.gate_id}`)} ${t(`repair.evidence.${gate.gate_id}`)}` : ''
+  const sayGate = async () => {
+    if (!gate) return
+    const hasClip = lang in gateClips
+    if (!(hasClip && (await live.playClip(`/audio/gates/${lang}/${gate.gate_id}.pcm`)))) speak(gateText, lang)
+  }
   useEffect(() => {
-    if (gateText) speak(gateText, lang)
+    if (gateText) void sayGate()
+    // Only a new gate (or language) plays it again; sayGate changes every render.
   }, [gateText, lang])
 
   // Connecting shows in the header's pill; the strip below is for states he has to act on.
@@ -140,7 +148,7 @@ function JobScreen() {
             <Button
               variant="outline"
               className="h-14 gap-2 border-housing/40 bg-transparent px-6 text-[length:var(--text-body)] text-housing hover:bg-housing/10 hover:text-housing"
-              onClick={() => speak(gateText, lang)}
+              onClick={() => void sayGate()}
             >
               <Volume2 aria-hidden className="size-6" />
               {t('repair.hearAgain')}

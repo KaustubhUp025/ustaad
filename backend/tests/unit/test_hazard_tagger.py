@@ -53,6 +53,7 @@ def test_a_word_inside_another_word_does_not_match():
     ("said", "reason"),
     [
         ("गीज़र का पैनल खोलकर थर्मोस्टेट देखिए", "geyser_open"),
+        ("क्या गीज़र के अंदर कोई रिसेट बटन है?", "geyser_open"),
         ("गैस भरनी पड़ेगी", "refrigerant"),
         ("माइक्रोवेव का कैपेसिटर डिस्चार्ज करो", "microwave_hv"),
         ("मैग्नेट्रॉन बदलना होगा", "microwave_hv"),

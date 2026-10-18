@@ -111,7 +111,8 @@ def judge(check: MediaCheck, uri: str, retakes: int, lang: str, own: bool = Fals
     if own:
         good = check.problem not in ("blurry", "dark")
     else:
-        good = check.matches_expected and check.confidence >= MIN_MEDIA_CONFIDENCE
+        # Flash can answer "matches" and still name a problem (blurred PCB sample, Oct 18): the problem wins.
+        good = check.matches_expected and check.confidence >= MIN_MEDIA_CONFIDENCE and check.problem is None
     retake = not good and retakes < MAX_RETAKES
     if good:
         follow_up = None

@@ -41,3 +41,15 @@
 Meta developer app → WhatsApp product → test number → add the 5 team phones as recipients → webhook URL
 `https://<ustaad-api-dev-url>/webhook/whatsapp` with the verify token from Secret Manager → subscribe to
 `messages`. Create a system-user token for anything that must outlive 24 hours.
+
+## 6. Vendor quotes bot (Telegram)
+Quote requests (M8) go to vendors through a Telegram bot for the demo. Meta locked both WhatsApp business accounts;
+WhatsApp Cloud API is the future production path.
+1. Create the bot with @BotFather (`/newbot`) and store its token without pasting it anywhere:
+   `read -rs T && printf '%s' "$T" | gcloud secrets versions add tg-bot-token --data-file=-`
+   (`infra/setup.sh` creates `tg-bot-token` and a random `tg-webhook-secret`).
+2. Each vendor phone opens the bot and presses **Start** (a bot can only message chats that started it).
+3. List their chat IDs and save them as the demo worker's vendors on dev:
+   `TG_BOT_TOKEN=$(gcloud secrets versions access latest --secret tg-bot-token) uv run --directory backend --env-file .env python ../infra/tg_chat_ids.py --seed`
+4. Deploy (`make deploy-dev`), then point the bot at the service: `PROJECT_ID=… ./infra/tg_set_webhook.sh`
+   (`ENV=demo` for the judged service). Run step 3 before this: getUpdates stops once a webhook is set.

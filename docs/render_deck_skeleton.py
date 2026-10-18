@@ -1,6 +1,7 @@
 from pathlib import Path
 from textwrap import wrap
 
+from reportlab import rl_config
 from reportlab.lib.colors import HexColor, white
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen.canvas import Canvas
@@ -8,6 +9,7 @@ from reportlab.pdfgen.canvas import Canvas
 
 OUT = Path(__file__).with_name("ustaad-deck-skeleton.pdf")
 SHOT = Path(__file__).parent / "screenshots/t24-import-1280.png"
+rl_config.useA85 = 0
 W, H = 960, 540
 BG = HexColor("#EEF1EF")
 GRAPHITE = HexColor("#1D2327")
@@ -61,7 +63,7 @@ def cards(c: Canvas, items, y=250, color=GREEN):
 
 
 def build():
-    c = Canvas(str(OUT), pagesize=(W, H))
+    c = Canvas(str(OUT), pagesize=(W, H), pageCompression=1)
 
     page(c, "Ustaad", dark=True)
     c.setFillColor(YELLOW); c.rect(55, 190, 12, 225, fill=1, stroke=0)
@@ -81,7 +83,7 @@ def build():
     c.showPage()
 
     page(c, "Architecture: a single repair conversation, grounded by stored knowledge and safe actions.")
-    boxes = [(55, 225, 160, 120, "Worker PWA", "Voice · captions · camera · quotes\nDashboard PWA", GRAPHITE, white), (305, 225, 170, 120, "Cloud Run API", "FastAPI + ADK\nLive WebSocket · REST · ingest jobs", white, GRAPHITE), (590, 325, 150, 82, "Gemini Live + Flash", "Agent Platform", GREEN, white), (590, 135, 150, 82, "Firestore + Storage", "Jobs · cards · imports · media", white, GRAPHITE), (780, 325, 135, 82, "Telegram Bot", "Vendor quote demo fallback", white, GRAPHITE), (780, 135, 135, 82, "Agent Search", "Manual citations · store setup pending", white, GRAPHITE)]
+    boxes = [(55, 225, 160, 120, "Worker PWA", "Voice · captions · camera · quotes\nDashboard PWA", GRAPHITE, white), (305, 225, 170, 120, "Cloud Run API", "FastAPI + ADK\nLive WebSocket · REST · ingest jobs", white, GRAPHITE), (590, 325, 150, 82, "Gemini Live + Flash", "Agent Platform", GREEN, white), (590, 135, 150, 82, "Firestore + Storage", "Jobs · cards · imports · media", white, GRAPHITE), (780, 325, 135, 82, "Telegram Bot", "Vendor quote demo fallback", white, GRAPHITE), (780, 135, 135, 82, "Agent Search", "Voltas · Daikin · LG\nPage-cited · 2.4–3.2 s", white, GRAPHITE)]
     for x, y, width, height, head, detail, fill, color in boxes:
         rect(c, x, y, width, height, fill, GREEN if fill == white else fill)
         textbox(c, head, x + 12, y + height - 28, width - 24, 13, color, bold=True)
@@ -89,7 +91,7 @@ def build():
     c.setStrokeColor(GREEN); c.setLineWidth(2)
     for end in [(585, 366), (585, 176), (775, 366), (775, 176)]: c.line(475, 285, *end)
     c.line(215, 285, 305, 285)
-    footer(c, "Repo facts: Firebase Hosting fronts the PWA; the Live WebSocket connects directly to Cloud Run. Agent Search is intentionally shown as pending.")
+    footer(c, "Repo facts: Firebase Hosting fronts the PWA; the Live WebSocket connects directly to Cloud Run. Agent Search cites Voltas, Daikin and LG manual pages.")
     c.showPage()
 
     page(c, "Safety is a product boundary, not a disclaimer.")
@@ -100,13 +102,13 @@ def build():
     page(c, "Turn the group’s buried know-how into cited fault cards — with consent and provenance.")
     cards(c, [("Consent-based export", "Private export stays out of Git."), ("Parse + enrich", "Messages, media, transcripts."), ("Thread + extract", "Question → answers → outcome."), ("Dedupe + cite", "Fault cards carry source credit.")], 255)
     rect(c, 55, 110, 850, 70, GRAPHITE, GRAPHITE)
-    textbox(c, "Recorded partial dev run, not a final benchmark: 60 messages · 13 notes · 6 photos · 9 correctly grouped threads · 8 cards + 1 merge · 1 min 47 s end-to-end. FINAL IMPORT SCORE — PENDING.", 72, 148, 815, 14, white)
+    textbox(c, "Recorded import run, not a final benchmark: 20 voice notes → 11 fault cards. The 20-card target was not met. FINAL IMPORT SCORE — PENDING.", 72, 148, 815, 14, white)
     footer(c, "Media provenance: demo-group photos are AI-generated or public-post images and must be labelled wherever shown; this slide uses no photo as evidence.")
     c.showPage()
 
     page(c, "Keep the technician on the job while nearby vendors answer the part request.")
     cards(c, [("Request", "Ustaad checks the needed part and sends a structured request."), ("Reply", "Vendor text or voice replies are parsed and ranked."), ("Approve", "The worker sees availability, price, ETA, and voice-reply status.")], 240, COPPER)
-    rect(c, 55, 135, 850, 42, YELLOW, YELLOW); textbox(c, "DEMO FALLBACK: TELEGRAM BOT. WHATSAPP CLOUD API RETURNS AFTER META BUSINESS VERIFICATION.", 72, 150, 815, 10, GRAPHITE, bold=True)
+    rect(c, 55, 135, 850, 42, YELLOW, YELLOW); textbox(c, "DEMO: TELEGRAM BOT. FUTURE PRODUCTION: WHATSAPP AFTER META BUSINESS ACCOUNTS ARE UNLOCKED.", 72, 150, 815, 10, GRAPHITE, bold=True)
     footer(c, "PHONE TEST / QUOTE ROUND-TRIP RESULT — PENDING. No vendor price, delivery, or response-time claim is made here.")
     c.showPage()
 
@@ -116,21 +118,21 @@ def build():
     textbox(c, "What the dashboard shows", 718, 388, 170, 15, GRAPHITE, bold=True)
     textbox(c, "• Import status and safe errors\n• Knowledge/fault-card list\n• Review queue for cards needing review\n• Clear synthetic/demo-data labels", 718, 350, 170, 11, MUTED)
     rect(c, 718, 180, 160, 28, YELLOW, YELLOW); textbox(c, "SYNTHETIC DEMO DATA", 730, 189, 145, 8, GRAPHITE, bold=True)
-    footer(c, "Screenshot source: docs/screenshots/t24-import-1280.png. It labels the sample data and photo provenance in-product.")
+    footer(c, "Screenshot source: docs/screenshots/t24-import-1280.png. Synthetic demo data; any AI-generated/public-post photos are labelled in the dashboard.")
     c.showPage()
 
     page(c, "Evidence, not hype")
     rect(c, 55, 150, 390, 260, white, GREEN); rect(c, 515, 150, 390, 260, white, COPPER)
-    textbox(c, "Recorded in docs/STATUS.md", 75, 375, 340, 16, GRAPHITE, bold=True)
-    textbox(c, "• Dev API health and demo PWA shell are documented.\n• Local real Live checks recorded Hindi push-to-talk, captions, barge-in and reconnect behavior.\n• The partial import run is documented separately, not presented as the final score.", 75, 340, 340, 11, MUTED)
-    textbox(c, "Final evidence placeholders", 535, 375, 340, 16, GRAPHITE, bold=True)
-    textbox(c, "• 4G speech-to-reply p50\n• Photo-to-findings p50 and golden-photo result\n• Full import quality score\n• Quote round-trip and final phone-test results\n• Safety-bypass evidence", 535, 340, 340, 11, MUTED)
+    textbox(c, "Recorded checks", 75, 375, 340, 16, GRAPHITE, bold=True)
+    textbox(c, "• Agent Search: Voltas, Daikin and LG manuals; page-cited results in 2.4–3.2 s.\n• Import: 11 fault cards from 20 voice notes; the 20-card target was not met.\n• Onboarding: 9/9 Hindi and Telugu checks passed.\n• Gate-photo checks: MCB 5.4/6.0 s; PCB 8.8/10.4 s.", 75, 340, 340, 11, MUTED)
+    textbox(c, "Still pending", 535, 375, 340, 16, GRAPHITE, bold=True)
+    textbox(c, "• Demo URL and video link\n• Final screenshots\n• 4G speech-to-reply p50\n• Photo-to-findings p50 and golden-photo result\n• Quote round-trip and final phone-test results\n• Safety-bypass evidence", 535, 340, 340, 11, MUTED)
     footer(c, "Final numbers must be copied from the measured-quality table after T29 — never inferred from targets.")
     c.showPage()
 
     page(c, "Ready the evidence. Then let a judge try it.", dark=True)
     rect(c, 55, 145, 850, 245, BG, BG)
-    textbox(c, "DEMO URL — [INSERT VERIFIED URL]\nVIDEO LINK — [INSERT PUBLIC/UNLISTED LINK]\nFINAL IMPORT SCORE — [INSERT T29 EVIDENCE]\nFINAL PHONE-TEST RESULTS — [INSERT VERIFIED EVIDENCE]\nTeam: Kaustubh Upadhyay — voice and agent · Samyak Jain — knowledge and commerce", 85, 345, 790, 18, GRAPHITE)
+    textbox(c, "DEMO URL — [PENDING VERIFIED URL]\nVIDEO LINK — [PENDING PUBLIC/UNLISTED LINK]\nFINAL SCREENSHOTS — [PENDING]\nUNMEASURED RESULTS — [PENDING VERIFIED EVIDENCE]\nTeam: Kaustubh Upadhyay — voice and agent · Samyak Jain — knowledge and commerce", 85, 345, 790, 18, GRAPHITE)
     footer(c, "Future of Work & Enterprise Productivity · Ustaad makes expert repair knowledge speakable, citable, and safer at the unit.", True)
     c.save()
 

@@ -87,3 +87,16 @@ def test_the_sdk_retries_429_and_timeouts_with_the_import_options_but_not_400():
     assert rule["retry"].predicate(httpx.ReadTimeout("hung"))
     assert not rule["retry"].predicate(invalid)
     assert rule["stop"].max_attempt_number == 5
+
+
+def test_the_live_search_embedding_goes_to_embed_location_when_set(monkeypatch):
+    # Oct 18, from the laptop: `global` took 12.6 s for a while (past the 10 s timeout), then 2.5 s; asia-south1 took
+    # 1.0-1.4 s throughout, with identical vectors (cosine 1.0), so stored cards still match.
+    monkeypatch.setenv("EMBED_LOCATION", "asia-south1")
+    gemini.embed(["t"], "RETRIEVAL_QUERY")
+    monkeypatch.delenv("EMBED_LOCATION")
+    gemini.embed(["t"], "RETRIEVAL_QUERY")
+
+    regional, default = MADE
+    assert regional["location"] == "asia-south1"
+    assert default["location"] is None

@@ -43,16 +43,53 @@ minute and try again; the demo runs a small number of live sessions at once.
 
 ## What it does, and how to check each part
 
-| | Feature | How to check it |
-|---|---|---|
-| <img src="docs/readme/cited-step.png" width="200"> | **Fixes from real technicians, with credit.** Ustaad searches the group's fault cards first, then the brand manuals. Each step says whose voice note it came from; tap the chip to hear the original note. | Ask about **E6** on a Voltas AC. Step cards show **"Ramesh · May 2025"**. |
-| <img src="docs/readme/photo-retake.png" width="200"> | **It asks to see.** Ustaad asks for the nameplate, the display or a part, with framing tips. Gemini Flash checks each photo. A blurred photo gets a retake reason, not a guess. It reads brand, model and error code from a nameplate or display. | Tap a sample photo, or photograph any appliance nameplate. The top bar shows the code and model it read. |
-| <img src="docs/readme/safety-gate.png" width="200"> | **Safety gates that code enforces.** Before any high-voltage or capacitor step, the phone asks for proof: a photo of the MCB off or the plug pulled. Server code, not the model, decides when the next step can be shown. Gas (refrigerant) work is refused outright: Ustaad says a certified gas technician must do it. | Continue the E6 job until the safety screen appears. Saying "done" does not open it; only a passing photo does. |
-| <img src="docs/readme/general-guidance.png" width="200"> | **Honest when it doesn't know.** With no card or manual for a problem, Ustaad says so aloud, labels its steps **"General guidance"**, and never gives an error-code meaning or a live-power test. | Ask something no card covers, such as "my washing machine is not filling with water". |
-| <img src="docs/readme/onboarding-te.png" width="200"> | **Onboarding by voice, remembered.** A short interview fills his profile: appliances, brands, pincode, experience, stock and parts shop. Vertex AI Memory Bank keeps what he tells Ustaad for later sessions. | On Home, tap **Set up a profile** and answer the questions. The profile card fills as you speak. |
-| <img src="docs/readme/stock.png" width="200"> | **Stock and parts quotes.** Ustaad checks his toolbag before suggesting a part. If it's missing, it asks his nearby shops for a price over Telegram, and replies appear in the job. Saying "fixed it, changed the capacitor" closes the job: the fix becomes a new fault card and the part comes off his stock. | Open **Your stock** on Home. In a job, say "I need a PCB", then "fixed it, changed the capacitor". |
-| <img src="docs/readme/knowledge.png" width="200"> | **Knowledge desk (laptop).** Every fault card with appliance, code, symptom, source and confidence, plus a review queue for low-confidence cards. | Open [/d/knowledge](https://ustaad101.web.app/d/knowledge) and filter by appliance. |
-| <img src="docs/readme/import.png" width="200"> | **WhatsApp group import.** A Cloud Run Job reads an exported group chat, transcribes the voice notes, groups messages into threads and writes fault cards, crediting the speaker. | Open [/d/import](https://ustaad101.web.app/d/import): the "AC Technician Noida" export, 20/20 voice notes, 13 threads, 11 cards. |
+**1. Fixes from real technicians, with credit.** Ustaad searches the group's fault cards first, then the brand
+manuals. Each step card says whose voice note it came from; tap the chip to hear the original note.
+*Check:* ask about **E6** on a Voltas AC. Step cards show **"Ramesh · May 2025"**.
+
+**2. It asks to see.** Ustaad asks for the nameplate, the display or a part, with framing tips. Gemini Flash checks
+each photo: a blurred one gets a retake reason, not a guess. It reads brand, model and error code from a nameplate or
+display. *Check:* tap a sample photo, or photograph any appliance nameplate. The top bar shows what it read.
+
+**3. Safety gates that code enforces.** Before any high-voltage or capacitor step, the phone asks for proof: a photo
+of the MCB off or the plug pulled. Server code, not the model, decides when the next step can be shown. Gas
+(refrigerant) work is refused outright: Ustaad says a certified gas technician must do it. *Check:* continue the E6
+job until the safety screen appears. Saying "done" does not open it; only a passing photo does.
+
+**4. Honest when it doesn't know.** With no card or manual for a problem, Ustaad says so aloud, labels its steps
+**"General guidance"**, and never gives an error-code meaning or a live-power test. *Check:* ask something no card
+covers, such as "my washing machine is not filling with water".
+
+| Photo request and retake | General guidance |
+|:---:|:---:|
+| <img src="docs/readme/photo-retake.png" width="260" alt="Camera sheet asking for the outdoor PCB, with a retake reason"> | <img src="docs/readme/general-guidance.png" width="260" alt="A step labelled general guidance"> |
+
+**5. Onboarding by voice, remembered.** A short interview fills his profile: appliances, brands, pincode,
+experience, stock and parts shop. Vertex AI Memory Bank keeps what he tells Ustaad for later sessions.
+*Check:* on Home, tap **Set up a profile** and answer the questions. The profile card fills as you speak.
+
+**6. Stock and parts quotes.** Ustaad checks his toolbag before suggesting a part. If it's missing, it asks his
+nearby shops for a price over Telegram, and replies appear in the job. Saying "fixed it, changed the capacitor"
+closes the job: the fix becomes a new fault card and the part comes off his stock. *Check:* open **Your stock** on
+Home. In a job, say "I need a PCB", then "fixed it, changed the capacitor".
+
+| Onboarding in Telugu | Your stock |
+|:---:|:---:|
+| <img src="docs/readme/onboarding-te.png" width="260" alt="Telugu onboarding interview with the profile card filling in"> | <img src="docs/readme/stock.png" width="260" alt="Stock screen with counts and low-stock labels"> |
+
+**7. Knowledge desk (laptop).** Every fault card with appliance, code, symptom, source and confidence, plus a
+review queue for low-confidence cards. *Check:* open [/d/knowledge](https://ustaad101.web.app/d/knowledge) and filter
+by appliance.
+
+**8. WhatsApp group import.** A Cloud Run Job reads an exported group chat, transcribes the voice notes, groups
+messages into threads and writes fault cards, crediting the speaker. *Check:* open
+[/d/import](https://ustaad101.web.app/d/import): the "AC Technician Noida" export, 20/20 voice notes, 13 threads,
+11 cards.
+
+<p align="center">
+  <img src="docs/readme/knowledge.png" width="49%" alt="Knowledge desk listing fault cards">
+  <img src="docs/readme/import.png" width="49%" alt="Import page showing the finished AC Technician Noida import">
+</p>
 
 **Languages.** English, Hindi and Telugu from Home; Tamil and Bengali also work if you change `lang=` in the job URL
 to `ta` or `bn` (tested less). Ustaad keeps replying in the job's language even when the cards are in Hinglish, and

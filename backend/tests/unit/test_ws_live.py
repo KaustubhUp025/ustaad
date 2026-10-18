@@ -346,3 +346,12 @@ def test_on_a_general_job_a_spoken_power_on_check_gets_the_stop_screen(monkeypat
     with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate") as ws:
         ws.receive_json()
         assert _frames(ws, "turn_complete") == ["audio", "caption", "safety_stop", "turn_complete"]
+
+
+def test_ustaad_is_told_about_the_mute_once_per_gate(monkeypatch):
+    """Live run (Oct 18): a note after every muted turn made him answer the note, which was muted, and so on."""
+    told = _session(monkeypatch, "j_gate", GATED, _turn(GATE_TALK) + _turn("<no speech>") + _turn("ठीक है।"))
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate") as ws:
+        ws.receive_json()
+        assert _frames(ws, "turn_complete", 3) == ["turn_complete"] * 3
+    assert told == [ws_live.GATE_NOTE]

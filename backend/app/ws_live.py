@@ -164,12 +164,14 @@ async def _downstream(
     partials: dict[str, str] = {}
     # Speech guards: the job as last read (read again after a tool answer and at each turn), whether the rest of
     # this turn is cut off, the seconds of audio the phone got this turn (how much he heard before a cut), whether
-    # this turn is muted because a gate is open, and whether anything of it was dropped.
+    # this turn is muted because a gate is open, whether anything of it was dropped, and whether Ustaad was told
+    # about this gate's mute: once per gate, since his answer to the note is muted too and would draw another note.
     job: RepairJob | None = None
     cut = False
     heard_s = 0.0
     muted = False
     dropped = False
+    noted = False
     try:
         async for event in live_events(queue, lang, resume, job_id, desk, worker_id):
             if event.content and any(part.function_response for part in event.content.parts or []):
@@ -177,8 +179,9 @@ async def _downstream(
             for item in to_frames(event, partials, lang):
                 ustaads = isinstance(item, bytes) or (isinstance(item, Caption) and item.who == "ustaad")
                 if isinstance(item, Interrupted | TurnComplete):
-                    if dropped and isinstance(item, TurnComplete):
+                    if dropped and not noted and isinstance(item, TurnComplete):
                         desk.note(GATE_NOTE)
+                        noted = True
                     job, cut, heard_s, muted, dropped = None, False, 0.0, False, False
                 elif cut and ustaads:
                     continue
@@ -187,6 +190,7 @@ async def _downstream(
                         try:
                             job = job or await to_thread(desk.load_job)
                             muted = open_gate(job) is not None
+                            noted = noted and muted
                         except Exception as exc:  # noqa: BLE001 — fail closed: unknown gate state plays nothing
                             logger.warning("gate mute: job unreadable (%s)", type(exc).__name__)
                             muted = True

@@ -266,6 +266,8 @@ class CardHit(BaseModel):
 
 class SearchFaultCardsOut(BaseModel):
     cards: list[CardHit]
+    # True when the search itself failed (network, quota): no cards, but not "no card matched" either.
+    unavailable: bool = False
 
 
 StockErrorReason = Literal["unknown_part", "ambiguous_part", "below_zero"]

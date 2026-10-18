@@ -25,3 +25,17 @@ async def test_the_tool_returns_the_matching_card_without_step_text():
     out = await tool.run_async(args={"brand": "voltas", "error_code": "E6"}, tool_context=None)
     assert out["cards"][0]["card_id"] == "fc_e6"
     assert "must not leak" not in str(out)
+
+
+async def test_a_failed_search_answers_unavailable_instead_of_ending_the_live_session(caplog):
+    # ustaad-02's local T39 run (Oct 18): an embed ReadTimeout raised out of the tool, and ADK ended the Live session.
+    caplog.set_level("DEBUG")
+
+    def failing_embed(texts, task_type):
+        raise TimeoutError("https://aiplatform.googleapis.com/...?key=SYNTHETIC_TOKEN timed out")
+
+    (tool,) = search_tools(FakeCardStore(), failing_embed)
+    out = await tool.run_async(args={"brand": "voltas", "error_code": "E6"}, tool_context=None)
+    assert out["cards"] == [] and out["unavailable"] is True
+    assert [r.getMessage() for r in caplog.records] == ["card search failed (TimeoutError)"]
+    assert "SYNTHETIC_TOKEN" not in caplog.text

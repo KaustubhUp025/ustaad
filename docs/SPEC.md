@@ -86,7 +86,7 @@ Gemini, Cloud Run, Firestore, Storage, Memory Bank. Card + alerts (₹500/2,000/
 Rate limits: 20 req/min per IP on `/api/chat` and `/ws/live`, 3 concurrent Live sessions.
 
 Env: `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION=global`, `GOOGLE_GENAI_USE_ENTERPRISE=TRUE`,
-`GOOGLE_GENAI_USE_VERTEXAI=TRUE`, `FLASH_MODEL`, `LIVE_MODEL`, `LIVE_LOCATION` (region for the Live client; the smoke test uses the same value), `TTS_MODEL=gemini-3.8-flash-tts`,
+`GOOGLE_GENAI_USE_VERTEXAI=TRUE`, `FLASH_MODEL`, `LIVE_MODEL`, `LIVE_LOCATION` (region for the Live client; the smoke test uses the same value), `EMBED_LOCATION` (optional region for embeddings; `global` was slower and at times past the 10 s timeout), `TTS_MODEL=gemini-3.8-flash-tts`,
 `EMBED_MODEL=gemini-embedding-001`, `TRANSCRIBE_MODEL` (empty = Flash), `AGENT_ENGINE_ID`,
 `AGENT_SEARCH_DATASTORE`, `TG_BOT_TOKEN`, `TG_WEBHOOK_SECRET`, `PLACES_API_KEY`,
 `DEMO_SAFE`, `MEDIA_BUCKET`, `ALLOWED_ORIGINS`.
@@ -139,7 +139,8 @@ General steps: with no card ids, the Live model passes its proposed steps to `st
 `next_step`, the gates and the callback treat it exactly like a card step.
 Live: AUDIO modality, input + output transcription on, language from profile, session resumption, context
 compression, PCM16 16 kHz in / 24 kHz out, push-to-talk.
-Memory: Memory Bank (soft facts, end of session; PreloadMemoryTool) · Firestore (structured) · session state (job, step, gates).
+Memory: Memory Bank (soft facts; searched at session start into `memory_summary`, saved at session end, per
+demo visit (its session token), worker and database; ADK's PreloadMemoryTool needs typed user text, which Live voice sessions lack) · Firestore (structured) · session state (job, step, gates).
 
 ## 7. Contracts (frozen Mon Oct 12, 12:00)
 Firestore: `workers/{wid}` (+ `inventory`, `vendors`), `jobs`, `fault_cards`, `imports`, `quote_requests`, `quotes`,

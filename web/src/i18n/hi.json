@@ -99,7 +99,11 @@
     "voltasLabel": "Voltas एनर्जी लेबल",
     "mcbOff": "OFF पर MCB",
     "publicPost": "पब्लिक पोस्ट से ली गई फ़ोटो",
-    "ownPhoto": "हमारी अपनी फ़ोटो"
+    "ownPhoto": "हमारी अपनी फ़ोटो",
+    "aiGenerated": "AI से बनाई गई फ़ोटो",
+    "pcbClear": "आउटडोर PCB, साफ़",
+    "pcbBlurry": "आउटडोर PCB, जानबूझकर धुंधली",
+    "meterHigh": "कैपेसिटर पर मल्टीमीटर: 5.03 V (ज़्यादा)"
   },
   "quotes": {
     "title": "पार्ट्स के भाव",

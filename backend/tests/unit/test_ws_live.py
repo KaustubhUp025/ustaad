@@ -22,7 +22,7 @@ def fake_live(monkeypatch):
     """Stands in for the Live model: echoes audio, and answers the end of a spoken turn or a typed line."""
     opened = []
 
-    async def live_events(queue, lang, resume, job_id, desk, worker_id):
+    async def live_events(queue, lang, resume, job_id, desk, worker_id, token):
         opened.append((lang, resume))
         if lang == "xx":
             raise RuntimeError("model not found")
@@ -178,7 +178,7 @@ def test_a_safety_gate_from_the_model_opens_its_photo_request(monkeypatch):
     monkeypatch.delenv("MOCK_LIVE", raising=False)
     gate = {"status": "SAFETY_GATE", "gate_id": "G_MAINS_OFF", "required_evidence": "MCB OFF photo"}
 
-    async def live_events(queue, lang, resume, job_id, desk, worker_id):
+    async def live_events(queue, lang, resume, job_id, desk, worker_id, token):
         response = types.FunctionResponse(name="next_step", response=gate)
         yield Event(author="ustaad", content=types.Content(parts=[types.Part(function_response=response)]))
         while not (await queue.get()).close:
@@ -240,7 +240,7 @@ def _session(monkeypatch, job_id, job, events):
     monkeypatch.setitem(ws_live.DESKS, job_id, desk)
     told = []
 
-    async def live_events(queue, lang, resume, job_id, desk, worker_id):
+    async def live_events(queue, lang, resume, job_id, desk, worker_id, token):
         for event in events:
             yield event
         while not (req := await queue.get()).close:

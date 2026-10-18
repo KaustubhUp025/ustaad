@@ -99,7 +99,11 @@
     "voltasLabel": "Voltas এনার্জি লেবেল",
     "mcbOff": "OFF অবস্থায় MCB",
     "publicPost": "পাবলিক পোস্ট থেকে নেওয়া ছবি",
-    "ownPhoto": "আমাদের নিজের ছবি"
+    "ownPhoto": "আমাদের নিজের ছবি",
+    "aiGenerated": "AI দিয়ে তৈরি ছবি",
+    "pcbClear": "আউটডোর PCB, পরিষ্কার",
+    "pcbBlurry": "আউটডোর PCB, ইচ্ছে করে ঝাপসা",
+    "meterHigh": "ক্যাপাসিটরে মাল্টিমিটার: 5.03 V (বেশি)"
   },
   "quotes": {
     "title": "পার্টসের দাম",

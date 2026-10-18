@@ -55,8 +55,11 @@ async def hear_json[M: BaseModel](question: str, flac: bytes, schema: type[M]) -
 def embed(
     texts: list[str], task_type: str, http_options: types.HttpOptions = INTERACTIVE_EMBED
 ) -> list[list[float]]:
-    """EMBED_DIM must match the Firestore vector index (infra/firestore.sh), or search silently finds nothing."""
-    client = genai.Client(http_options=http_options)
+    """EMBED_DIM must match the Firestore vector index (infra/firestore.sh), or search silently finds nothing.
+    EMBED_LOCATION, when set, is the region for this call only. Measured from a laptop on Oct 18: `global` took 12.6 s
+    for a while (past the live search's 10 s timeout), then 2.5 s; asia-south1 took 1.0-1.4 s throughout, with
+    identical vectors, so cards embedded in `global` still match."""
+    client = genai.Client(http_options=http_options, location=os.getenv("EMBED_LOCATION"))
     response = client.models.embed_content(
         model=os.environ["EMBED_MODEL"],
         contents=texts,

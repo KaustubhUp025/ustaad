@@ -99,7 +99,11 @@
     "voltasLabel": "Voltas ఎనర్జీ లేబుల్",
     "mcbOff": "OFF లో ఉన్న MCB",
     "publicPost": "పబ్లిక్ పోస్ట్ నుండి తీసిన ఫోటో",
-    "ownPhoto": "మా సొంత ఫోటో"
+    "ownPhoto": "మా సొంత ఫోటో",
+    "aiGenerated": "AI తో తయారైన చిత్రం",
+    "pcbClear": "అవుట్‌డోర్ PCB, స్పష్టంగా",
+    "pcbBlurry": "అవుట్‌డోర్ PCB, కావాలని మసకగా",
+    "meterHigh": "కెపాసిటర్‌పై మల్టీమీటర్: 5.03 V (ఎక్కువ)"
   },
   "quotes": {
     "title": "పార్ట్స్ కోట్‌లు",

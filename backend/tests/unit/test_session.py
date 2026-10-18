@@ -34,3 +34,7 @@ def test_a_token_signed_with_another_secret_is_refused(monkeypatch):
 def test_garbage_is_refused():
     for token in ("", "demo", "t", "a.b.c", "%%%.%%%"):
         assert verify(token, NOW) is None
+
+
+def test_two_visitors_on_the_same_demo_worker_in_the_same_second_get_different_tokens():
+    assert issue("w_hi_demo", NOW) != issue("w_hi_demo", NOW)

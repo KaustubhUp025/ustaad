@@ -6,6 +6,7 @@ import hashlib
 import hmac
 import json
 import os
+import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
@@ -28,7 +29,9 @@ def _sign(payload: str) -> str:
 
 
 def issue(worker_id: str, now: datetime) -> str:
-    payload = _b64(json.dumps({"wid": worker_id, "exp": int((now + TOKEN_TTL).timestamp())}).encode())
+    # The nonce makes each visit's token its own, even for one worker in the same second: memory is kept per token.
+    claims = {"wid": worker_id, "exp": int((now + TOKEN_TTL).timestamp()), "nonce": secrets.token_hex(8)}
+    payload = _b64(json.dumps(claims).encode())
     return f"{payload}.{_sign(payload)}"
 
 

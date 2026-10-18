@@ -36,7 +36,7 @@ Commit prefix: the feature ID if there is one (`M4: …`), otherwise the task ID
 | T17 | P0 | A | `request_media`, camera sheet, retake loop (M4); from T16: the gate screen's photo button opens the camera sheet, and `confirm_safety` accepts only a `media_uri` from a server-issued request in `jobs.media` | SPEC §6, contracts/ws-events.md | photo request → check → retake once → continue, on phone | T11 | done |
 | T18 | P1 | A (from B, Oct 16) | Inventory tools, `/w/stock`, voice deltas (M7) | contracts/rest.md, firestore.md | "do capacitor use kiye" → qty −2 | T10 | done (PR #31); dev Firestore has demo stock for `w_hi_demo` (T25 may replace it) |
 | T19 | P0 | A | Vendor webhook (Telegram since Oct 17), quote state machine, Places search (M8) | SPEC §7 quotes, contracts/firestore.md | 3 team phones get requests; replies parsed | T06, T10 | doing (A): PR #53 Telegram webhook, state machine, text/voice parser, request_quotes, GET/approve REST; a/M8-vendors-clarify find_vendors (saved + Places nearby, nearest first) and the CLARIFY follow-up (one question per quote); unit-tested, Places checked live; phone run on dev pending (needs a real `places-api-key`) |
-| T20 | P2 | A | Memory Bank: preload + save (S3) | SPEC §6 Memory | 2nd session recalls language + weak area | T05 | todo |
+| T20 | P2 | A | Memory Bank: preload + save (S3) | SPEC §6 Memory | 2nd session recalls language + weak area | T05 | done (two-session check in STATUS.md) |
 
 ## Wed Oct 14 — finish features, integration 21:00
 | ID | P | Owner | Task | Read | Done when | Needs | Status |

@@ -141,6 +141,23 @@ general aloud, no invented error-code meaning, asks to see before guessing, no l
 | 5 | Microwave | माइक्रोवेव चलता है पर खाना गरम नहीं होता, क्या करूँ? | |
 | 6 | Live test (invites one) | वॉशिंग मशीन चालू नहीं हो रही, सॉकेट में वोल्टेज कैसे चेक करूँ? | |
 
+## Memory Bank check (T20, S3)
+
+Oct 18, real Agent Engine, typed turns on a local backend (main + #64 + #71):
+- Session 1 said (Hindi): "always talk to me in Hindi; I'm weak at checking inverter AC PCBs, I want to learn it".
+- Stored for that visit: "I want you to always speak to me in Hindi." and "I am weak at checking inverter AC PCBs
+  and want to learn how to do it."
+- A later session on the same visit, asked in English which language he asked for and what he is weak at, answered
+  in Hindi: he asked for Hindi always, and he is weak at inverter AC PCB checks. A new visit on the same
+  `w_hi_demo` asked the same thing remembered nothing (it guessed English). Visits stay separate.
+- What went wrong on the way, and the fixes:
+  - ADK 2.11's default ingest path sent the save from a closed client, so nothing was saved. Fixed in #64 with
+    `wait_for_completion` (the generate path).
+  - Memory Bank's topics are now named (`infra/agent_engine.py`: personal info, preferences, `preferred_language`,
+    `skill_gaps`) and applied to the engine.
+  - Similarity search lags a save: 25 s after session 1, recall found only the weak area while both facts were
+    stored; minutes later it found both. A real next session is much later than that.
+
 ## Measured quality bar (fill on Thu, T29; the deck uses these numbers)
 | Measure | Target | Actual |
 | --- | --- | --- |

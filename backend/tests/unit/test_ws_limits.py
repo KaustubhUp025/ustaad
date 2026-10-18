@@ -21,7 +21,7 @@ def live(monkeypatch):
     monkeypatch.delenv("MOCK_LIVE", raising=False)
     workers = []
 
-    async def live_events(queue, lang, resume, job_id, desk, worker_id):
+    async def live_events(queue, lang, resume, job_id, desk, worker_id, token):
         workers.append(worker_id)
         while not (await queue.get()).close:
             pass

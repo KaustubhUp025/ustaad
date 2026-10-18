@@ -1,6 +1,6 @@
 import pytest
 
-from tools.hazard_tagger import RULES, tag
+from tools.hazard_tagger import RULES, speech_stop, tag
 
 # Test strings only: they name a part so a rule can match, and carry no repair guidance.
 CASES = [
@@ -47,3 +47,37 @@ def test_plain_text_gets_no_hazard():
 
 def test_a_word_inside_another_word_does_not_match():
     assert tag("Test step at the door gasket", "none") == ("none", None)
+
+
+@pytest.mark.parametrize(
+    ("said", "reason"),
+    [
+        ("गीज़र का पैनल खोलकर थर्मोस्टेट देखिए", "geyser_open"),
+        ("गैस भरनी पड़ेगी", "refrigerant"),
+        ("माइक्रोवेव का कैपेसिटर डिस्चार्ज करो", "microwave_hv"),
+        ("मैग्नेट्रॉन बदलना होगा", "microwave_hv"),
+        ("पिक्चर ट्यूब में करंट रहता है", "crt"),
+        ("గీజర్ ప్యానెల్ తెరిచి చూడండి", "geyser_open"),
+        ("கீசரைத் திறந்து பாருங்கள்", "geyser_open"),
+        ("গিজার খুলে দেখুন", "geyser_open"),
+        ("గ్యాస్ నింపాలి", "refrigerant"),
+        ("கேஸ் நிரப்ப வேண்டும்", "refrigerant"),
+        ("গ্যাস ভরতে হবে", "refrigerant"),
+        ("Recharge the gas", "refrigerant"),
+    ],
+)
+def test_speech_in_any_script_hits_its_stop_row(said, reason):
+    assert speech_stop(said) == reason
+
+
+@pytest.mark.parametrize(
+    "said",
+    [
+        "AC में गैस कम हो सकती है",
+        "माइक्रोवेव के अंदर की लाइट जल रही है?",
+        "गीज़र में इंडिकेटर लाइट जल रही है?",
+        "पावर सप्लाई चेक करो",
+    ],
+)
+def test_a_mention_in_conversation_is_not_a_stop(said):
+    assert speech_stop(said) is None

@@ -9,6 +9,7 @@ from google.genai import types
 from app import ws_live
 from app.main import app
 from app.session import issue
+from models.repair import RepairJob
 from models.ws import server_frame
 
 FRAMES = [json.loads(line) for line in ws_live.FIXTURE.read_text(encoding="utf-8").splitlines()]
@@ -216,3 +217,66 @@ def test_a_step_done_tap_reaches_the_jobs_desk(monkeypatch):
         ws.send_json({"v": 1, "type": "ping"})
         assert ws.receive_json()["type"] == "pong"
     assert taps == [3]
+
+
+def test_a_step_said_before_next_step_is_cut_off_and_the_gate_shown(monkeypatch):
+    """Q1 (Oct 18): with the step stored and the mains gate open, Ustaad began saying the step itself."""
+    monkeypatch.delenv("MOCK_LIVE", raising=False)
+    step = "मशीन से जुड़ी पानी की सप्लाई का नल चेक करें कि वह खुला है या नहीं।"
+    job = RepairJob.model_validate(
+        {
+            "job_id": "j_ahead",
+            "steps": [
+                {
+                    "n": 1,
+                    "instruction": step,
+                    "hazard": "none",
+                    "source": {
+                        "kind": "general",
+                        "label": "General guidance",
+                        "audio_uri": None,
+                        "doc": None,
+                        "page": None,
+                    },
+                }
+            ],
+        }
+    )
+    desk = ws_live.MediaDesk("j_ahead", "media")
+    desk.load_job = lambda: job
+    monkeypatch.setitem(ws_live.DESKS, "j_ahead", desk)
+    told = []
+
+    def say(text):
+        return Event(author="ustaad", output_transcription=types.Transcription(text=text), partial=True)
+
+    audio = Event(
+        author="ustaad",
+        content=types.Content(
+            parts=[types.Part(inline_data=types.Blob(data=b"\x01\x02", mime_type="audio/pcm"))]
+        ),
+    )
+
+    async def live_events(queue, lang, resume, job_id, desk, worker_id):
+        yield audio
+        yield say("हम कुछ सामान्य जाँच कर सकते हैं। ")
+        yield say("क्या आप चेक कर सकते हैं कि मशीन से जुड़ी पानी की सप्लाई")
+        yield audio
+        yield say(" का नल खुला है")
+        yield Event(author="ustaad", interrupted=True)
+        while not (req := await queue.get()).close:
+            if req.content:
+                told.append(req.content.parts[0].text)
+
+    monkeypatch.setattr(ws_live, "live_events", live_events)
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_ahead") as ws:
+        ws.receive_json()
+        assert ws.receive_bytes() == b"\x01\x02"
+        assert ws.receive_json()["text"] == "हम कुछ सामान्य जाँच कर सकते हैं। "
+        assert ws.receive_json()["type"] == "interrupted"
+        assert ws.receive_json()["gate_id"] == "G_MAINS_OFF"
+        assert ws.receive_json()["type"] == "media_request"
+        assert ws.receive_json()["type"] == "interrupted"
+        ws.send_json({"v": 1, "type": "ping"})
+        assert ws.receive_json()["type"] == "pong"
+    assert told == [ws_live.AHEAD_NOTE]

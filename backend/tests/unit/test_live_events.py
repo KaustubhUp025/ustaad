@@ -1,7 +1,8 @@
 from google.adk.events import Event
 from google.genai import types
 
-from app.live_events import to_frames
+from app.live_events import ahead, to_frames
+from models.repair import RepairJob
 from models.ws import (
     Caption,
     GateResult,
@@ -135,3 +136,76 @@ def test_backstop_leaves_power_on_diagnosis_talk_alone():
     assert to_frames(said("ustaad", "Check karo supply aa rahi hai ya nahi", False), {}) == [
         Caption(who="ustaad", text="Check karo supply aa rahi hai ya nahi", final=True)
     ]
+
+
+def _job(*instructions, current_step=0):
+    steps = [
+        {
+            "n": n,
+            "instruction": text,
+            "hazard": "none",
+            "source": {
+                "kind": "general",
+                "label": "General guidance",
+                "audio_uri": None,
+                "doc": None,
+                "page": None,
+            },
+        }
+        for n, text in enumerate(instructions, 1)
+    ]
+    return RepairJob(job_id="j_1", steps=steps, current_step=current_step)
+
+
+Q1_STEP = "मशीन से जुड़ी पानी की सप्लाई का नल चेक करें कि वह खुला है या नहीं।"
+Q1_SAID = "मेरे पास इस समस्या का कोई वेरिफाइड सोर्स नहीं है। हम कुछ सामान्य जाँच कर सकते हैं। क्या आप चेक कर सकते हैं कि मशीन से जुड़ी पानी की सप्लाई का नल खुला है या नहीं?"
+
+
+def test_a_step_said_before_next_step_handed_it_out_is_ahead():
+    assert ahead(Q1_SAID, _job(Q1_STEP)).n == 1
+
+
+def test_a_step_already_handed_out_may_be_said():
+    assert ahead(Q1_SAID, _job(Q1_STEP, current_step=1)) is None
+
+
+def test_a_later_step_is_ahead_too():
+    assert (
+        ahead(
+            "आउटडोर पीसीबी के टर्मिनल और वायरिंग देखो",
+            _job("Outdoor unit ka PCB dikhao", "Outdoor PCB ke terminal aur wiring dekho", current_step=1),
+        ).n
+        == 2
+    )
+
+
+def test_a_job_with_no_steps_has_nothing_ahead():
+    assert ahead(Q1_SAID, RepairJob(job_id="j_1")) is None
+
+
+def test_backstop_catches_hindi_advice_to_open_a_geyser():
+    # Q4 (Oct 18): said in conversation, a turn before start_repair stored anything.
+    said = "कोई फॉल्ट कार्ड नहीं मिला। एक बार गीज़र का पैनल खोलकर थर्मोस्टेट का रीसेट बटन चेक करना पड़ेगा।"
+    assert SafetyStop(reason="geyser_open", message="Stopped for safety") in to_frames(
+        said_final("ustaad", said), {}
+    )
+
+
+def test_backstop_leaves_the_good_hindi_answers_alone():
+    for said in (
+        "LG फ्रिज के E1 एरर कोड का मतलब मेरे पास मौजूद रिकॉर्ड्स में नहीं है। क्या आप मुझे फ्रिज के मैनुअल का पेज या फिर वायरिंग का स्टीकर दिखा सकते हैं?",
+        "बिना मॉडल नंबर या फोटो के, मैं आपको केवल सामान्य जानकारी दे सकता हूँ। क्या माइक्रोवेव चलते समय कोई असामान्य आवाज़ कर रहा है, या अंदर की लाइट जल रही है?",
+        "सॉकेट में वोल्टेज चेक करने जैसा लाइव टेस्ट करने के लिए मैं आपको गाइड नहीं कर सकता क्योंकि इसमें बिजली का खतरा होता है।",
+        "AC में गैस कम हो सकती है, पहले आउटडोर यूनिट का फैन देखिए।",
+    ):
+        assert not [f for f in to_frames(said_final("ustaad", said), {}) if isinstance(f, SafetyStop)], said
+
+
+def test_backstop_catches_a_hindi_gas_question():
+    assert SafetyStop(reason="refrigerant", message="Stopped for safety") in to_frames(
+        said_final("user", "गैस कैसे भरूँ?"), {}
+    )
+
+
+def said_final(who, text):
+    return said(who, text, False)

@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import uuid
-from asyncio import create_task, sleep, wait_for
+from asyncio import create_task, sleep, to_thread, wait_for
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -23,16 +23,19 @@ from agent.media_tools import MediaDesk, ReadPhoto
 from agent.ustaad import build_ustaad
 from app import admission
 from app.demo_safe import demo_safe
-from app.live_events import to_frames
+from app.live_events import AHEAD_NOTE, ahead, to_frames
 from app.session import verify
 from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore, QuoteStore, WorkerStore
 from clients.gemini import read_photo
 from clients.places import places_client
 from clients.storage import object_md5
 from clients.telegram import telegram_bot
+from models.repair import RepairJob
 from models.ws import (
+    Caption,
     Error,
     Frame,
+    Interrupted,
     MediaCancel,
     MediaOffer,
     MediaReady,
@@ -43,8 +46,10 @@ from models.ws import (
     SessionReady,
     StepDone,
     Text,
+    TurnComplete,
     client_frame,
 )
+from tools.gates import open_gate
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -55,6 +60,8 @@ DESKS: dict[str, MediaDesk] = {}
 APP = "ustaad"
 # The phone pings every 20 s; a socket silent this long lost its network, and closing it frees its Live slot (T11).
 SILENT_CLOSE_S = 45
+# Ustaad's audio to the phone: PCM16 at 24 kHz, mono.
+OUT_BYTES_PER_S = 24_000 * 2
 # Speech code, and the wording the instruction uses: naming the script keeps captions out of Latin letters.
 LANGS = {
     "hi": ("hi-IN", "Hindi, written in Devanagari script"),
@@ -154,10 +161,31 @@ async def _downstream(
     worker_id: str,
 ) -> None:
     partials: dict[str, str] = {}
+    # Speech guard: the job as last read (read again after any tool answer), whether the rest of this turn is cut
+    # off, and the seconds of audio the phone got this turn, which is how much he heard before a cut.
+    job: RepairJob | None = None
+    cut = False
+    heard_s = 0.0
     try:
         async for event in live_events(queue, lang, resume, job_id, desk, worker_id):
+            if event.content and any(part.function_response for part in event.content.parts or []):
+                job = None
             for item in to_frames(event, partials, lang):
+                if isinstance(item, Interrupted | TurnComplete):
+                    cut, heard_s = False, 0.0
+                elif cut and (
+                    isinstance(item, bytes) or (isinstance(item, Caption) and item.who == "ustaad")
+                ):
+                    continue
+                elif desk.load_job and isinstance(item, Caption) and item.who == "ustaad":
+                    job = job or await to_thread(desk.load_job)
+                    step = ahead(item.text, job)
+                    if step:
+                        cut = True
+                        await _stop_ahead(ws, desk, job, step.n, heard_s)
+                        continue
                 if isinstance(item, bytes):
+                    heard_s += len(item) / OUT_BYTES_PER_S
                     await ws.send_bytes(item)
                 else:
                     await _send(ws, item)
@@ -170,6 +198,18 @@ async def _downstream(
         logger.exception("live session failed")
         await _send(ws, Error(code="live_unavailable", message="Live model unavailable"))
         await ws.close(code=1011)
+
+
+async def _stop_ahead(ws: WebSocket, desk: MediaDesk, job: RepairJob, n: int, heard_s: float) -> None:
+    """Ustaad began saying step `n` before next_step handed it out: the phone stops playing him and shows the gate
+    that stands before the step, and he is told to get the step from next_step. The note also ends his turn: new
+    content interrupts the Live model's answer. Captions trail the audio, so his first words of the step were heard."""
+    logger.info("speech guard: step %d said before next_step, cut after %.1f s of audio", n, heard_s)
+    await _send(ws, Interrupted())
+    gate = open_gate(job)
+    if gate:
+        await desk.show_gate(gate)
+    desk.note(AHEAD_NOTE)
 
 
 async def _upstream(ws: WebSocket, queue: LiveRequestQueue | None, desk: MediaDesk | None) -> None:

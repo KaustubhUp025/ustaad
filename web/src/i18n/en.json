@@ -99,7 +99,11 @@
     "voltasLabel": "Voltas energy label",
     "mcbOff": "MCB in the OFF position",
     "publicPost": "Image from a public post",
-    "ownPhoto": "Our own photo"
+    "ownPhoto": "Our own photo",
+    "aiGenerated": "AI-generated image",
+    "pcbClear": "Outdoor PCB, clear",
+    "pcbBlurry": "Outdoor PCB, blurred on purpose",
+    "meterHigh": "Multimeter on a capacitor: 5.03 V (too high)"
   },
   "dashboard": {
     "subtitle": "Knowledge desk",

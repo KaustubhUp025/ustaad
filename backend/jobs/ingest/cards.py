@@ -30,7 +30,9 @@ RULES: 1 A card exists only if a fix or conclusion is stated. Unanswered questio
        2 Use only what people said or what photos show. Never add an error-code meaning, step or part not in the thread.
        3 fix_message_id: the id of the answer that gives the fix or diagnosis, not the asker's report that it
          worked; that report is only the outcome. message_ids: every message id you used.
-       4 Each step: text as said, summary_en (one line of English), hazard none | HV | capacitor | refrigerant.
+       4 steps: every check or action the fix answer gives, in its order, even when the outcome shows an early one
+         worked. The outcome tells which step worked (root_cause); it never removes steps from the answer.
+         Each step: text as said, summary_en (one line of English), hazard none | HV | capacitor | refrigerant.
          Anything with gas charging, leak repair, brazing or pressure work is refrigerant. Anything touching a
          capacitor is capacitor. Anything touching wiring, terminals, the PCB or mains is HV.
        5 confidence 0-1: low if the speaker was unsure, the audio unclear, or people disagreed.

@@ -41,6 +41,13 @@ class FakeQuoteStore:
             return None
         return self.requests[qrid], list(self.quotes[qrid].values())
 
+    def for_job(self, worker_id: str, job_id: str) -> list[tuple[QuoteRequest, list[QuoteDoc]]]:
+        return [
+            (request, list(self.quotes[request.id].values()))
+            for request in self.requests.values()
+            if request.worker_id == worker_id and request.job_id == job_id
+        ]
+
     def find(self, qid: str, now: datetime) -> tuple[QuoteRequest, QuoteDoc] | None:
         return next(
             (

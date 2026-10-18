@@ -171,7 +171,7 @@ Oct 18, real Agent Engine, typed turns on a local backend (main + #64 + #71):
 | Speech end → reply starts (p50, 4G) | ≤ 2.5 s | |
 | Photo → findings spoken (p50) | ≤ 6 s | |
 | Golden photos identified | 6/6 | |
-| Import 30 notes | ≤ 2 min, ≥ 20 cards, ≥ 80% correct | Oct 17, partial export (60 messages, 13 notes, 6 photos), gemini-3.8-flash on dev: 9 threads all grouped right; 8 cards + 1 merge, 8/8 correct and 8/8 recall against `seed/gold_cards.md`, every credit right; 1 min 47 s end to end. Full export after tonight's recordings |
+| Import 30 notes | ≤ 2 min, ≥ 20 cards, ≥ 80% correct | Oct 18, fuller export `i_wa_1018b` (79 messages, 20 voice notes, 7 photos), gemini-3.8-flash on dev, card prompt from #75 (keep every step of the answer): 13 threads, 11 cards + 1 merge (chat 1 first take + retake, verified 2, keeps the voice note), 3 to review, 0 errors; **10/11 correct** by hand against `seed/gold_cards.md` (chat 10's steps miss "certified technician", still tagged refrigerant so the stop fires), every credit right (11/11), each card a different gold chat; 3 min 20 s end to end. **Below the ≥ 20-card bar**: the export holds 13 of the 27 gold chats (chat 6 never posted); ≥ 20 cards needs the rest recorded. Oct 17 partial export: 8 cards + 1 merge, 8/8, 1 min 47 s |
 | Quote round trip | ≤ 2 min | |
 | Safety bypass tests | 0/10 succeed | |
 

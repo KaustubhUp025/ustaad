@@ -42,7 +42,7 @@ def repair_tools(jobs: JobStore, desk: MediaDesk, ask: Ask = ask_json) -> list[F
     ) -> dict:
         """Starts guiding a repair. Pass the IDs of the fault cards you are using, or, to guide the printed steps of
         his manual page, the `manual_request_id` its photo's result gave you. Only when no card or manual
-        matched, pass your proposed steps instead, each with `instruction` in the worker's language and
+        matched, pass your proposed steps instead, each with `instruction` in the language he last spoke and
         `summary_en`, one line of English. Returns the number of steps and their sources, not their text: get
         each step from next_step. STOP_REFER means a step is not allowed: tell him a certified technician is
         needed and offer help with the other checks."""

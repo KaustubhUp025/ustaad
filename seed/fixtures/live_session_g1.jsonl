@@ -1,0 +1,33 @@
+{"t_ms": 8, "frame": {"v": 1, "type": "caption", "who": "user", "text": "Namaste", "final": true}}
+{"t_ms": 12489, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "नमस्ते! उस्ताद ऐप पर आपका स्वागत है। आप किन अप्लायंसेज की रिपेयरिंग करते हैं? कृपया कोई भी तीन नाम बताइए जिन्हें आप सबसे ज़्यादा करते हैं।", "final": true}}
+{"t_ms": 12492, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 15499, "frame": {"v": 1, "type": "caption", "who": "user", "text": "AC aur fridge", "final": true}}
+{"t_ms": 16239, "frame": {"v": 1, "type": "profile_update", "fields": {"trades": ["ac", "fridge"]}}}
+{"t_ms": 16240, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 20841, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "ठीक है। आप कौन से ब्रांड्स के अप्लायंसेज सबसे ज़्यादा रिपेयर करते हैं?", "final": true}}
+{"t_ms": 20841, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 23846, "frame": {"v": 1, "type": "caption", "who": "user", "text": "Voltas, LG, Daikin", "final": true}}
+{"t_ms": 24441, "frame": {"v": 1, "type": "profile_update", "fields": {"brands": ["Voltas", "LG", "Daikin"]}}}
+{"t_ms": 24442, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 28997, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "बहुत बढ़िया। आपके इलाके का 6-अंकों का पिनकोड क्या है?", "final": true}}
+{"t_ms": 28997, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 32007, "frame": {"v": 1, "type": "caption", "who": "user", "text": "201301", "final": true}}
+{"t_ms": 32582, "frame": {"v": 1, "type": "profile_update", "fields": {"pincode": "201301"}}}
+{"t_ms": 32583, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 35654, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "आप इस काम को कितने सालों से कर रहे हैं?", "final": true}}
+{"t_ms": 35654, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 38655, "frame": {"v": 1, "type": "caption", "who": "user", "text": "8 saal", "final": true}}
+{"t_ms": 39246, "frame": {"v": 1, "type": "profile_update", "fields": {"experience_yrs": 8}}}
+{"t_ms": 39247, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 44034, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "आप कौन-से कॉमन पार्ट्स स्टॉक में रखते हैं और लगभग कितनी मात्रा में?", "final": true}}
+{"t_ms": 44034, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 47050, "frame": {"v": 1, "type": "caption", "who": "user", "text": "Capacitor chaar rakhta hoon, PCB nahi", "final": true}}
+{"t_ms": 47738, "frame": {"v": 1, "type": "profile_update", "fields": {"stock": [{"part": "capacitor", "qty": 4}, {"part": "PCB", "qty": 0}]}}}
+{"t_ms": 47738, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 51605, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "आखिरी सवाल, आप पार्ट्स किस दुकान से खरीदते हैं?", "final": true}}
+{"t_ms": 51605, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 54620, "frame": {"v": 1, "type": "caption", "who": "user", "text": "Sharma Electricals", "final": true}}
+{"t_ms": 55222, "frame": {"v": 1, "type": "profile_update", "fields": {"shop": "Sharma Electricals", "onboarding_done": true}}}
+{"t_ms": 55223, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 60617, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "आपका प्रोफ़ाइल तैयार है! बताइए, आज आप किस अप्लायंसेज पर काम कर रहे हैं?", "final": true}}
+{"t_ms": 60618, "frame": {"v": 1, "type": "turn_complete"}}

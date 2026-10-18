@@ -107,6 +107,7 @@
     "saveFailed": "The count didn't change. Check your network, then try again.",
     "intro": "Parts in your toolbag. Ustaad checks this list before asking shops for a part.",
     "howTo": "Change a count with − and +, or tell Ustaad: \"bought two capacitors\".",
+    "order": "To order a part you don't have, ask Ustaad during a job: \"I need a 35+5uF capacitor\". Ustaad asks your shops for a price on Telegram.",
     "back": "Back to home"
   },
   "demo": {

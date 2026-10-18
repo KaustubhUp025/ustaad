@@ -27,13 +27,13 @@ from the export before scoring.
 | 9 | card | LG | OE | washing_machine | not draining; coin in the drain filter | unplug; check the drain hose for kinks; clean the drain filter | none | Somil (plan) |
 | 10 | card, **refrigerant** (STOP_REFER when used) | "" | "" | split_ac or null | refrigerant leak (oil stain on the pipe) | no self-refill: leak fixed and gas charged only by a certified gas technician | refrigerant | Samyak |
 | 11 | card | Voltas | P7 | split_ac | indoor coil anti-freeze protection; dirty filter | read the code with ADJ (8 presses in 10 s); power off, wash the filter, check the airflow | none | Samyak (plan) |
-| 12 | card | LG | "" | split_ac | mounting plate not level | level the plate; drain pipe must not bend upward | none | Somil (plan) |
+| 12 | card | LG | "" | split_ac | mounting plate not level | level the plate; drain pipe must not bend upward | none | Samyak (voice; took Somil's part) |
 | 13 | card | Voltas | P8 | split_ac | outdoor coil overheating; airflow blocked | MCB off; clear the area around the outdoor unit; clean the coil | none | Samyak (plan) |
 | 14 | card | Voltas | P3 | split_ac | supply voltage protection; voltage dropping to 180 V | check the supply and MCB rating; install a stabiliser | HV | Samyak (plan) |
 | 15 | card | "" | IE | washing_machine | no water coming in; tap half closed | open the tap fully; check the hose for kinks; check the inlet filter | none | Somil (plan) |
 | 16 | card; **Samyak's** fix, not Somil's "replace the PCB" (a card whose steps replace the board scores wrong); review status either | Voltas | F9 | split_ac | outdoor DC fan fault; leaf stuck, connector loose | MCB off, wait 5 min; turn the fan by hand, clear it; check the connector; board later | HV | Samyak (plan) |
 | 17 | card | "" | "" | split_ac or null | dirty filter, fan on low | check the setting, filter, fan speed, doors and windows before suspecting gas | none | Samyak (plan) |
-| 18 | **needs_review** (unsure answer, unsure outcome) | "" | "" | split_ac or null | maybe capacitor or motor | (changed the capacitor; unsure) | capacitor | Somil (plan) |
+| 18 | **needs_review** (unsure answer, unsure outcome) | "" | "" | split_ac or null | maybe capacitor or motor | (changed the capacitor; unsure) | capacitor | Samyak (voice; took Somil's part) |
 | 19 | card | Voltas | E4 | split_ac | room sensor faulty or its connector loose | MCB off, wait 5 min; check the room sensor connector on the indoor board | HV | Samyak (plan) |
 | 20 | card | Daikin | A5 | split_ac | freeze-up protection; air filter clogged | power off before removing the filter; clear the airflow, filter and coil dust | none | Samyak (plan) |
 | 21 | card | "" | "" | split_ac or null | MCB tripped | check power, the plug, the MCB and the timer | none | Samyak (plan) |

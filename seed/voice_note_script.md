@@ -192,13 +192,13 @@ Fill the last two columns as you go. The answer key must match what really happe
 | 9 | card | Somil |  |  |
 | 10 | card (gas STOP) | Samyak | Samyak, voice PTT-20261015-WA0054 (question: Kaustubh by voice WA0053) | ✅ Oct 15 20:41; outcome sent Oct 16 11:00 |
 | 11 | card | Samyak |  |  |
-| 12 | card | Somil |  |  |
+| 12 | card | Somil | Samyak, voice (took Somil's part) |  |
 | 13 | card | Samyak |  |  |
 | 14 | card | Samyak |  |  |
 | 15 | card | Somil |  |  |
 | 16 | card (disagreement) | Samyak (Somil disagrees) |  |  |
 | 17 | card | Samyak |  |  |
-| 18 | needs_review | Somil |  |  |
+| 18 | needs_review | Somil | Samyak, voice (took Somil's part) |  |
 | 19 | card | Samyak |  |  |
 | 20 | card | Samyak |  |  |
 | 21 | card | Samyak |  |  |

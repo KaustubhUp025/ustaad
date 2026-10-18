@@ -29,6 +29,7 @@ from models.tools import (
     SafetyGateOut,
     StepOut,
 )
+from models.worker import LANGS
 from models.ws import (
     Frame,
     GateResult,
@@ -52,8 +53,8 @@ VISION_TIMEOUT_S = 30
 
 # Said at once when a photo arrives: its check takes several seconds, and silence felt broken (phone test, Oct 17).
 PHOTO_ARRIVED = (
-    "[His photo arrived and is being checked; that takes a few seconds. In one short sentence, in the language he "
-    "last spoke, tell him you got it and are looking at it. Do not guess what it shows and do not say any step.]"
+    "[His photo arrived and is being checked; that takes a few seconds. In one short sentence, in {language}, tell "
+    "him you got it and are looking at it. Do not guess what it shows and do not say any step.]"
 )
 
 
@@ -172,7 +173,7 @@ class MediaDesk:
         # Only this request's folder: a photo uploaded for an earlier request cannot answer it (PR #25 review).
         if not request or request.inp.kind != frame.kind or not frame.uri.startswith(f"{self._prefix}{request.request_id}/"):
             return False
-        self._tell(types.Content(role="user", parts=[types.Part(text=PHOTO_ARRIVED)]))
+        self._tell(types.Content(role="user", parts=[types.Part(text=PHOTO_ARRIVED.format(language=LANGS[self.lang][1]))]))
         self.spawn(self.on_photo(request, frame.uri))
         return True
 
@@ -389,7 +390,7 @@ def media_tools(desk: MediaDesk, jobs: JobStore, read_photo: ReadPhoto) -> list[
             await desk.show(repair.step_card(after, desk.lang))
             return (
                 f"[{lead} The app handed out step {step.n} of {after.of}, now on his screen: "
-                f'"{step.instruction_en or step.instruction}". Tell him this step now in the language he last spoke, '
+                f'"{step.instruction_en or step.instruction}". Tell him this step now in {LANGS[desk.lang][1]}, '
                 "translating it if it is in another language; do not call next_step until he reports back on it.]"
             )
         if isinstance(after, SafetyGateOut):

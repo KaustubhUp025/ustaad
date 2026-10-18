@@ -34,7 +34,7 @@ from clients.places import places_client
 from clients.storage import object_md5
 from clients.telegram import telegram_bot
 from models.repair import RepairJob
-from models.worker import Worker
+from models.worker import LANGS, Worker
 from models.ws import (
     Caption,
     Error,
@@ -67,15 +67,6 @@ SILENT_CLOSE_S = 45
 # Ustaad's audio to the phone: PCM16 at 24 kHz, mono.
 OUT_BYTES_PER_S = 24_000 * 2
 # Speech code, and the wording the instruction uses: naming the script keeps captions out of Latin letters.
-LANGS = {
-    "hi": ("hi-IN", "Hindi, written in Devanagari script"),
-    "te": ("te-IN", "Telugu, written in Telugu script"),
-    "ta": ("ta-IN", "Tamil, written in Tamil script"),
-    "bn": ("bn-IN", "Bengali, written in Bengali script"),
-    "en": ("en-IN", "English"),
-}
-
-
 def session_state(worker: Worker, lang: str, job_id: str) -> dict[str, str]:
     """What the instruction and the tools read: the job and worker come from here, never from the model. A worker who
     has not finished onboarding gets the interview (T21)."""

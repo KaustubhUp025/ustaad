@@ -50,3 +50,12 @@ async def test_a_part_not_in_stock_still_closes_the_job_and_says_why():
     out = await tool.func(CONTEXT, **(FIXTURE["close"] | {"parts_used": [{"part": "test unknown part", "qty": 1}]}))
     assert out["status"] == "CLOSED" and out["stock_not_updated"] == "unknown_part"
     assert jobs.job.status == "closed" and len(cards.cards) == 1
+
+
+def test_a_job_with_no_repair_is_not_closed():
+    # Phone test (Oct 18): he only ordered capacitors, and Ustaad would not let him go without a symptom and a fix.
+    from agent.ustaad import INSTRUCTION
+
+    tool = setup()[0]
+    for text in (tool.func.__doc__, INSTRUCTION):
+        assert "A job with no repair is not closed" in " ".join(text.split())

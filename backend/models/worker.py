@@ -7,6 +7,14 @@ from pydantic import AfterValidator, AwareDatetime, BaseModel, ConfigDict, Field
 from models.repair import Trade
 
 Lang = Literal["hi", "te", "ta", "bn", "en"]
+# Each language's Live speech code and the name the instruction and notes use for it.
+LANGS: dict[str, tuple[str, str]] = {
+    "hi": ("hi-IN", "Hindi, written in Devanagari script"),
+    "te": ("te-IN", "Telugu, written in Telugu script"),
+    "ta": ("ta-IN", "Tamil, written in Tamil script"),
+    "bn": ("bn-IN", "Bengali, written in Bengali script"),
+    "en": ("en-IN", "English"),
+}
 
 
 def _distinct(trades: list[Trade]) -> list[Trade]:

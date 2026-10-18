@@ -242,7 +242,7 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
       />
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button
-          className="h-(--touch) w-full flex-1 gap-2 text-[length:var(--text-body)]"
+          className="h-(--touch) w-full gap-2 text-[length:var(--text-body)] sm:flex-1"
           disabled={busy || camera.state === 'starting'}
           onClick={() => (live ? void camera.capture().then(take) : fallback.current?.click())}
         >

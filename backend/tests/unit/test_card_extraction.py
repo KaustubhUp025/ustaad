@@ -186,6 +186,21 @@ async def test_the_prompt_carries_the_thread_and_the_use_only_what_is_said_rule(
     assert "never guess the brand" in seen[0]
 
 
+async def test_the_prompt_keeps_every_step_of_the_answer_even_when_the_outcome_names_one():
+    # Gold chat 7 (Oct 18 dev import): the answer gave three checks (cells, then obstruction, then re-plug) and the
+    # asker said the cells were dead; 3 of 3 drafts kept only the cells until the prompt said the outcome never
+    # removes steps. With the rule, 3 of 3 kept all three in order (real Flash, laptop probe).
+    seen = []
+
+    async def ask(prompt: str, schema: type) -> CardDraft:
+        seen.append(prompt)
+        return draft(resolved=False)
+
+    await import_cards([THREAD], ask, embed, FakeCardStore(), NOW)
+    assert "every check or action the fix answer gives, in its order" in seen[0]
+    assert "it never removes steps from the answer" in seen[0]
+
+
 async def test_a_failed_extraction_is_listed_and_the_other_threads_still_import():
     async def ask(prompt: str, schema: type) -> CardDraft:
         if "[x1]" in prompt:

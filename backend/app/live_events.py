@@ -4,6 +4,7 @@ from typing import Any
 
 from google.adk.events import Event
 
+from models.repair import RepairJob, RepairStep
 from models.tools import StepOut
 from models.ws import (
     Caption,
@@ -15,15 +16,51 @@ from models.ws import (
     SafetyStop,
     TurnComplete,
 )
-from tools.hazard_tagger import tag
+from tools import spoken
+from tools.hazard_tagger import hands_on, speech_power_on, speech_stop
 from tools.repair import step_card
+
+# Sent to Ustaad when the server cut him off for saying a step next_step had not handed out.
+AHEAD_NOTE = (
+    "[The app stopped you: you began saying a repair step that next_step has not handed out. Never say a step "
+    "before next_step returns it. Call next_step now; if it returns SAFETY_GATE, tell him only what to switch off "
+    "and photograph.]"
+)
+
+
+# Sent to Ustaad when his turn was not played because a gate is open (SAFETY.md, gate mute).
+GATE_NOTE = (
+    "[The app did not play your last answer: a safety gate is open, and until its photo passes nothing you say is "
+    "played; his screen shows what to switch off and photograph. Wait for the note that it passed, then answer his "
+    "questions and go on.]"
+)
 
 
 def _backstop(caption: str) -> SafetyStop | None:
     """Backstop on speech, not a gate (SAFETY.md): it fires after the words have begun, so it only catches what the
     tool and the gates did not. Both speakers count, so a gas question from the worker also gets the stop screen."""
-    _, stop = tag(caption, "none")
+    stop = speech_stop(caption)
     return SafetyStop(reason=stop, message="Stopped for safety") if stop else None
+
+
+def ahead(said: str, job: RepairJob) -> RepairStep | None:
+    """The stored step this caption says that next_step has not handed out yet, if any (SAFETY.md, speech guard).
+    A step is compared in every form it is stored in: as written, its English and its translation."""
+    heard = spoken.words(said)
+    for step in job.steps[job.current_step :]:
+        forms = (step.instruction, step.instruction_en, step.instruction_translated)
+        if any(form and spoken.says(heard, spoken.words(form)) for form in forms):
+            return step
+    return None
+
+
+def power_on_stop(said: str, job: RepairJob) -> bool:
+    """Spoken power-on advice that gets the `power_on` stop (SAFETY.md): on a general job any power-on check, as for
+    its steps; before start_repair only power on with hands-on inspection (a torch, a part, an opened cover), since
+    power-on diagnosis talk belongs there; on a card or manual job none, its steps may need the power on."""
+    if not job.steps:
+        return speech_power_on(said) and hands_on(said)
+    return all(step.source.kind == "general" for step in job.steps) and speech_power_on(said)
 
 
 def _tool_frame(name: str, result: dict[str, Any], lang: str) -> Frame | None:

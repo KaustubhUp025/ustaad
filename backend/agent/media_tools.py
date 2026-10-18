@@ -17,7 +17,7 @@ from google.adk.tools import FunctionTool, ToolContext
 from google.genai import types
 
 from clients.firestore import JobStore
-from models.repair import GateId, MediaKind
+from models.repair import GateId, MediaKind, RepairJob
 from models.tools import (
     ConfirmSafetyIn,
     GateCheck,
@@ -93,6 +93,8 @@ class MediaDesk:
         self.pages: dict[str, ManualPage] = {}
         self.on_photo: Callable[[OpenRequest, str], Awaitable[None]] | None = None
         self.on_step_done: Callable[[int], Awaitable[None]] | None = None
+        # Reads this job for the speech guard in app/ws_live.py; set by the repair tools.
+        self.load_job: Callable[[], RepairJob] | None = None
         # The step whose done-tap was taken: a repeat tap must not hand out a gate or the end again.
         self.step_tapped: int | None = None
         self.tasks: set[asyncio.Task] = set()

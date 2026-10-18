@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 def repair_tools(jobs: JobStore, desk: MediaDesk, ask: Ask = ask_json) -> list[FunctionTool]:
+    desk.load_job = lambda: jobs.load(desk.job_id)
+
     async def translate(job_id: str, lang: str, language_name: str) -> None:
         """One Flash call for all the job's step cards, after the start: nothing waits for it, and on a failure the
         cards show the original words."""

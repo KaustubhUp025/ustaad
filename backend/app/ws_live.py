@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import uuid
-from asyncio import create_task, sleep, wait_for
+from asyncio import create_task, sleep, to_thread, wait_for
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -25,16 +25,19 @@ from agent.memory import APP, memory_user, recall, remember
 from agent.ustaad import build_ustaad
 from app import admission
 from app.demo_safe import demo_safe
-from app.live_events import to_frames
+from app.live_events import AHEAD_NOTE, GATE_NOTE, ahead, power_on_stop, to_frames
 from app.session import verify
 from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore, QuoteStore, WorkerStore
 from clients.gemini import read_photo
 from clients.places import places_client
 from clients.storage import object_md5
 from clients.telegram import telegram_bot
+from models.repair import RepairJob
 from models.ws import (
+    Caption,
     Error,
     Frame,
+    Interrupted,
     MediaCancel,
     MediaOffer,
     MediaReady,
@@ -42,11 +45,14 @@ from models.ws import (
     Pong,
     Ptt,
     SafetyGate,
+    SafetyStop,
     SessionReady,
     StepDone,
     Text,
+    TurnComplete,
     client_frame,
 )
+from tools.gates import open_gate
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -56,6 +62,8 @@ FIXTURE = Path(__file__).parents[2] / "seed/fixtures/live_session.jsonl"
 DESKS: dict[str, MediaDesk] = {}
 # The phone pings every 20 s; a socket silent this long lost its network, and closing it frees its Live slot (T11).
 SILENT_CLOSE_S = 45
+# Ustaad's audio to the phone: PCM16 at 24 kHz, mono.
+OUT_BYTES_PER_S = 24_000 * 2
 # Speech code, and the wording the instruction uses: naming the script keeps captions out of Latin letters.
 LANGS = {
     "hi": ("hi-IN", "Hindi, written in Devanagari script"),
@@ -186,10 +194,57 @@ async def _downstream(
     token: str,
 ) -> None:
     partials: dict[str, str] = {}
+    # Speech guards: the job as last read (read again after a tool answer and at each turn), whether the rest of
+    # this turn is cut off, the seconds of audio the phone got this turn (how much he heard before a cut), whether
+    # this turn is muted because a gate is open, whether anything of it was dropped, and whether Ustaad was told
+    # about this gate's mute: once per gate, since his answer to the note is muted too and would draw another note.
+    job: RepairJob | None = None
+    cut = False
+    heard_s = 0.0
+    muted = False
+    dropped = False
+    noted = False
     try:
         async for event in live_events(queue, lang, resume, job_id, desk, worker_id, token):
+            if event.content and any(part.function_response for part in event.content.parts or []):
+                job = None
             for item in to_frames(event, partials, lang):
+                ustaads = isinstance(item, bytes) or (isinstance(item, Caption) and item.who == "ustaad")
+                if isinstance(item, Interrupted | TurnComplete):
+                    if dropped and not noted and isinstance(item, TurnComplete):
+                        desk.note(GATE_NOTE)
+                        noted = True
+                    job, cut, heard_s, muted, dropped = None, False, 0.0, False, False
+                elif cut and ustaads:
+                    continue
+                elif ustaads:
+                    if not muted:
+                        # Fail closed: with no loader, or a job that cannot be read, the gate state is unknown and
+                        # nothing of the turn is played.
+                        try:
+                            if desk.load_job is None:
+                                raise LookupError("no job loader")
+                            job = job or await to_thread(desk.load_job)
+                            muted = open_gate(job) is not None
+                            noted = noted and muted
+                        except Exception as exc:  # noqa: BLE001 — unknown gate state plays nothing
+                            logger.warning("gate mute: job unreadable (%s)", type(exc).__name__)
+                            muted = True
+                    if muted:
+                        dropped = True
+                        continue
+                    if isinstance(item, Caption):
+                        step = ahead(item.text, job)
+                        if step:
+                            cut = True
+                            await _stop_ahead(ws, desk, step.n, heard_s)
+                            continue
+                        if item.final and power_on_stop(item.text, job):
+                            await _send(ws, item)
+                            await _send(ws, SafetyStop(reason="power_on", message="Stopped for safety"))
+                            continue
                 if isinstance(item, bytes):
+                    heard_s += len(item) / OUT_BYTES_PER_S
                     await ws.send_bytes(item)
                 else:
                     await _send(ws, item)
@@ -202,6 +257,15 @@ async def _downstream(
         logger.exception("live session failed")
         await _send(ws, Error(code="live_unavailable", message="Live model unavailable"))
         await ws.close(code=1011)
+
+
+async def _stop_ahead(ws: WebSocket, desk: MediaDesk, n: int, heard_s: float) -> None:
+    """Ustaad began saying step `n` before next_step handed it out (no gate is open, or the turn would be held): the
+    phone stops playing him and he is told to get the step from next_step. The note also ends his turn: new content
+    interrupts the Live model's answer. Captions trail the audio, so his first words of the step were heard."""
+    logger.info("speech guard: step %d said before next_step, cut after %.1f s of audio", n, heard_s)
+    await _send(ws, Interrupted())
+    desk.note(AHEAD_NOTE)
 
 
 async def _upstream(ws: WebSocket, queue: LiveRequestQueue | None, desk: MediaDesk | None) -> None:

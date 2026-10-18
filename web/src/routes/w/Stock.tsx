@@ -12,30 +12,30 @@ export default function Stock() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col">
-      <header className="flex items-baseline justify-between bg-graphite px-4 py-4 text-housing">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-housing/20 bg-graphite px-4 py-4 text-housing">
         <h1 className="font-heading text-[length:var(--text-xl)] font-bold">{t('stock.title')}</h1>
-        <span className="text-[length:var(--text-sm)]">{t('stock.demo')}</span>
+        <span className="rounded-sm border border-housing/50 px-2 py-1 text-[length:var(--text-sm)]">{t('stock.demo')}</span>
       </header>
       {inventory.isPending && (
-        <p role="status" className="px-4 py-6">
+        <p role="status" className="mx-4 mt-6 border-l-4 border-l-primary bg-card px-4 py-3">
           {t('stock.loading')}
         </p>
       )}
       {inventory.isError && (
-        <div role="alert" className="flex flex-col items-start gap-4 px-4 py-6">
+        <div role="alert" className="mx-4 mt-6 flex flex-col items-start gap-4 border-l-4 border-l-destructive bg-card px-4 py-4">
           <p>{t('stock.error')}</p>
           <Button className="h-(--touch) px-6 text-[length:var(--text-body)]" onClick={() => inventory.refetch()}>
             {t('stock.retry')}
           </Button>
         </div>
       )}
-      {inventory.isSuccess && items.length === 0 && <p className="px-4 py-6">{t('stock.empty')}</p>}
+      {inventory.isSuccess && items.length === 0 && <p className="mx-4 mt-6 border-l-4 border-l-primary bg-card px-4 py-4">{t('stock.empty')}</p>}
       {step.isError && (
-        <p role="alert" className="border-l-4 border-l-parts bg-card px-4 py-3">
+        <p role="alert" className="mx-4 mt-4 border-l-4 border-l-parts bg-card px-4 py-3">
           {t('stock.saveFailed')}
         </p>
       )}
-      <ul className="divide-y divide-border">
+      <ul className="mx-4 mt-6 border-y border-border">
         {items.map((item) => (
           <Row key={item.id} item={item} busy={step.isPending} onStep={(delta) => step.mutate({ part: item.name, delta })} />
         ))}
@@ -49,9 +49,9 @@ function Row({ item, busy, onStep }: { item: InventoryItem; busy: boolean; onSte
   const low = item.qty <= item.min_qty
 
   return (
-    <li className="flex items-center gap-3 px-4 py-3">
+    <li className="flex items-center gap-3 px-2 py-4 sm:px-4">
       <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
-        <span className="font-heading text-[length:var(--text-caption)] font-semibold">{item.name}</span>
+        <span className="break-words font-heading text-[length:var(--text-caption)] font-semibold">{item.name}</span>
         {low && (
           <span className="rounded-sm border border-parts px-2 text-[length:var(--text-sm)] text-parts">
             {item.qty === 0 ? t('stock.out') : t('stock.low')}

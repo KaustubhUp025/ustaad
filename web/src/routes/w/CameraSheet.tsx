@@ -110,7 +110,7 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
     <section
       role="dialog"
       aria-labelledby="camera-title"
-      className="mt-3 flex flex-1 animate-in flex-col gap-3 rounded-t-xl bg-card px-4 pt-4 pb-4 shadow-lg slide-in-from-bottom motion-reduce:animate-none"
+      className="mt-3 flex min-h-0 flex-1 flex-col gap-3 rounded-t-(--radius-sheet-top) border border-border bg-card px-4 pt-4 pb-4 shadow-lg motion-safe:animate-in motion-safe:slide-in-from-bottom motion-reduce:animate-none"
     >
       {/* Everything fits above the mic on a 360 x 800 phone, so he can still talk while framing (phone test, Oct 15). */}
       <div className="flex items-start gap-2">
@@ -193,18 +193,18 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
       {!busy && samples.length > 0 && (
         <div className="flex flex-col gap-1">
           <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('samples.title')}</p>
-          <ul className="flex gap-3 overflow-x-auto pb-1">
+          <ul className="grid grid-cols-3 gap-3">
             {samples.map((sample) => (
-              <li key={sample.src} className="flex w-24 shrink-0 flex-col gap-1">
+              <li key={sample.src} className="flex min-w-0 flex-col gap-1">
                 <button
                   type="button"
-                  className="size-24 overflow-hidden rounded-sm border border-border outline-none focus-visible:ring-4 focus-visible:ring-ring"
+                  className="aspect-square w-full overflow-hidden rounded-sm border border-border outline-none focus-visible:ring-4 focus-visible:ring-ring"
                   aria-label={t('samples.send', { name: t(sample.name) })}
                   onClick={() => void sendSample(sample.src)}
                 >
                   <img src={sample.src} alt="" className="size-full object-cover" />
                 </button>
-                <span className="text-[length:var(--text-sm)] leading-tight text-muted-foreground">
+                <span className="break-words text-[length:var(--text-sm)] leading-tight text-muted-foreground">
                   {t(`samples.${sample.provenance}`)}
                 </span>
               </li>
@@ -240,9 +240,9 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
           e.target.value = ''
         }}
       />
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <Button
-          className="h-(--touch) flex-1 gap-2 text-[length:var(--text-body)]"
+          className="h-(--touch) w-full gap-2 text-[length:var(--text-body)] sm:flex-1"
           disabled={busy || camera.state === 'starting'}
           onClick={() => (live ? void camera.capture().then(take) : fallback.current?.click())}
         >
@@ -252,7 +252,7 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
         {!gateId && phase !== 'dark' && phase !== 'blurry' && (
           <Button
             variant="outline"
-            className="h-(--touch) gap-2 text-[length:var(--text-body)]"
+            className="h-(--touch) w-full gap-2 text-[length:var(--text-body)] sm:w-auto"
             disabled={busy}
             onClick={() => picker.current?.click()}
           >
@@ -261,7 +261,7 @@ export function CameraSheet({ view: { request, retakeReason, answers }, title, g
           </Button>
         )}
         {(phase === 'dark' || phase === 'blurry') && (
-          <Button variant="outline" className="h-(--touch) text-[length:var(--text-body)]" onClick={() => void upload(held.current!)}>
+          <Button variant="outline" className="h-(--touch) w-full text-[length:var(--text-body)] sm:w-auto" onClick={() => void upload(held.current!)}>
             {t('camera.sendAnyway')}
           </Button>
         )}

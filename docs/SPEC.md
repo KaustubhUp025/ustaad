@@ -139,7 +139,8 @@ General steps: with no card ids, the Live model passes its proposed steps to `st
 `next_step`, the gates and the callback treat it exactly like a card step.
 Live: AUDIO modality, input + output transcription on, language from profile, session resumption, context
 compression, PCM16 16 kHz in / 24 kHz out, push-to-talk.
-Memory: Memory Bank (soft facts, end of session; PreloadMemoryTool) · Firestore (structured) · session state (job, step, gates).
+Memory: Memory Bank (soft facts; searched at session start into `memory_summary`, saved at session end, per
+demo visit (its session token), worker and database; ADK's PreloadMemoryTool needs typed user text, which Live voice sessions lack) · Firestore (structured) · session state (job, step, gates).
 
 ## 7. Contracts (frozen Mon Oct 12, 12:00)
 Firestore: `workers/{wid}` (+ `inventory`, `vendors`), `jobs`, `fault_cards`, `imports`, `quote_requests`, `quotes`,

@@ -100,3 +100,8 @@ class FaultCard(BaseModel):
         if value.utcoffset() != timedelta(0):
             raise ValueError("created_at must be UTC")
         return value
+
+
+class FaultCardListResponse(BaseModel):
+    items: list[FaultCard]
+    next: str | None

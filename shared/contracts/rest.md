@@ -29,6 +29,7 @@ numbers, exception text, request-validation details, tracebacks, credentials, se
 | `GET /api/quotes/{qrid}` | — | `{"request": QuoteRequest, "quotes": [Quote]}` |
 | `POST /api/quotes/{qid}/approve` | — | `{"request": QuoteRequest, "quotes": [Quote]}` |
 | `POST /api/imports` | `{"uris": ["gs://…"], "group_name"?: "AC Mistri Noida"}` | `Import` (status `queued`) |
+| `GET /api/imports` | — | `{"items": [Import]}` — this worker's newest 20 imports |
 | `GET /api/imports/{id}` | — | `Import` |
 | `GET /api/clusters?pincode=` | — | `{"items": [Cluster]}` |
 | `GET /api/nudges` | — | `{"items": [{"id", "text", "kind": "skill"\|"restock", "action"?: {...}}]}` |
@@ -38,6 +39,10 @@ numbers, exception text, request-validation details, tracebacks, credentials, se
 
 Entity shapes (Worker, Job, FaultCard, InventoryItem, Vendor, QuoteRequest, Quote, Import, Cluster) are the
 Firestore documents in `firestore.md` plus `id`, minus server-only fields (`embedding`, `tg_chat_id`, `tg_message_id`, raw webhook bodies).
+
+**Dashboard scope.** Fault cards are shared group knowledge: `GET /api/fault-cards` and the dashboard's
+`cards` / `cards_needing_review` counts are visible to every signed-in worker. Jobs and imports, including
+the dashboard's `jobs_7d` / `imports` counts and both import routes, are scoped to the signed-in worker.
 
 ## Media upload URL validation
 

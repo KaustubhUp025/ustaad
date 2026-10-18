@@ -1,12 +1,38 @@
 """Shapes of the WhatsApp import pipeline (SPEC §4): a thread's messages going into card extraction, the card draft
 Flash returns, and the counts written to `imports/{id}`."""
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import AwareDatetime, BaseModel, model_validator
+from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
 from models.fault_card import FaultCardPart
 from models.repair import ApplianceType, Confidence, Hazard
+
+ImportStatus = Literal["queued", "parsing", "transcribing", "extracting", "done", "failed"]
+
+
+class Import(BaseModel):
+    """The public `imports/{id}` document (rest.md, firestore.md)."""
+
+    id: Annotated[str, Field(strict=True, pattern=r"^i_\S+$")]
+    worker_id: str
+    group_name: str | None = None
+    status: ImportStatus
+    files_total: Annotated[int, Field(strict=True, ge=0)]
+    audio_total: Annotated[int, Field(strict=True, ge=0)]
+    audio_done: Annotated[int, Field(strict=True, ge=0)]
+    threads: Annotated[int, Field(strict=True, ge=0)]
+    cards_created: Annotated[int, Field(strict=True, ge=0)]
+    cards_needing_review: Annotated[int, Field(strict=True, ge=0)]
+    errors: list[str]
+    started_at: AwareDatetime | None
+    finished_at: AwareDatetime | None
+
+
+class ImportListResponse(BaseModel):
+    """The signed-in worker's recent import records (rest.md)."""
+
+    items: list[Import]
 
 
 class ThreadMessage(BaseModel):

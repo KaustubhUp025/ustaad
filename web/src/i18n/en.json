@@ -135,13 +135,23 @@
     "navigation": "Dashboard navigation",
     "knowledge": "Knowledge",
     "import": "Import",
+    "loading": "Loading dashboard data…",
+    "loadFailed": "Dashboard data didn't load. Check your network, then try again.",
     "knowledgeIntro": "Fault cards captured from technician conversations.",
+    "knowledgeEmpty": "No fault cards match this filter yet.",
     "synthetic": "Synthetic demo data",
     "filterLabel": "Filter by appliance type",
     "filters": {
       "all": "All appliances",
       "split_ac": "Split AC",
+      "window_ac": "Window AC",
+      "fridge": "Refrigerator",
       "washing_machine": "Washing machine",
+      "led_tv": "LED TV",
+      "microwave": "Microwave",
+      "geyser": "Geyser",
+      "fan_cooler": "Fan or cooler",
+      "other": "Other appliance",
       "unknown": "Appliance unclear"
     },
     "faultCards": "Fault cards",
@@ -153,6 +163,8 @@
     "notScored": "Not scored",
     "reviewQueue": "Review queue",
     "reviewIntro": "Check low-confidence cards before technicians use them.",
+    "reviewEmpty": "No cards need review right now.",
+    "sourceUnknown": "Source not available",
     "approve": "Approve card",
     "reject": "Reject card",
     "image": {
@@ -160,6 +172,8 @@
       "public_post": "Image from a public post"
     },
     "importDisclosure": "The demo voice notes are real recordings. The photos are AI-generated or from public posts.",
+    "importLiveIntro": "Latest import progress from the private backend.",
+    "importEmpty": "No imports are available for this worker yet.",
     "importProgress": "Import progress",
     "status": {
       "queued": "Queued",
@@ -174,6 +188,7 @@
     "cardsCreated": "Cards created",
     "needsReview": "Need review",
     "importActivity": "Import activity",
+    "importRecord": "Import record",
     "importItem": "Import {{number}}",
     "cardsCreatedBadge": "{{count}} cards created",
     "errors": {

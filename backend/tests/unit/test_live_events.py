@@ -261,7 +261,15 @@ def test_before_start_repair_power_on_with_hands_on_inspection_is_a_stop():
 
 def test_power_on_diagnosis_talk_before_start_repair_is_allowed():
     # G2's opening and ordinary questions: SAFETY.md lets power-on diagnosis happen in conversation.
-    for said in ("AC ऑन करके error code देखिए", "AC on karke error code dekho", "मशीन चालू करने पर क्या होता है?", "पानी की सप्लाई आ रही है?"):
+    for said in (
+        "AC ऑन करके error code देखिए",
+        "AC on karke error code dekho",
+        "मशीन चालू करने पर क्या होता है?",
+        "पानी की सप्लाई आ रही है?",
+        # Refusals that name the danger (live run, Oct 18): naming voltage is not hands-on inspection.
+        "माइक्रोवेव के अंदरूनी हिस्सों और खास तौर पर हाई वोल्टेज कंपोनेंट्स की जाँच करने के लिए एक प्रमाणित तकनीशियन की ज़रूरत पड़ेगी।",
+        "सॉकेट में वोल्टेज चेक करने जैसा लाइव टेस्ट करने के लिए, मैं आपको गाइड नहीं कर सकता। क्या आपने मशीन का प्लग और पावर सप्लाई चेक की है?",
+    ):
         assert not power_on_stop(said, RepairJob(job_id="j_1")), said
 
 

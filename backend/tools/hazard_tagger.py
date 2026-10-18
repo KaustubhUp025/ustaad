@@ -223,6 +223,17 @@ def speech_power_on(said: str) -> bool:
     return needs_power_on(said) or bool(SPEECH_POWER_ON.search(said))
 
 
+# Words that only say the power is on: they are the power-on half, never the hands-on half, so a refusal that names
+# the danger ("हाई वोल्टेज कंपोनेंट्स … तकनीशियन") is not a hands-on check (live run, Oct 18).
+POWER_WORDS = (
+    "voltage", "volt", "live", "mains", "socket", "supply", "power", "वोल्टेज", "लाइव", "सप्लाई", "पावर", "पॉवर",
+    "వోల్టేజ", "సప్లై", "வோல்டேஜ", "சப்ளை", "ভোল্টেজ", "সাপ্লাই",
+)
+
+
 def hands_on(said: str) -> bool:
     lower = said.lower()
-    return any(t in lower for t in TORCH) or repair_talk(said)
+    if any(t in lower for t in TORCH):
+        return True
+    rest = [w for w in SPEECH_SPLIT.split(lower) if w and not any(w.startswith(p) for p in POWER_WORDS)]
+    return repair_talk(" ".join(rest))

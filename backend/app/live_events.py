@@ -4,7 +4,7 @@ from typing import Any
 
 from google.adk.events import Event
 
-from models.repair import RepairJob, RepairStep
+from models.repair import GateId, RepairJob, RepairStep
 from models.tools import StepOut
 from models.ws import (
     Caption,
@@ -17,7 +17,7 @@ from models.ws import (
     TurnComplete,
 )
 from tools import spoken
-from tools.hazard_tagger import speech_stop
+from tools.hazard_tagger import hands_on, repair_talk, speech_power_on, speech_stop, without_gate_words
 from tools.repair import step_card
 
 # Sent to Ustaad when the server cut him off for saying a step next_step had not handed out.
@@ -25,6 +25,13 @@ AHEAD_NOTE = (
     "[The app stopped you: you began saying a repair step that next_step has not handed out. Never say a step "
     "before next_step returns it. Call next_step now; if it returns SAFETY_GATE, tell him only what to switch off "
     "and photograph.]"
+)
+
+
+# Sent to Ustaad when his turn was held back because a gate is open and he talked about the repair.
+GATE_NOTE = (
+    "[The app did not play your last answer: a safety gate is open. Until its photo passes, talk only about the gate: "
+    "what to switch off and what to photograph. Answer his questions, but give no check, part or step.]"
 )
 
 
@@ -44,6 +51,22 @@ def ahead(said: str, job: RepairJob) -> RepairStep | None:
         if any(form and spoken.says(heard, spoken.words(form)) for form in forms):
             return step
     return None
+
+
+def releasable(said: str, job: RepairJob, gate: GateId) -> bool:
+    """Whether a turn Ustaad finished while `gate` was open may be played: gate talk and questions are; repair talk,
+    power-on talk, a stored step or a stop row are not. The server drops the turn on anything else, an error included."""
+    talk = without_gate_words(said, gate)
+    return not (speech_stop(said) or ahead(said, job) or repair_talk(talk) or speech_power_on(talk))
+
+
+def power_on_stop(said: str, job: RepairJob) -> bool:
+    """Spoken power-on advice that gets the `power_on` stop (SAFETY.md): on a general job any power-on check, as for
+    its steps; before start_repair only power on with hands-on inspection (a torch, a part, an opened cover), since
+    power-on diagnosis talk belongs there; on a card or manual job none, its steps may need the power on."""
+    if not job.steps:
+        return speech_power_on(said) and hands_on(said)
+    return all(step.source.kind == "general" for step in job.steps) and speech_power_on(said)
 
 
 def _tool_frame(name: str, result: dict[str, Any], lang: str) -> Frame | None:

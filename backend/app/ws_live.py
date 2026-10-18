@@ -23,7 +23,7 @@ from agent.media_tools import MediaDesk, ReadPhoto
 from agent.ustaad import build_ustaad
 from app import admission
 from app.demo_safe import demo_safe
-from app.live_events import AHEAD_NOTE, ahead, to_frames
+from app.live_events import AHEAD_NOTE, GATE_NOTE, ahead, power_on_stop, releasable, to_frames
 from app.session import verify
 from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore, QuoteStore, WorkerStore
 from clients.gemini import read_photo
@@ -43,6 +43,7 @@ from models.ws import (
     Pong,
     Ptt,
     SafetyGate,
+    SafetyStop,
     SessionReady,
     StepDone,
     Text,
@@ -161,29 +162,42 @@ async def _downstream(
     worker_id: str,
 ) -> None:
     partials: dict[str, str] = {}
-    # Speech guard: the job as last read (read again after any tool answer), whether the rest of this turn is cut
-    # off, and the seconds of audio the phone got this turn, which is how much he heard before a cut.
+    # Speech guards: the job as last read (read again after a tool answer and at each turn), whether the rest of
+    # this turn is cut off, the seconds of audio the phone got this turn (how much he heard before a cut), and
+    # Ustaad's turn held back while a gate is open (None when not holding).
     job: RepairJob | None = None
     cut = False
     heard_s = 0.0
+    held: list[Frame | bytes] | None = None
     try:
         async for event in live_events(queue, lang, resume, job_id, desk, worker_id):
             if event.content and any(part.function_response for part in event.content.parts or []):
                 job = None
             for item in to_frames(event, partials, lang):
+                ustaads = isinstance(item, bytes) or (isinstance(item, Caption) and item.who == "ustaad")
                 if isinstance(item, Interrupted | TurnComplete):
-                    cut, heard_s = False, 0.0
-                elif cut and (
-                    isinstance(item, bytes) or (isinstance(item, Caption) and item.who == "ustaad")
-                ):
+                    if held is not None and isinstance(item, TurnComplete):
+                        await _release_or_drop(ws, desk, job, held)
+                    job, cut, heard_s, held = None, False, 0.0, None
+                elif cut and ustaads:
                     continue
-                elif desk.load_job and isinstance(item, Caption) and item.who == "ustaad":
+                elif desk.load_job and ustaads:
                     job = job or await to_thread(desk.load_job)
-                    step = ahead(item.text, job)
-                    if step:
-                        cut = True
-                        await _stop_ahead(ws, desk, job, step.n, heard_s)
+                    if held is None and open_gate(job):
+                        held = []
+                    if held is not None:
+                        held.append(item)
                         continue
+                    if isinstance(item, Caption):
+                        step = ahead(item.text, job)
+                        if step:
+                            cut = True
+                            await _stop_ahead(ws, desk, step.n, heard_s)
+                            continue
+                        if item.final and power_on_stop(item.text, job):
+                            await _send(ws, item)
+                            await _send(ws, SafetyStop(reason="power_on", message="Stopped for safety"))
+                            continue
                 if isinstance(item, bytes):
                     heard_s += len(item) / OUT_BYTES_PER_S
                     await ws.send_bytes(item)
@@ -200,15 +214,34 @@ async def _downstream(
         await ws.close(code=1011)
 
 
-async def _stop_ahead(ws: WebSocket, desk: MediaDesk, job: RepairJob, n: int, heard_s: float) -> None:
-    """Ustaad began saying step `n` before next_step handed it out: the phone stops playing him and shows the gate
-    that stands before the step, and he is told to get the step from next_step. The note also ends his turn: new
-    content interrupts the Live model's answer. Captions trail the audio, so his first words of the step were heard."""
+async def _release_or_drop(ws: WebSocket, desk: MediaDesk, job: RepairJob, held: list[Frame | bytes]) -> None:
+    """Ustaad finished a turn while a gate was open: it is played only if its caption is gate talk (releasable).
+    Fail closed (Samyak's review): no caption, an error while judging, or anything else drops it, and he is told to
+    talk only about the gate."""
+    said = next((item.text for item in reversed(held) if isinstance(item, Caption) and item.final), None)
+    gate = open_gate(job)
+    try:
+        ok = said is not None and gate is not None and releasable(said, job, gate)
+    except Exception as exc:  # noqa: BLE001 — anything that cannot be judged is not played
+        logger.warning("gate hold: judging failed (%s)", type(exc).__name__)
+        ok = False
+    if not ok:
+        logger.info("gate hold: turn dropped while %s open", gate)
+        desk.note(GATE_NOTE)
+        return
+    for item in held:
+        if isinstance(item, bytes):
+            await ws.send_bytes(item)
+        else:
+            await _send(ws, item)
+
+
+async def _stop_ahead(ws: WebSocket, desk: MediaDesk, n: int, heard_s: float) -> None:
+    """Ustaad began saying step `n` before next_step handed it out (no gate is open, or the turn would be held): the
+    phone stops playing him and he is told to get the step from next_step. The note also ends his turn: new content
+    interrupts the Live model's answer. Captions trail the audio, so his first words of the step were heard."""
     logger.info("speech guard: step %d said before next_step, cut after %.1f s of audio", n, heard_s)
     await _send(ws, Interrupted())
-    gate = open_gate(job)
-    if gate:
-        await desk.show_gate(gate)
     desk.note(AHEAD_NOTE)
 
 

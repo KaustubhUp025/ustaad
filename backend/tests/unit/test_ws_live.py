@@ -219,64 +219,134 @@ def test_a_step_done_tap_reaches_the_jobs_desk(monkeypatch):
     assert taps == [3]
 
 
-def test_a_step_said_before_next_step_is_cut_off_and_the_gate_shown(monkeypatch):
-    """Q1 (Oct 18): with the step stored and the mains gate open, Ustaad began saying the step itself."""
+def _step(source="general"):
+    label = "General guidance" if source == "general" else "Ramesh"
+    return {"n": 1, "instruction": "मशीन से जुड़ी पानी की सप्लाई का नल चेक करें कि वह खुला है या नहीं।", "hazard": "none", "source": {"kind": source, "label": label, "audio_uri": None, "doc": None, "page": None}}
+
+
+def _audio():
+    return Event(author="ustaad", content=types.Content(parts=[types.Part(inline_data=types.Blob(data=b"\x01\x02", mime_type="audio/pcm"))]))
+
+
+def _say(text, partial=True):
+    return Event(author="ustaad", output_transcription=types.Transcription(text=text), partial=partial)
+
+
+def _session(monkeypatch, job_id, job, events):
+    """A desk whose job is `job`, a model that yields `events` then waits, and the notes Ustaad was sent."""
     monkeypatch.delenv("MOCK_LIVE", raising=False)
-    step = "मशीन से जुड़ी पानी की सप्लाई का नल चेक करें कि वह खुला है या नहीं।"
-    job = RepairJob.model_validate(
-        {
-            "job_id": "j_ahead",
-            "steps": [
-                {
-                    "n": 1,
-                    "instruction": step,
-                    "hazard": "none",
-                    "source": {
-                        "kind": "general",
-                        "label": "General guidance",
-                        "audio_uri": None,
-                        "doc": None,
-                        "page": None,
-                    },
-                }
-            ],
-        }
-    )
-    desk = ws_live.MediaDesk("j_ahead", "media")
-    desk.load_job = lambda: job
-    monkeypatch.setitem(ws_live.DESKS, "j_ahead", desk)
+    desk = ws_live.MediaDesk(job_id, "media")
+    desk.load_job = lambda: RepairJob.model_validate(job)
+    monkeypatch.setitem(ws_live.DESKS, job_id, desk)
     told = []
 
-    def say(text):
-        return Event(author="ustaad", output_transcription=types.Transcription(text=text), partial=True)
-
-    audio = Event(
-        author="ustaad",
-        content=types.Content(
-            parts=[types.Part(inline_data=types.Blob(data=b"\x01\x02", mime_type="audio/pcm"))]
-        ),
-    )
-
     async def live_events(queue, lang, resume, job_id, desk, worker_id):
-        yield audio
-        yield say("हम कुछ सामान्य जाँच कर सकते हैं। ")
-        yield say("क्या आप चेक कर सकते हैं कि मशीन से जुड़ी पानी की सप्लाई")
-        yield audio
-        yield say(" का नल खुला है")
-        yield Event(author="ustaad", interrupted=True)
+        for event in events:
+            yield event
         while not (req := await queue.get()).close:
             if req.content:
                 told.append(req.content.parts[0].text)
 
     monkeypatch.setattr(ws_live, "live_events", live_events)
+    return told
+
+
+def _until_pong(ws):
+    """Every frame the phone gets until a pong: bytes as b"audio", frames by type."""
+    ws.send_json({"v": 1, "type": "ping"})
+    got = []
+    while True:
+        message = ws.receive()
+        if message.get("bytes") is not None:
+            got.append("audio")
+            continue
+        frame = json.loads(message["text"])
+        if frame["type"] == "pong":
+            return got
+        got.append(frame["type"])
+
+
+def test_a_step_said_before_next_step_is_cut_off(monkeypatch):
+    """Q1-type (Oct 18) on a job with no gate before the step: the rest of the turn is cut and Ustaad is told."""
+    told = _session(
+        monkeypatch,
+        "j_ahead",
+        {"job_id": "j_ahead", "steps": [_step("whatsapp_voice")]},
+        [_audio(), _say("हम कुछ सामान्य जाँच कर सकते हैं। "), _say("क्या आप चेक कर सकते हैं कि मशीन से जुड़ी पानी की सप्लाई"), _audio(), _say(" का नल खुला है"), Event(author="ustaad", interrupted=True)],
+    )
     with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_ahead") as ws:
         ws.receive_json()
-        assert ws.receive_bytes() == b"\x01\x02"
-        assert ws.receive_json()["text"] == "हम कुछ सामान्य जाँच कर सकते हैं। "
-        assert ws.receive_json()["type"] == "interrupted"
-        assert ws.receive_json()["gate_id"] == "G_MAINS_OFF"
-        assert ws.receive_json()["type"] == "media_request"
-        assert ws.receive_json()["type"] == "interrupted"
-        ws.send_json({"v": 1, "type": "ping"})
-        assert ws.receive_json()["type"] == "pong"
+        assert _until_pong(ws) == ["audio", "caption", "interrupted", "interrupted"]
     assert told == [ws_live.AHEAD_NOTE]
+
+
+GATED = {"job_id": "j_gate_hold", "steps": [_step()]}  # a general job: G_MAINS_OFF stands before step 1
+
+
+def test_while_a_gate_is_open_gate_talk_plays_once_the_turn_is_complete(monkeypatch):
+    told = _session(
+        monkeypatch,
+        "j_gate_hold",
+        GATED,
+        [_audio(), _say("कृपया मशीन का पावर प्लग "), _audio(), _say("कृपया मशीन का पावर प्लग निकाल दें और उसकी फोटो भेजें।", partial=False), Event(author="ustaad", turn_complete=True)],
+    )
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate_hold") as ws:
+        ws.receive_json()
+        assert _until_pong(ws) == ["audio", "caption", "audio", "caption", "turn_complete"]
+    assert told == []
+
+
+def test_while_a_gate_is_open_repair_talk_is_never_played(monkeypatch):
+    """c1's case (Oct 18): a terminal-box check from the card's root cause, said while the gate was locked."""
+    told = _session(
+        monkeypatch,
+        "j_gate_hold",
+        GATED,
+        [_audio(), _say("Outdoor unit ka cover khol kar communication wire check karo", partial=False), Event(author="ustaad", turn_complete=True)],
+    )
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate_hold") as ws:
+        ws.receive_json()
+        assert _until_pong(ws) == ["turn_complete"]
+    assert told == [ws_live.GATE_NOTE]
+
+
+def test_while_a_gate_is_open_a_failing_judge_drops_the_turn(monkeypatch):
+    """Fail closed (Samyak): if judging the held turn fails, nothing of it is played."""
+    told = _session(
+        monkeypatch,
+        "j_gate_hold",
+        GATED,
+        [_audio(), _say("कृपया मशीन का पावर प्लग निकाल दें और उसकी फोटो भेजें।", partial=False), Event(author="ustaad", turn_complete=True)],
+    )
+
+    def broken(said, job, gate):
+        raise RuntimeError("judge failed")
+
+    monkeypatch.setattr(ws_live, "releasable", broken)
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate_hold") as ws:
+        ws.receive_json()
+        assert _until_pong(ws) == ["turn_complete"]
+    assert told == [ws_live.GATE_NOTE]
+
+
+def test_while_a_gate_is_open_a_turn_with_no_caption_is_dropped(monkeypatch):
+    told = _session(monkeypatch, "j_gate_hold", GATED, [_audio(), _audio(), Event(author="ustaad", turn_complete=True)])
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate_hold") as ws:
+        ws.receive_json()
+        assert _until_pong(ws) == ["turn_complete"]
+    assert told == [ws_live.GATE_NOTE]
+
+
+def test_while_a_gate_is_open_an_interrupted_turn_is_dropped(monkeypatch):
+    _session(monkeypatch, "j_gate_hold", GATED, [_audio(), _say("कृपया मशीन का"), Event(author="ustaad", interrupted=True)])
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate_hold") as ws:
+        ws.receive_json()
+        assert _until_pong(ws) == ["interrupted"]
+
+
+def test_on_a_general_job_a_spoken_power_on_check_gets_the_stop_screen(monkeypatch):
+    passed = {**GATED, "gates": {"G_MAINS_OFF": "passed", "G_CAP_DISCHARGE": "open"}}
+    _session(monkeypatch, "j_gate_hold", passed, [_audio(), _say("अब TV ऑन करके देखिए", partial=False), Event(author="ustaad", turn_complete=True)])
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate_hold") as ws:
+        ws.receive_json()
+        assert _until_pong(ws) == ["audio", "caption", "safety_stop", "turn_complete"]

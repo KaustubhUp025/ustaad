@@ -1,7 +1,7 @@
 from google.adk.events import Event
 from google.genai import types
 
-from app.live_events import ahead, to_frames
+from app.live_events import ahead, power_on_stop, releasable, to_frames
 from models.repair import RepairJob
 from models.ws import (
     Caption,
@@ -209,3 +209,64 @@ def test_backstop_catches_a_hindi_gas_question():
 
 def said_final(who, text):
     return said(who, text, False)
+
+
+GATE_TALK = [
+    # What Ustaad said while G_MAINS_OFF was open in the Oct 18 live runs: gate instructions and a question.
+    "कृपया मशीन का पावर प्लग निकाल दें और उसकी फोटो भेजें।",
+    "सुरक्षा के लिए, कृपया मशीन की पावर सप्लाई बंद कर दें और MCB या प्लग की एक फोटो भेजें।",
+    "कोई भी इंटरनल चेक करने से पहले, कृपया टीवी का प्लग निकाल दें या पावर स्विच ऑफ कर दें और उसकी फोटो भेजें।",
+    "Pehle MCB band karo aur plug socket se nikal ke photo bhejo",
+    "क्या मशीन में कोई डिस्प्ले या लाइट जल रही है?",
+]
+
+
+def test_gate_talk_and_questions_are_released_while_the_mains_gate_is_open():
+    for said in GATE_TALK:
+        assert releasable(said, _job(Q1_STEP), "G_MAINS_OFF"), said
+
+
+def test_repair_advice_is_held_back_while_a_gate_is_open():
+    for said in (
+        # c1's case (Oct 18): a terminal-box check from the card's root cause, said with the gate locked.
+        "Outdoor unit ka cover khol kar communication wire check karo",
+        "आउटडोर यूनिट का कवर खोलकर टर्मिनल देखिए।",
+        "पीसीबी पर जला हुआ निशान देखिए।",
+        Q1_SAID,  # a stored step
+        "गीज़र का पैनल खोलकर थर्मोस्टेट देखिए",  # a stop row
+        "TV ऑन करके स्क्रीन देखिए",  # power on
+        "Switch on the MCB and check the display",  # power on, in the gate's own words
+        "पावर ऑन करके डिस्प्ले देखिए",
+    ):
+        assert not releasable(said, _job(Q1_STEP), "G_MAINS_OFF"), said
+
+
+def test_the_capacitor_gates_own_words_are_gate_talk_only_for_that_gate():
+    said = "मल्टीमीटर से कैपेसिटर के टर्मिनल पर वोल्टेज नापकर उसकी फोटो भेजिए।"
+    assert releasable(said, _job(Q1_STEP), "G_CAP_DISCHARGE")
+    assert not releasable(said, _job(Q1_STEP), "G_MAINS_OFF")
+
+
+def test_on_a_general_job_any_spoken_power_on_check_is_a_stop():
+    for said in ("गीज़र का पावर सप्लाई चालू करके देखिए", "TV ऑन करके देखिए", "Switch on the MCB and measure the supply voltage"):
+        assert power_on_stop(said, _job(Q1_STEP)), said
+
+
+def test_before_start_repair_power_on_with_hands_on_inspection_is_a_stop():
+    # Q3 LED TV (Oct 18): no start_repair, a power-on check with a torch on the screen.
+    said = "बिना मॉडल नंबर के, मैं आपको कुछ सामान्य उपाय बता सकता हूँ। आप टीवी को ऑन करके एक टॉर्च जलाकर स्क्रीन के पास ले जाएँ।"
+    assert power_on_stop(said, RepairJob(job_id="j_1"))
+    assert power_on_stop("AC ऑन करके आउटडोर PCB पर वोल्टेज देखिए", RepairJob(job_id="j_1"))
+
+
+def test_power_on_diagnosis_talk_before_start_repair_is_allowed():
+    # G2's opening and ordinary questions: SAFETY.md lets power-on diagnosis happen in conversation.
+    for said in ("AC ऑन करके error code देखिए", "AC on karke error code dekho", "मशीन चालू करने पर क्या होता है?", "पानी की सप्लाई आ रही है?"):
+        assert not power_on_stop(said, RepairJob(job_id="j_1")), said
+
+
+def test_card_steps_may_need_the_power_on():
+    card_job = RepairJob.model_validate(
+        {"job_id": "j_1", "steps": [{"n": 1, "instruction": "Test step", "hazard": "none", "source": {"kind": "whatsapp_voice", "label": "Ramesh", "audio_uri": None, "doc": None, "page": None}}]}
+    )
+    assert not power_on_stop("AC ऑन करके PCB पर वोल्टेज देखिए", card_job)

@@ -5,7 +5,7 @@ it on card steps later."""
 import re
 from typing import get_args
 
-from models.repair import Hazard, StopReason
+from models.repair import GateId, Hazard, StopReason
 
 # One row per outcome: a stop reason or a hazard level, and the keyword groups that match it. A group matches when
 # all its words are in the summary. Stop rows come first: a stop wins over any hazard level.
@@ -159,3 +159,70 @@ def speech_stop(said: str) -> StopReason | None:
         if any(all(any(w.startswith(p) for w in spoken) for p in group) for group in groups):
             return reason
     return None
+
+
+# While a gate is open Ustaad may talk only about the gate (app/live_events.releasable). Repair talk is naming a
+# mains part or a capacitor (the English HV and capacitor rows, plus these word prefixes in the other scripts and
+# Hinglish), or opening a cover or panel.
+SPEECH_PARTS: list[tuple[str, ...]] = [
+    *[
+        (p,)
+        for p in (
+            "पीसीबी", "बोर्ड", "टर्मिनल", "वायरिंग", "वायर", "कनेक्टर", "रिले", "फ्यूज", "कंप्रेसर", "कम्प्रेसर",
+            "मोटर", "ट्रांसफ", "एलिमेंट", "थर्मोस्टे", "वोल्टेज", "कैपेसिटर", "कपैसिटर", "कैपसिटर",
+            "పీసీబీ", "బోర్డ", "టెర్మినల", "వైరింగ", "వైర", "కనెక్టర", "రిలే", "ఫ్యూజ", "కంప్రెసర", "మోటార", "మోటర",
+            "ట్రాన్స్ఫార్మ", "ఎలిమెంట", "థర్మోస్టా", "వోల్టేజ", "కెపాసిటర", "కపాసిటర",
+            "பிசிபி", "போர்ட", "டெர்மினல", "வயரிங", "வயர", "கனெக்டர", "ரிலே", "ஃப்யூஸ", "கம்ப்ரசர", "மோட்டார",
+            "டிரான்ஸ்ஃபார்ம", "எலிமென்ட", "தெர்மோஸ்டா", "வோல்டேஜ", "கெபாசிட்ட", "கேபாசிட்ட",
+            "পিসিবি", "বোর্ড", "টার্মিনাল", "ওয়্যারিং", "ওয়্যার", "কানেক্টর", "রিলে", "ফিউজ", "কম্প্রেসার", "মোটর",
+            "ট্রান্সফরম", "এলিমেন্ট", "থার্মোস্ট", "ভোল্টেজ", "ক্যাপাসিট",
+        )
+    ],
+    ("कवर", "खोल"), ("ढक्कन", "खोल"), ("पैनल", "खोल"), ("cover", "khol"), ("cover", "open"), ("panel", "khol"),
+    ("కవర", "తెర"), ("கவர", "திற"), ("কভার", "খোল"), ("কভার", "খুল"),
+]
+# A gate's own words are gate talk, not repair talk: "plug socket se nikalo" for the mains gate, the meter across
+# the capacitor's terminals for the capacitor gate.
+GATE_WORDS: dict[GateId, tuple[str, ...]] = {
+    "G_MAINS_OFF": ("mcb", "isolator", "plug", "socket", "mains", "सॉकेट", "मेन्स", "सॉकिट"),
+    "G_CAP_DISCHARGE": (
+        "capacitor", "terminal", "multimeter", "meter", "voltage", "volt", "discharge", "कैपेसिटर", "कपैसिटर",
+        "कैपसिटर", "टर्मिनल", "मल्टीमीटर", "मीटर", "वोल्टेज", "डिस्चार्ज", "కెపాసిటర", "కపాసిటర", "టెర్మినల",
+        "వోల్టేజ", "கெபாசிட்ட", "கேபாசிட்ட", "டெர்மினல", "வோல்டேஜ", "ক্যাপাসিট", "টার্মিনাল", "ভোল্টেজ",
+    ),
+}
+# Power on, said in the other scripts (the English is POWER_ON): switching on, keeping on, plugging in, voltage,
+# live, or the electricity supply. Water supply is not power ("पानी की सप्लाई"), nor is switching the supply off.
+SPEECH_POWER_ON = re.compile(
+    r"(ऑन|चालू)\s*(कर|रख)|(पावर|पॉवर|स्विच)\s*ऑन|प्लग\s*(इन|लगा)|वोल्टेज|लाइव"
+    r"|(पावर|पॉवर|बिजली|इलेक्ट्रिक)\s*(की\s*)?सप्लाई(?!\s*(\S+\s*){0,2}बंद)|बिजली\s*(आ|चालू)"
+    r"|ఆన్\s*చే|వోల్టేజ|కరెంట్\s*సప్లై|ஆன்\s*(செய்|பண்ண)|வோல்டேஜ|கரண்ட்\s*சப்ளை"
+    r"|(অন|চালু)\s*কর|ভোল্টেজ|(বিদ্যুৎ|কারেন্ট)\s*সাপ্লাই"
+)
+# Hands-on inspection while powered (the LED TV torch check, Oct 18): a torch, or repair talk.
+TORCH = ("टॉर्च", "torch", "flashlight", "టార్చ", "டார்ச", "টর্চ")
+
+
+def _has(spoken: list[str], groups: list[tuple[str, ...]]) -> bool:
+    return any(all(any(w.startswith(p) for w in spoken) for p in group) for group in groups)
+
+
+def without_gate_words(said: str, gate: GateId) -> str:
+    """The caption without the gate's own words, which are gate talk however they sound."""
+    return " ".join(w for w in SPEECH_SPLIT.split(said.lower()) if w and not any(w.startswith(g) for g in GATE_WORDS[gate]))
+
+
+def repair_talk(said: str) -> bool:
+    """Whether a caption names a mains part or a capacitor or opens a cover."""
+    spoken = [w for w in SPEECH_SPLIT.split(said.lower()) if w]
+    hazard, _ = tag(" ".join(spoken), "none")
+    return hazard in ("HV", "capacitor") or _has(spoken, SPEECH_PARTS)
+
+
+def speech_power_on(said: str) -> bool:
+    return needs_power_on(said) or bool(SPEECH_POWER_ON.search(said))
+
+
+def hands_on(said: str) -> bool:
+    lower = said.lower()
+    return any(t in lower for t in TORCH) or repair_talk(said)

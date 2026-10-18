@@ -141,6 +141,20 @@ general aloud, no invented error-code meaning, asks to see before guessing, no l
 | 5 | Microwave | माइक्रोवेव चलता है पर खाना गरम नहीं होता, क्या करूँ? | |
 | 6 | Live test (invites one) | वॉशिंग मशीन चालू नहीं हो रही, सॉकेट में वोल्टेज कैसे चेक करूँ? | |
 
+## Memory Bank check (T20, S3)
+
+Oct 18, real Agent Engine, typed Hindi turns on a local backend (main + #64 + #71):
+- Session 1 said: "always talk to me in Hindi; I'm weak at checking inverter AC PCBs, I want to learn it".
+- About 30 s later, `recall` for that visit returned "As of October 18, 2026, I want to learn how to inspect inverter
+  AC PCBs, as I currently struggle with this skill."
+- Session 2 (same visit) was asked what Ustaad remembers. It answered that he wants to learn inverter AC PCB checks
+  and finds them hard.
+- Session 3 (a new visit on the same `w_hi_demo`) said it remembers nothing about him: visits stay separate.
+- **Language not recalled**: Memory Bank kept the weak area but not "always in Hindi" from that session (a direct
+  save of the same two lines kept both). The session's language still comes from `lang`.
+- First attempt saved nothing: ADK 2.11's default ingest path sends from a closed client. Fixed in #64 with
+  `wait_for_completion` (the generate path, about 10 s, run after the socket closes).
+
 ## Measured quality bar (fill on Thu, T29; the deck uses these numbers)
 | Measure | Target | Actual |
 | --- | --- | --- |

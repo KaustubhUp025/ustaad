@@ -8,6 +8,7 @@ import { noRepair, repairReducer } from './safety'
 
 export type CaptionLine = { who: 'user' | 'ustaad'; text: string; final: boolean }
 type CaptionFrame = Extract<ServerFrame, { type: 'caption' }>
+export type Identified = Extract<ServerFrame, { type: 'identified' }>
 
 const SHOWN = 3 // DESIGN.md: the last 3 turns stay on screen
 
@@ -25,6 +26,7 @@ export function useLive(lang: string, jobId: string) {
   const [media, setMedia] = useState(noMedia)
   const [quotes, setQuotes] = useState(noQuotes)
   const [profile, setProfile] = useState(noProfile)
+  const [identified, setIdentified] = useState<Identified | null>(null)
   const [talking, setTalking] = useState(false)
   const [micBlocked, setMicBlocked] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -36,6 +38,7 @@ export function useLive(lang: string, jobId: string) {
       jobId,
       (frame) => {
         if (frame.type === 'caption') setCaptions((lines) => addCaption(lines, frame))
+        if (frame.type === 'identified') setIdentified(frame)
         setRepair((view) => repairReducer(view, frame))
         setMedia((view) => mediaReducer(view, frame))
         setQuotes((view) => quotesReducer(view, frame))
@@ -54,6 +57,7 @@ export function useLive(lang: string, jobId: string) {
     media,
     quotes,
     profile,
+    identified,
     talking,
     micBlocked,
     async startTalking() {
@@ -69,6 +73,12 @@ export function useLive(lang: string, jobId: string) {
     stopTalking() {
       setTalking(false)
       conn.current?.stopTalking()
+    },
+    // A typed or tapped question (the example phrases on an empty job): the server only transcribes audio, so his
+    // line is shown here.
+    sendText(text: string) {
+      setCaptions((lines) => addCaption(lines, { v: 1, type: 'caption', who: 'user', text, final: true }))
+      conn.current?.sendText(text)
     },
     // He starts a photo himself; the server answers with the request to send it on.
     offerPhoto: () => conn.current?.mediaOffer('photo'),

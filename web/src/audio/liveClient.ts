@@ -53,6 +53,7 @@ export type ServerFrame =
   | { v: 1; type: 'media_result'; request_id: string; matches_expected: boolean; confidence: number; retake_reason: string | null }
   | { v: 1; type: 'quotes'; quote_request_id: string; items: QuoteItem[] }
   | { v: 1; type: 'profile_update'; fields: Record<string, unknown> }
+  | { v: 1; type: 'identified'; brand: string | null; model: string | null; error_code: string | null; confidence: number }
 
 export type LiveStatus = 'connecting' | 'ready' | 'reconnecting' | 'failed' | 'busy'
 
@@ -63,6 +64,7 @@ export interface LiveConnection {
   mediaReady(requestId: string, uri: string, kind: MediaKind): void
   mediaCancel(requestId: string): void
   stepDone(n: number): void
+  sendText(text: string): void
   close(): void
 }
 
@@ -242,6 +244,9 @@ export function openLive(
     },
     stepDone(n) {
       sendFrame({ type: 'step_done', n })
+    },
+    sendText(text) {
+      sendFrame({ type: 'text', text })
     },
     close() {
       closed = true

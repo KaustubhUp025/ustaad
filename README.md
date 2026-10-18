@@ -10,11 +10,18 @@
 Ustaad is a voice-first assistant for Indian AC and appliance repair technicians. It turns a technician group's
 WhatsApp voice notes into searchable, cited fault cards, guides a worker step by step by voice in Hindi, Telugu,
 Tamil or Bengali while he stands at the broken unit, asks for photos when it needs to see, stops him at safety
-steps, checks his stock and gets quotes from his parts shops (on Telegram for the demo; WhatsApp once Meta verifies us).
+steps, checks his stock and gets quotes from his parts shops (on Telegram for the demo; WhatsApp is the future production
+path because Meta business accounts were locked).
 
 Built for the Google Cloud AI Builder Cup 2026 — theme: Future of Work & Enterprise Productivity.
 
-> Live demo: _(link after first deploy)_ · Video: _(link)_ · Deck: `docs/deck.pdf`
+> Live demo: _(pending)_ · Video: _(pending)_ · Final screenshots: _(pending)_ · Deck: `docs/ustaad-deck-skeleton.pdf`
+
+## Recorded checks
+These are recorded results, not targets: Agent Search returns page-cited results from Voltas, Daikin and LG manuals in
+2.4–3.2 seconds. The import run produced 11 fault cards from 20 voice notes; the 20-card target was not met. Onboarding
+checks passed 9/9 in Hindi and Telugu. Gate-photo checks recorded MCB at 5.4/6.0 seconds and PCB at 8.8/10.4 seconds.
+Any unmeasured metric remains pending.
 
 ## For judges (2 minutes)
 1. Open the live link on a phone, tap **Try the demo**.
@@ -34,8 +41,8 @@ Start with `docs/SETUP.md`, then `docs/WORKFLOW.md`. Ground truth: `docs/SPEC.md
 Rules for any AI coding agent: `AGENTS.md`; playbooks in `docs/playbooks/`; commands via `make`.
 
 ### Vendor quotes bot (Telegram)
-Quote requests (M8) go to vendors through a Telegram bot, the demo fallback: Meta locked both of our WhatsApp business
-accounts (error 131031) pending business verification. WhatsApp Cloud API is the future production path after verification.
+Quote requests (M8) go to vendors through a Telegram bot for the demo. Meta locked both WhatsApp business accounts;
+WhatsApp Cloud API is the future production path.
 1. Create the bot with @BotFather (`/newbot`) and store its token without pasting it anywhere:
    `read -rs T && printf '%s' "$T" | gcloud secrets versions add tg-bot-token --data-file=-`
    (`infra/setup.sh` creates `tg-bot-token` and a random `tg-webhook-secret`).

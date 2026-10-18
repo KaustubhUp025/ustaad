@@ -72,7 +72,7 @@ Lane A's code is folded into T12, T16 and T21 above. These rows are the rest. Fi
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T31 | P0 | both | Shoot video (real AC, two phones, screen capture) | PRODUCT.md | raw takes for every beat | T30 | todo |
-| T32 | P0 | B | Deck (10 slides), README final, architecture image | PRODUCT.md, STATUS.md | PDF in docs/ | T29 | todo |
+| T32 | P0 | B | Deck (10 slides), README final, architecture image | PRODUCT.md, STATUS.md | PDF in docs/ | T29 | doing: evidence-labelled 10-slide deck skeleton |
 | T33 | P0 | A | Edit video, subtitles, narration, < 2:58 | — | uploaded unlisted + Drive copy | T31 | todo |
 | T34 | P0 | A | Final demo deploy; check all links in incognito on phone and laptop | WORKFLOW checklist | checklist ticked | T33 | todo |
 | T35 | P0 | both | **Submit by 21:00 IST** | WORKFLOW checklist | confirmation screenshot | T32, T34 | todo |

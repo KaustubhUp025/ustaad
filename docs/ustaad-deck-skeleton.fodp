@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0" office:mimetype="application/vnd.oasis.opendocument.presentation" office:version="1.2">
+  <office:automatic-styles>
+    <style:default-style style:family="graphic"><style:graphic-properties draw:fill="none" draw:stroke="none"/></style:default-style>
+    <style:page-layout style:name="PL"><style:page-layout-properties fo:page-width="33.867cm" fo:page-height="19.05cm" style:print-orientation="landscape"/></style:page-layout>
+    <style:style style:name="Page" style:family="drawing-page"><style:drawing-page-properties draw:fill="solid" draw:fill-color="#EEF1EF"/></style:style>
+    <style:style style:name="Title" style:family="paragraph"><style:text-properties fo:font-family="Noto Sans" fo:font-size="21pt" fo:font-weight="bold" fo:color="#1D2327"/></style:style>
+    <style:style style:name="Cover" style:family="paragraph"><style:text-properties fo:font-family="Noto Sans" fo:font-size="40pt" fo:font-weight="bold" fo:color="#EEF1EF"/></style:style>
+    <style:style style:name="Sub" style:family="paragraph"><style:text-properties fo:font-family="Noto Sans" fo:font-size="16pt" fo:color="#536069"/></style:style>
+    <style:style style:name="Body" style:family="paragraph"><style:text-properties fo:font-family="Noto Sans" fo:font-size="14pt" fo:color="#1D2327"/></style:style>
+    <style:style style:name="Small" style:family="paragraph"><style:text-properties fo:font-family="Noto Sans" fo:font-size="10pt" fo:color="#536069"/></style:style>
+    <style:style style:name="Light" style:family="paragraph"><style:text-properties fo:font-family="Noto Sans" fo:font-size="14pt" fo:color="#EEF1EF"/></style:style>
+    <style:style style:name="Tag" style:family="paragraph"><style:text-properties fo:font-family="Noto Sans" fo:font-size="10pt" fo:font-weight="bold" fo:color="#1D2327"/></style:style>
+  </office:automatic-styles>
+  <office:master-styles><style:master-page style:name="Default" style:page-layout-name="PL"/></office:master-styles>
+  <office:body><office:presentation>
+
+    <draw:page draw:name="01 Cover" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:rect svg:x="0cm" svg:y="0cm" svg:width="33.867cm" svg:height="19.05cm" draw:fill="solid" draw:fill-color="#1D2327" draw:stroke="none"/>
+      <draw:rect svg:x="2cm" svg:y="2.1cm" svg:width="0.42cm" svg:height="8.7cm" draw:fill="solid" draw:fill-color="#F6BE00" draw:stroke="none"/>
+      <draw:frame svg:x="3.1cm" svg:y="3.4cm" svg:width="26cm" svg:height="2.2cm"><draw:text-box><text:p text:style-name="Cover">Ustaad</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="3.1cm" svg:y="6.4cm" svg:width="23cm" svg:height="3.2cm"><draw:text-box><text:p text:style-name="Light">A voice-first repair companion that turns technician-group knowledge into cited, step-by-step help.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="3.1cm" svg:y="11.5cm" svg:width="7.3cm" svg:height="1cm" draw:fill="solid" draw:fill-color="#F6BE00" draw:stroke="none"/>
+      <draw:frame svg:x="3.45cm" svg:y="11.75cm" svg:width="6.7cm" svg:height="0.5cm"><draw:text-box><text:p text:style-name="Tag">GOOGLE CLOUD AI BUILDER CUP 2026</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="3.1cm" svg:y="15.2cm" svg:width="25cm" svg:height="1cm"><draw:text-box><text:p text:style-name="Small">Submission deck skeleton · all claims trace to repository documentation · final links and results are marked pending</text:p></draw:text-box></draw:frame>
+    </draw:page>
+
+    <draw:page draw:name="02 The problem" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:frame svg:x="1.7cm" svg:y="1.2cm" svg:width="29cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Title">The senior technician is usually unreachable when the worker needs them most.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="1.7cm" svg:y="3.0cm" svg:width="23cm" svg:height="1.1cm"><draw:text-box><text:p text:style-name="Sub">Raju is an independent, Hindi-first AC technician: patchy 4G, busy hands, a customer waiting, and hundreds of unplayed group voice notes.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="1.7cm" svg:y="5.0cm" svg:width="6.8cm" svg:height="7.5cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#CBD3D0"/>
+      <draw:rect svg:x="9.15cm" svg:y="5.0cm" svg:width="6.8cm" svg:height="7.5cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#CBD3D0"/>
+      <draw:rect svg:x="16.6cm" svg:y="5.0cm" svg:width="6.8cm" svg:height="7.5cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#CBD3D0"/>
+      <draw:rect svg:x="24.05cm" svg:y="5.0cm" svg:width="6.8cm" svg:height="7.5cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#CBD3D0"/>
+      <draw:frame svg:x="2.1cm" svg:y="5.55cm" svg:width="5.8cm" svg:height="6.2cm"><draw:text-box><text:p text:style-name="Body">Before the job</text:p><text:p text:style-name="Small">No model number; the wrong parts may be packed.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="9.55cm" svg:y="5.55cm" svg:width="5.8cm" svg:height="6.2cm"><draw:text-box><text:p text:style-name="Body">At the unit</text:p><text:p text:style-name="Small">A blinking error code; a senior is busy elsewhere.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="17cm" svg:y="5.55cm" svg:width="5.8cm" svg:height="6.2cm"><draw:text-box><text:p text:style-name="Body">Missing a part</text:p><text:p text:style-name="Small">Time disappears riding shop to shop.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="24.45cm" svg:y="5.55cm" svg:width="5.8cm" svg:height="6.2cm"><draw:text-box><text:p text:style-name="Body">After the job</text:p><text:p text:style-name="Small">The fix is rarely written down for the next technician.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="1.7cm" svg:y="14.5cm" svg:width="28cm" svg:height="1cm"><draw:text-box><text:p text:style-name="Small">Source: docs/PRODUCT.md · product framing, not a customer-study claim.</text:p></draw:text-box></draw:frame>
+    </draw:page>
+
+    <draw:page draw:name="03 One spoken workflow" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:frame svg:x="1.7cm" svg:y="1.2cm" svg:width="29cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Title">One working conversation — from “E6 aa raha hai” to a cited next step.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="1.8cm" svg:y="5.2cm" svg:width="5.8cm" svg:height="4.0cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:rect svg:x="9.1cm" svg:y="5.2cm" svg:width="5.8cm" svg:height="4.0cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:rect svg:x="16.4cm" svg:y="5.2cm" svg:width="5.8cm" svg:height="4.0cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:rect svg:x="23.7cm" svg:y="5.2cm" svg:width="5.8cm" svg:height="4.0cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:frame svg:x="2.2cm" svg:y="5.7cm" svg:width="5cm" svg:height="2.8cm"><draw:text-box><text:p text:style-name="Body">1 · Ask by voice</text:p><text:p text:style-name="Small">Push-to-talk, captions, and the worker’s own words.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="9.5cm" svg:y="5.7cm" svg:width="5cm" svg:height="2.8cm"><draw:text-box><text:p text:style-name="Body">2 · See when needed</text:p><text:p text:style-name="Small">Photo request with a framing tip; check, retake, or continue.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="16.8cm" svg:y="5.7cm" svg:width="5cm" svg:height="2.8cm"><draw:text-box><text:p text:style-name="Body">3 · Cite and guide</text:p><text:p text:style-name="Small">A source chip and one gate-aware step at a time.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="24.1cm" svg:y="5.7cm" svg:width="5cm" svg:height="2.8cm"><draw:text-box><text:p text:style-name="Body">4 · Act and learn</text:p><text:p text:style-name="Small">Check stock, ask vendors, then capture the completed fix.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="3.3cm" svg:y="10.5cm" svg:width="26cm" svg:height="2.2cm"><draw:text-box><text:p text:style-name="Sub">Voice-first by design: short spoken guidance for a worker whose hands are busy, with every meaningful interaction visible in captions.</text:p></draw:text-box></draw:frame>
+    </draw:page>
+
+    <draw:page draw:name="04 Architecture" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:frame svg:x="1.7cm" svg:y="1.2cm" svg:width="29cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Title">Architecture: a single repair conversation, grounded by stored knowledge and safe actions.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="1.7cm" svg:y="5.0cm" svg:width="5.5cm" svg:height="5.7cm" draw:fill="solid" draw:fill-color="#1D2327" draw:stroke="none"/>
+      <draw:frame svg:x="2.1cm" svg:y="5.6cm" svg:width="4.8cm" svg:height="4.2cm"><draw:text-box><text:p text:style-name="Light">Worker PWA</text:p><text:p text:style-name="Light">Voice · captions · camera · quotes</text:p><text:p text:style-name="Light">Dashboard PWA</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="10.1cm" svg:y="5.0cm" svg:width="6.1cm" svg:height="5.7cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#1D2327"/>
+      <draw:frame svg:x="10.5cm" svg:y="5.6cm" svg:width="5.3cm" svg:height="4.2cm"><draw:text-box><text:p text:style-name="Body">Cloud Run API</text:p><text:p text:style-name="Small">FastAPI + ADK</text:p><text:p text:style-name="Small">Live WebSocket · REST · ingest jobs</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="19.1cm" svg:y="3.7cm" svg:width="5.4cm" svg:height="3.0cm" draw:fill="solid" draw:fill-color="#0B6B4F" draw:stroke="none"/>
+      <draw:frame svg:x="19.45cm" svg:y="4.15cm" svg:width="4.7cm" svg:height="2cm"><draw:text-box><text:p text:style-name="Light">Gemini Live + Flash</text:p><text:p text:style-name="Light">Agent Platform</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="19.1cm" svg:y="8.2cm" svg:width="5.4cm" svg:height="3.0cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:frame svg:x="19.45cm" svg:y="8.65cm" svg:width="4.7cm" svg:height="2cm"><draw:text-box><text:p text:style-name="Body">Firestore + Cloud Storage</text:p><text:p text:style-name="Small">Jobs · cards · imports · media</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="26.2cm" svg:y="3.7cm" svg:width="5.3cm" svg:height="3.0cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#A9592D"/>
+      <draw:frame svg:x="26.55cm" svg:y="4.15cm" svg:width="4.6cm" svg:height="2cm"><draw:text-box><text:p text:style-name="Body">Telegram Bot</text:p><text:p text:style-name="Small">Vendor quote demo fallback</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="26.2cm" svg:y="8.2cm" svg:width="5.3cm" svg:height="3.0cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#A9592D"/>
+      <draw:frame svg:x="26.55cm" svg:y="8.65cm" svg:width="4.6cm" svg:height="2cm"><draw:text-box><text:p text:style-name="Body">Agent Search</text:p><text:p text:style-name="Small">Manual citations · store setup pending</text:p></draw:text-box></draw:frame>
+      <draw:line svg:x1="7.3cm" svg:y1="7.8cm" svg:x2="9.8cm" svg:y2="7.8cm" draw:stroke="solid" svg:stroke-color="#1D2327" svg:stroke-width="0.08cm"/>
+      <draw:line svg:x1="16.4cm" svg:y1="7.8cm" svg:x2="18.8cm" svg:y2="5.2cm" draw:stroke="solid" svg:stroke-color="#0B6B4F" svg:stroke-width="0.08cm"/>
+      <draw:line svg:x1="16.4cm" svg:y1="7.8cm" svg:x2="18.8cm" svg:y2="9.7cm" draw:stroke="solid" svg:stroke-color="#0B6B4F" svg:stroke-width="0.08cm"/>
+      <draw:line svg:x1="16.4cm" svg:y1="7.8cm" svg:x2="25.8cm" svg:y2="5.2cm" draw:stroke="solid" svg:stroke-color="#A9592D" svg:stroke-width="0.08cm"/>
+      <draw:line svg:x1="16.4cm" svg:y1="7.8cm" svg:x2="25.8cm" svg:y2="9.7cm" draw:stroke="solid" svg:stroke-color="#A9592D" svg:stroke-width="0.08cm"/>
+      <draw:frame svg:x="1.7cm" svg:y="14.6cm" svg:width="28cm" svg:height="0.8cm"><draw:text-box><text:p text:style-name="Small">Repo facts: Firebase Hosting fronts the PWA; the Live WebSocket connects directly to Cloud Run. Agent Search is intentionally shown as pending.</text:p></draw:text-box></draw:frame>
+    </draw:page>
+
+    <draw:page draw:name="05 Safety by design" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:frame svg:x="1.7cm" svg:y="1.2cm" svg:width="29cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Title">Safety is a product boundary, not a disclaimer.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="1.7cm" svg:y="4.4cm" svg:width="8.7cm" svg:height="8.1cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#D1263A"/>
+      <draw:rect svg:x="12.5cm" svg:y="4.4cm" svg:width="8.7cm" svg:height="8.1cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#D1263A"/>
+      <draw:rect svg:x="23.3cm" svg:y="4.4cm" svg:width="8.7cm" svg:height="8.1cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#D1263A"/>
+      <draw:frame svg:x="2.2cm" svg:y="5.1cm" svg:width="7.5cm" svg:height="6.6cm"><draw:text-box><text:p text:style-name="Body">Hide hazardous steps</text:p><text:p text:style-name="Small">Gates keep a hazardous step from reaching the worker until the required evidence passes.</text:p><text:p text:style-name="Small">Hard-stop work routes to a fixed safety screen.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="13cm" svg:y="5.1cm" svg:width="7.5cm" svg:height="6.6cm"><draw:text-box><text:p text:style-name="Body">Ground the guidance</text:p><text:p text:style-name="Small">Use a cited fault card or manual page. If neither exists, label it as general guidance and ask to see more.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="23.8cm" svg:y="5.1cm" svg:width="7.5cm" svg:height="6.6cm"><draw:text-box><text:p text:style-name="Body">Verify, then report</text:p><text:p text:style-name="Small">Safety bypass evidence and phone checks are kept separate from feature claims.</text:p><text:p text:style-name="Small">FINAL SAFETY RESULT — INSERT T29 EVIDENCE</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="1.7cm" svg:y="14.5cm" svg:width="29cm" svg:height="0.8cm"><draw:text-box><text:p text:style-name="Small">Source: docs/SAFETY.md and docs/SPEC.md. This slide makes no final pass-rate claim.</text:p></draw:text-box></draw:frame>
+    </draw:page>
+
+    <draw:page draw:name="06 Knowledge from conversations" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:frame svg:x="1.7cm" svg:y="1.2cm" svg:width="29cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Title">Turn the group’s buried know-how into cited fault cards — with consent and provenance.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="1.7cm" svg:y="5.2cm" svg:width="5.4cm" svg:height="3.6cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:rect svg:x="8.6cm" svg:y="5.2cm" svg:width="5.4cm" svg:height="3.6cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:rect svg:x="15.5cm" svg:y="5.2cm" svg:width="5.4cm" svg:height="3.6cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:rect svg:x="22.4cm" svg:y="5.2cm" svg:width="5.4cm" svg:height="3.6cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:frame svg:x="2.05cm" svg:y="5.7cm" svg:width="4.7cm" svg:height="2.5cm"><draw:text-box><text:p text:style-name="Body">Consent-based export</text:p><text:p text:style-name="Small">Private export stays out of Git.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="8.95cm" svg:y="5.7cm" svg:width="4.7cm" svg:height="2.5cm"><draw:text-box><text:p text:style-name="Body">Parse + enrich</text:p><text:p text:style-name="Small">Messages, media, transcripts.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="15.85cm" svg:y="5.7cm" svg:width="4.7cm" svg:height="2.5cm"><draw:text-box><text:p text:style-name="Body">Thread + extract</text:p><text:p text:style-name="Small">Question → answers → outcome.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="22.75cm" svg:y="5.7cm" svg:width="4.7cm" svg:height="2.5cm"><draw:text-box><text:p text:style-name="Body">Dedupe + cite</text:p><text:p text:style-name="Small">Fault cards carry source credit.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="1.7cm" svg:y="10.7cm" svg:width="28.0cm" svg:height="2.4cm" draw:fill="solid" draw:fill-color="#1D2327" draw:stroke="none"/>
+      <draw:frame svg:x="2.1cm" svg:y="11.15cm" svg:width="27.1cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Light">Recorded partial dev run, not a final benchmark: 60 messages · 13 notes · 6 photos · 9 correctly grouped threads · 8 cards + 1 merge · 1 min 47 s end-to-end. FINAL IMPORT SCORE — PENDING.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="1.7cm" svg:y="14.5cm" svg:width="29cm" svg:height="0.8cm"><draw:text-box><text:p text:style-name="Small">Media provenance: demo-group photos are AI-generated or public-post images and must be labelled wherever shown; this slide uses no photo as evidence.</text:p></draw:text-box></draw:frame>
+    </draw:page>
+
+    <draw:page draw:name="07 Quote a missing part" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:frame svg:x="1.7cm" svg:y="1.2cm" svg:width="29cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Title">Keep the technician on the job while nearby vendors answer the part request.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="2.0cm" svg:y="5.2cm" svg:width="7.0cm" svg:height="5.5cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#A9592D"/>
+      <draw:rect svg:x="13.4cm" svg:y="5.2cm" svg:width="7.0cm" svg:height="5.5cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#A9592D"/>
+      <draw:rect svg:x="24.8cm" svg:y="5.2cm" svg:width="7.0cm" svg:height="5.5cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#A9592D"/>
+      <draw:frame svg:x="2.5cm" svg:y="5.8cm" svg:width="6cm" svg:height="4.2cm"><draw:text-box><text:p text:style-name="Body">Request</text:p><text:p text:style-name="Small">Ustaad checks the needed part and sends a structured request.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="13.9cm" svg:y="5.8cm" svg:width="6cm" svg:height="4.2cm"><draw:text-box><text:p text:style-name="Body">Reply</text:p><text:p text:style-name="Small">Vendor text or voice replies are parsed and ranked.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="25.3cm" svg:y="5.8cm" svg:width="6cm" svg:height="4.2cm"><draw:text-box><text:p text:style-name="Body">Approve</text:p><text:p text:style-name="Small">The worker sees availability, price, ETA, and voice-reply status.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="2cm" svg:y="12.3cm" svg:width="29.8cm" svg:height="1.6cm" draw:fill="solid" draw:fill-color="#F6BE00" draw:stroke="none"/>
+      <draw:frame svg:x="2.45cm" svg:y="12.75cm" svg:width="28.6cm" svg:height="0.7cm"><draw:text-box><text:p text:style-name="Tag">DEMO FALLBACK: TELEGRAM BOT. WHATSAPP CLOUD API RETURNS AFTER META BUSINESS VERIFICATION.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="2cm" svg:y="15.0cm" svg:width="29cm" svg:height="0.8cm"><draw:text-box><text:p text:style-name="Small">PHONE TEST / QUOTE ROUND-TRIP RESULT — PENDING. No vendor price, delivery, or response-time claim is made here.</text:p></draw:text-box></draw:frame>
+    </draw:page>
+
+    <draw:page draw:name="08 Dashboard, honestly labelled" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:frame svg:x="1.7cm" svg:y="1.0cm" svg:width="29cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Title">A laptop view makes knowledge capture visible to the shop owner and judges.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="1.7cm" svg:y="3.3cm" svg:width="20.0cm" svg:height="12.0cm"><draw:image xlink:href="screenshots/t24-import-1280.png" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/></draw:frame>
+      <draw:rect svg:x="23.0cm" svg:y="3.5cm" svg:width="8.4cm" svg:height="9.4cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#CBD3D0"/>
+      <draw:frame svg:x="23.5cm" svg:y="4.15cm" svg:width="7.4cm" svg:height="7.8cm"><draw:text-box><text:p text:style-name="Body">What the dashboard shows</text:p><text:p text:style-name="Small">• Import status and safe errors</text:p><text:p text:style-name="Small">• Knowledge/fault-card list</text:p><text:p text:style-name="Small">• Review queue for cards needing review</text:p><text:p text:style-name="Small">• Clear synthetic/demo-data labels</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="23.5cm" svg:y="13.2cm" svg:width="6.8cm" svg:height="1.0cm" draw:fill="solid" draw:fill-color="#F6BE00" draw:stroke="none"/>
+      <draw:frame svg:x="23.8cm" svg:y="13.5cm" svg:width="6.2cm" svg:height="0.4cm"><draw:text-box><text:p text:style-name="Tag">SYNTHETIC DEMO DATA</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="1.7cm" svg:y="16.0cm" svg:width="29cm" svg:height="0.7cm"><draw:text-box><text:p text:style-name="Small">Screenshot source: docs/screenshots/t24-import-1280.png. It labels the sample data and photo provenance in-product.</text:p></draw:text-box></draw:frame>
+    </draw:page>
+
+    <draw:page draw:name="09 Evidence, not hype" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:frame svg:x="1.7cm" svg:y="1.2cm" svg:width="29cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Title">What is verified now — and what the final submission must still prove.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="1.7cm" svg:y="4.2cm" svg:width="13.7cm" svg:height="9.0cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#0B6B4F"/>
+      <draw:rect svg:x="18.0cm" svg:y="4.2cm" svg:width="13.7cm" svg:height="9.0cm" draw:fill="solid" draw:fill-color="#FFFFFF" draw:stroke="solid" draw:stroke-color="#A9592D"/>
+      <draw:frame svg:x="2.2cm" svg:y="4.8cm" svg:width="12.7cm" svg:height="7.6cm"><draw:text-box><text:p text:style-name="Body">Recorded in docs/STATUS.md</text:p><text:p text:style-name="Small">• Dev API health and demo PWA shell are documented.</text:p><text:p text:style-name="Small">• Local real Live checks recorded Hindi push-to-talk, captions, barge-in and reconnect behavior.</text:p><text:p text:style-name="Small">• The partial import run is documented separately, not presented as the final score.</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="18.5cm" svg:y="4.8cm" svg:width="12.7cm" svg:height="7.6cm"><draw:text-box><text:p text:style-name="Body">Final evidence placeholders</text:p><text:p text:style-name="Small">• 4G speech-to-reply p50</text:p><text:p text:style-name="Small">• Photo-to-findings p50 and golden-photo result</text:p><text:p text:style-name="Small">• Full import quality score</text:p><text:p text:style-name="Small">• Quote round-trip and final phone-test results</text:p><text:p text:style-name="Small">• Safety-bypass evidence</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="1.7cm" svg:y="14.6cm" svg:width="29cm" svg:height="0.8cm"><draw:text-box><text:p text:style-name="Small">Final numbers must be copied from the measured-quality table after T29 — never inferred from targets.</text:p></draw:text-box></draw:frame>
+    </draw:page>
+
+    <draw:page draw:name="10 Submission checklist" draw:style-name="Page" draw:master-page-name="Default">
+      <draw:rect svg:x="0cm" svg:y="0cm" svg:width="33.867cm" svg:height="19.05cm" draw:fill="solid" draw:fill-color="#1D2327" draw:stroke="none"/>
+      <draw:frame svg:x="2cm" svg:y="1.8cm" svg:width="28cm" svg:height="2.0cm"><draw:text-box><text:p text:style-name="Cover">Ready the evidence. Then let a judge try it.</text:p></draw:text-box></draw:frame>
+      <draw:rect svg:x="2cm" svg:y="5.2cm" svg:width="29.5cm" svg:height="6.9cm" draw:fill="solid" draw:fill-color="#EEF1EF" draw:stroke="none"/>
+      <draw:frame svg:x="2.7cm" svg:y="5.8cm" svg:width="27.8cm" svg:height="5.7cm"><draw:text-box><text:p text:style-name="Body">DEMO URL — [INSERT VERIFIED URL]</text:p><text:p text:style-name="Body">VIDEO LINK — [INSERT PUBLIC/UNLISTED LINK]</text:p><text:p text:style-name="Body">FINAL IMPORT SCORE — [INSERT T29 EVIDENCE]</text:p><text:p text:style-name="Body">FINAL PHONE-TEST RESULTS — [INSERT VERIFIED EVIDENCE]</text:p><text:p text:style-name="Body">Team: Kaustubh Upadhyay — voice and agent · Samyak Jain — knowledge and commerce</text:p></draw:text-box></draw:frame>
+      <draw:frame svg:x="2cm" svg:y="14.0cm" svg:width="27cm" svg:height="1.4cm"><draw:text-box><text:p text:style-name="Light">Future of Work &amp; Enterprise Productivity · Ustaad makes expert repair knowledge speakable, citable, and safer at the unit.</text:p></draw:text-box></draw:frame>
+    </draw:page>
+  </office:presentation></office:body>
+</office:document>

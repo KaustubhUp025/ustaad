@@ -1,0 +1,242 @@
+{
+  "results": [
+    {
+      "modelScores": {
+        "relevance_score": {
+          "values": [
+            0.8
+          ]
+        }
+      },
+      "rankSignals": {
+        "keywordSimilarityScore": 1.0624217,
+        "relevanceScore": 0.8294163,
+        "semanticSimilarityScore": 0.7087412,
+        "topicalityRank": 1.0,
+        "documentAge": 497863.7,
+        "boostingFactor": 0.0,
+        "defaultRank": 1.0,
+        "customSignals": [],
+        "precomputedExpressionValues": []
+      },
+      "retrievalSignals": {
+        "retrievalSources": [
+          1,
+          2
+        ],
+        "semanticRelevanceScore": 0.41210505
+      },
+      "chunk": {
+        "name": "projects/945574998233/locations/global/collections/default_collection/dataStores/ustaad-manuals-layout/branches/0/documents/70822b6246c8116d34a49c7f4599ccad/chunks/c25",
+        "id": "c25",
+        "content": "# VOLTAS\n\nDUE TO HIGH VOLTAGE, DO NOT TOUCH THE TERMINALS IN THE CONTROL BOARD DURING OPERATION AND 5 MINUTES AFTER SWITCHING OFF. NEXT, CONFIRM THE VOLTAGE RECTIFICATION CIRCUIT BETWEEN DIODE BRIDGE (+) AND (-) HAS DROPPED TO BELOW 42V, BEFORE ACCESSING TO THE TERMINALS IN THE CONTROL BOARD. ODU TYPE-3:- HEAT & COOL AC FAN / DC FAN (REACTOR ON PCB) NOTE- 1. THE WIRING DIAGRAM IS ONLY FOR EXPLANATION PURPOSE. 2. THE ACTUAL SHAPE OF COMPONENT AND PCB MAY BE DIFFERENT. 29 Instructions for Installation TO INDOOR UNIT AAA N L 3 BLUE) (BROWN) (ORANGE) WIRING DIAGRAM REACTOR TERMINAL BEARDA (Y/G) CONTROL BOARD L1 (BR) L2 (BR) S (ORG) NOISE FILTER CIRCUIT BR (20A 250V) AC-N (BLU) YIG GROUND (YIG) RED DC+ BLK GND M1 WHT +15V FAN MOTOR YLW Vsp CIRCUIT FAN MOTORD BLU VFG CN8W ELECTRONIC CONTROLLER CN14 REMARKS BLU: BLUE BLK BLACK RED RED YLW: YELLOW GRY: GRAY ORG ORANGE BR: BROWN YIG: YELLOWGREEN VOLTAS CONTROL CIRCUIT ROL CIRCUIT OUTDOOR AIR TEMP. SENSOR (THERMISTOR) COMMUNICATION CIRCUIT CN17 YELLOW PIPING TEMP.SENSOR (THERMISTOR) CN16 BLACK COMP TEMPERATURE SENSOR (THERMISTOR) CN15 WHITE PFC CIRCUIT RECTIFICATION CIRCUIT SWITCHING POWER SUPPLY CIRCUIT SUCTION TEMPERATURE SENSOR (THERMISTOR) CN20W RED WW (RED) RED \ub274 VV (BLU) BLU M3 U (WHT) WHT COMPRESSOR A CAUTION DUE TO HIGH VOLTAGE, DO NOT TOUCH THE TERMINALS IN THE CONTROL BOARD DURING OPERATION AND 5 MINUTES AFTER SWITCHING OFF. NEXT, CONFIRM THE VOLTAGE RECTIFICATION CIRCUIT BETWEEN DIODE BRIDGE (+) AND (-) HAS DROPPED TO BELOW 42V, BEFORE ACCESSING TO THE TERMINALS IN THE CONTROL BOARD. ODU TYPE-2:- DC FAN MOTOR WITH EEV ODU IDU ODU IDU LIGHT DISPLAY FAULT DETAILS LIGHT DISPLAY FAULT DETAILS FLASH FLASH 25 EE Indoor machine EE fault 16 P4 DC voltage over-high or over-low voltage protection 26 E1 Indoor fan fault 17 P5 IPM over-high temperature protection 27 E2 Indoor fan zero-crossing detection abnormal 18 P6 Discharge temperature overheat protection 28 E3 Indoor coil fault and sensor fault 19 P7 Cooling indoor coil anti-freezing protection 29 E4 Indoor ambient temperature sensor fault 20 P8 Cooling outdoor coil overheat protection 21 P9 Heating indoor coil overheat protection 22 PC Cooling outdoor ambient temperature over-low protection 1 E0 Outdoor EE fault 23 PH Heating outdoor ambient temperature over-high protection 2 E6 Indoor and outdoor machine communication fault 4 F1 Compressor starting abnormal (phase failure, reverse) 5 F2 Compressor out-of-step fault 6 F3 IPM module fault 7 F4 Compressor shell roof fault/protection 8 F5 Discharge temperature sensor fault 31 L1 Drive bus voltage over-high protection 9 F6 Suction temperature sensor fault 32 L2 Drive bus voltage over-low protection 10 F7 Outdoor coil temperature sensor fault 33 L3 Drive phase current overload fault 11 F8 Outdoor ambient temperature sensor fault 34 L4 Phase current sampling abnormal 12 F9 Outdoor DC fan fault E8 Outdoor communication fault",
+        "documentMetadata": {
+          "uri": "gs://ustaad101-media/manuals/voltas-inverter-series.pdf",
+          "title": "voltas-inverter-series"
+        },
+        "pageSpan": {
+          "pageStart": 32,
+          "pageEnd": 33
+        },
+        "relevanceScore": 0.7279644012451172,
+        "dataUrls": [],
+        "annotationContents": [],
+        "annotationMetadata": []
+      },
+      "id": ""
+    },
+    {
+      "modelScores": {
+        "relevance_score": {
+          "values": [
+            0.0
+          ]
+        }
+      },
+      "rankSignals": {
+        "keywordSimilarityScore": 0.82340676,
+        "relevanceScore": 0.0021668356,
+        "semanticSimilarityScore": 0.7172709,
+        "topicalityRank": 3.0,
+        "documentAge": 497863.7,
+        "boostingFactor": 0.0,
+        "defaultRank": 2.0,
+        "customSignals": [],
+        "precomputedExpressionValues": []
+      },
+      "retrievalSignals": {
+        "retrievalSources": [
+          2
+        ],
+        "semanticRelevanceScore": 0.44900772
+      },
+      "chunk": {
+        "name": "projects/945574998233/locations/global/collections/default_collection/dataStores/ustaad-manuals-layout/branches/0/documents/70822b6246c8116d34a49c7f4599ccad/chunks/c29",
+        "id": "c29",
+        "content": "# Instructions for Installation\n\n## VOLTAS\n\n### Installation Guide\n\nor repaired by any non-Voltas service personnel. 8. Consequential damages and losses of any nature whatsoever are not covered under 5 years warranty. 9. To avail compressor replacement after 5 years warranty, Voltas advices that the AC is covered under Voltas AMC. 5 Year Compressor Warranty Certificate Dear Customer, Now your Voltas Air Conditioner comes along with complete 5 years Compressor Warranty. Voltas undertakes to repair or replace the compressor of your air conditioner, due to any malfunction during normal usage in the first five years. We wish you a long and happy association with your Voltas Air Conditioner. Please make sure to fill up the following details completely without which this certificate will not be legitimate. Customer name Name of model Model No Air Conditioner Sr.No. Compressor Sr No. Date of Purchase Name of the dealer Voltas advises our customers to enter into an Annual Maintenance Contract with us, to increase the life of the compressor far beyond five years and also to ensure optimum electricity consumption during its entire life time. Please check the terms and conditions of the warranty on the reverse. Customer Care No. 9650694555/1860 599 4555, 24 Hrs & 7 Days A Week. 38 Guarantee Registration Card W5 Years Warranty on Compressor Name of Purchaser Invoice No and Date AC Model: Sr. No. Unit: Sr. No. of the Compressor: GUARANTEE REGISTRATION CARD (Customer's Copy) Name & Address of the Seller (Voltas/Authorised Dealer) VOLTAS VOLTAS \u2022 Years Warranty on Compressor W5 Name of Purchaser Invoice No and Date AC Model: Sr. No. Unit: Sr. No. of the Compressor: GUARANTEE REGISTRATION CARD (Dealer's Copy) Name & Address of the Seller (Voltas/Authorised Dealer) W5 Years Warranty on Compressor Name of Purchaser Invoice No and Date AC Model : Sr. No. Unit: Sr. No. of the Compressor: GUARANTEE REGISTRATION CARD (Office Copy) Name & Address of the Seller (Voltas/Authorised Dealer) Seller's Signature & Stamp VOLTAS Seller's Signature & Stamp VOLTAS Seller's Signature & Stamp 40 Voltas Recycling Program for E-Waste Voltas recycling program for E-Waste What is E-Waste: VOLTAS Waste electrical and electronic equipment, whole or in part or rejects from their manufacturing and repair process, which are intended to be discarded. E-waste can be considered as a resource that contains useful material of economic benefit for recovery of plastics, iron, glass, aluminum, copper and precious metals such as silver, gold, platinum, and palladium and lead, cadmium, mercury etc. The e-waste Rules apply to all electrical and electronic equipment (EEE) listed in Schedule 1 (this includes Air Conditioners) and put on market in India, including their components and consumables which are part of the product at the time of discarding. SCHEDULE I consists of the following Categories of Electrical and Electronic Equipments Covered under the Rules Sr. No. Categories of Electrical and Electronic Equipments (i) Information Technology and Telecommunication Equipment",
+        "documentMetadata": {
+          "uri": "gs://ustaad101-media/manuals/voltas-inverter-series.pdf",
+          "title": "voltas-inverter-series"
+        },
+        "pageSpan": {
+          "pageStart": 41,
+          "pageEnd": 45
+        },
+        "relevanceScore": 0.7350131273269653,
+        "dataUrls": [],
+        "annotationContents": [],
+        "annotationMetadata": []
+      },
+      "id": ""
+    },
+    {
+      "modelScores": {
+        "relevance_score": {
+          "values": [
+            0.0
+          ]
+        }
+      },
+      "rankSignals": {
+        "keywordSimilarityScore": 0.81625366,
+        "relevanceScore": 0.008636875,
+        "semanticSimilarityScore": 0.7172475,
+        "topicalityRank": 8.0,
+        "documentAge": 497863.7,
+        "boostingFactor": 0.0,
+        "defaultRank": 3.0,
+        "customSignals": [],
+        "precomputedExpressionValues": []
+      },
+      "retrievalSignals": {
+        "retrievalSources": [
+          2
+        ],
+        "semanticRelevanceScore": 0.41851014
+      },
+      "chunk": {
+        "name": "projects/945574998233/locations/global/collections/default_collection/dataStores/ustaad-manuals-layout/branches/0/documents/70822b6246c8116d34a49c7f4599ccad/chunks/c32",
+        "id": "c32",
+        "content": "# Instructions for Installation\n\n## VOLTAS\n\n### Installation Guide\n\n\u2022 Also scientific disposal of e-waste reduces the environment pollution. The correct disposal of old product will help prevent potential negative consequences for the environment and human health. 44 Voltas Recycling Program for E-Waste VOLTAS What are the negative consequences if proper recycling is not done. Any disposal through unauthorised agencies/person will attract action under Environment (Protection) Act 1986, which provides for imprisonment upto 5 years or with fine upto Rs. 1 Lac or both. Followings are negative consequences of disposal of product if not done in scientific way : Toxic material present in e-waste get mixed with earth, air, water etc and causes health issues. Oil & Gases which is present is some of e-waste like compressor and CRT causes environment pollution. Batteries contains highly hazardous element. Burning of rubber & Plastic in open area causes air pollution. How the product is to be properly handled while disposing it off. Product should not be damage, dismantle or thrown in municipal waste. It should be packed and handed over to authorized re-cycler. What are the effects if the product is dismantled by the user. All the products are safe for human being to use. However in case of breakage/dismantling in unscientific way could cause damage to environment or human being (directly or indirectly). Chances are there that user might come in contact with chemicals which could cause irritation in skin & eyes, might cause dizziness etc. Also sharp edges of electronic items could cause damage to body. What precautions to be taken in case of any accidental breakage and the person is exposed to such hazardous substances In case of accidental breakage of consumer durable products like: AC / Refrigerator: Gas Leakage from compressor - open the window & doors to allow proper ventilation. Oil Leakage from compressor - properly lock the oil-spillage point and clean your hand. Battery of Any Product: Don't touch the broken battery with bare-hand. Put it in bag/carton box. Clean your eyes & hand properly. What will happen if the product is not properly handled and is given/sold to scrap dealer like any other ordinary scrap. In case e-waste is sold to unauthorized dealers (Kabbadi), they don't have scientific tools to recycle the products and therefore they are not authorized by the Pollution Control Board. In open area they burn the plastic parts, break the seal of parts which carries gases and try to extract metals. Such smoke and gases pollute the environment. Also hazardous residual are thrown in landfills which is dangerous for land, water, air and living beings. 45 Service Stations/Offices 1. Corporate Head Office Voltas Limited: Voltas House'B'2nd Floor, T.B kadam Marg, Chinchpokli, Mumbai-400033 Phone: 022-66656333 2. Delhi Office Voltas Limited: 1st Floor, A-43, M.C.\u0399.\u0395. Mathura Road, New Delhi-110 044, Phone-011-66505550 3. Lucknow Office Voltas Limited: Shalimar Titanium, Block-C, 4th Floor, Office No. 410-412, Plot No. TCG-1/1, Opp. Indira Gandhi Prathisthan, Vibhuti Khand, Gomti Nagar, Lucknow - 226010 Phone: 0522-6566961 4. Ghaziabad Office",
+        "documentMetadata": {
+          "uri": "gs://ustaad101-media/manuals/voltas-inverter-series.pdf",
+          "title": "voltas-inverter-series"
+        },
+        "pageSpan": {
+          "pageStart": 47,
+          "pageEnd": 51
+        },
+        "relevanceScore": 0.7297288179397583,
+        "dataUrls": [],
+        "annotationContents": [],
+        "annotationMetadata": []
+      },
+      "id": ""
+    },
+    {
+      "modelScores": {
+        "relevance_score": {
+          "values": [
+            0.0
+          ]
+        }
+      },
+      "rankSignals": {
+        "keywordSimilarityScore": 0.8311545,
+        "relevanceScore": 0.0100196935,
+        "semanticSimilarityScore": 0.71382946,
+        "topicalityRank": 2.0,
+        "documentAge": 497863.7,
+        "boostingFactor": 0.0,
+        "defaultRank": 4.0,
+        "customSignals": [],
+        "precomputedExpressionValues": []
+      },
+      "retrievalSignals": {
+        "retrievalSources": [
+          2
+        ],
+        "semanticRelevanceScore": 0.39354876
+      },
+      "chunk": {
+        "name": "projects/945574998233/locations/global/collections/default_collection/dataStores/ustaad-manuals-layout/branches/0/documents/70822b6246c8116d34a49c7f4599ccad/chunks/c33",
+        "id": "c33",
+        "content": "# Instructions for Installation\n\n## VOLTAS\n\n### Installation Guide\n\nVoltas Limited: D-15, R S Plaza, 3rd Floor, R.D.C. Raj Nagar Ghaziabad-201001 5. Chandigarh Office Voltas Limited: Plot No. 194-195, 1st Floor, Industrial Area, Phase-2, Chandigarh-160002 Phone: 0172-4111800 6. Jaipur Office Voltas Limited: Diamond Tower, 201-203, Purani Chungi, Ajmer Road, Jaipur-302017 Phone: 0141-6451747/48 7. Haryana Office Voltas Limited: 1st Floor, A-43, M.C.I.E. Mathura Road, New Delhi-110 044, Phone: 011-66505582 8. Mumbai Office Voltas Limited: Voltas House 'B' Block 2nd Floor, T. B. Kadam Marg, Chinchpokli, Mumbai-400033, Phone: 022-66656333 9. Ahmedabad Office Voltas Limited: A-301, Shivalik Corporate Park, Behind IOCL Petrol Pump, Shivranjini Crossroad Satellite, Ahmedabad-380015 Phone: 0790-66301190/91 10. Pune Office Voltas Limited: 14, Equitorial Forum, 2nd & 3rd Floor, Mumbai-Pune Road, Wakadewadi, Pune-411003 Phone: 020-66011776 11. Nagpur Office Voltas Limited: UPBG, 280, Nirmiti House, WHC Road, Bajaj Nagar, Nagpur-440010 Phone: 0712-6464692 12. Goa Office Voltas Limited: UPBG, B-18, Akshay Apts., Lacampala Colony, Miramar, Panjim, Goa-403001 13. Raipur Office Voltas Limited: UPBG, 2nd Floor, C-7, Sector 2, Near ICICI Atm, Main Road, Devendra Nagar, Raipur (C.G.)-492001 Phone: 0771-4033886 14. Kolkata Office VOLTAS Voltas Limited: Unit No. 805, 8th Floor, Godrej Waterside Tower-2, Plot No. 5, Block DP, Sector-V, Salt Lake, Kolkata-700 091 Phone: 033-66266207 15. Jamshedpur Office Voltas Limited: Voltas House, 3rd Floor, Main Road Bistupur, Jamshedpur-831001 Phone: 0657-6455921 16. Patna Office Voltas Limited: Maharaja Complex, 306-A, 3rd Floor, Frazer Road, Patna- 800001 Phone: 0612-3222555/6455192 17. Guwahati Office Voltas Limited: Upasana Palace Complex, 6th Floor, Dr. Rajendra Prasad Road, Near Ganesh Mandir, Ganesh Guri, Guwahati-781006 Phone: 8811036281 18. Bhubaneswar Office Voltas Limited: B-15, Second Floor, Arihant Plaza, Shaheed Nagar, Bhubaneswar-751007 Phone: 0674-2544919/18 19. Hyderabad Office Voltas Limited: 7-2-1735, Saathinagar, Hyderabad-500018 Phone: 040-66743001 20. Chennai Office Voltas Limited: No. 624, Anna Salai, Chennai-600018 Phone: 66760333/11 21. Bangalore Office Voltas Limited: 7th Floor 701, Pride Hulkul, 116 Lalbagh, Bangalore-560027 Phone: 080-22535600 22, Kochi Office Voltas Limited: Ambanat Building, 39/3522, M.G. Road, Ravipuram, Kochi-682016 Phone: 0484-6605555 23, Coimbatore Office Voltas Limited: 24-2, Pykara Office Road, Tatabad, Coimbatore-6410102 Phone: 0422-6502419/6530080 24, Indore Office Voltas Limited: UPBG, The View, 305 Y.N. Road, 3rd Floor, Opp. South Tukoganj Thana, Above D.P. Jewellers, Indore-452001 Phone: 0731-4046393/4043512 25. Thane Office Voltas Limited: UPBG, Unit II, 1st Floor, 2nd Pokhran Road, Thane-400601 Phone: 022-67920106/07 48 VOLTAS RECOMMENDED GENUINE SPARE PARTS Voltas - V Service Stabiliser Choosing the right stabiliser for your air conditioner goes a long way in ensuring trouble-free cooling that lasts a lifetime. Towards this end, we recommend Voltas - V Service Stabiliser-an accompaniment that will make sure your air conditioner performs without fail. Voltas Recommended Genuine Spare Parts Any machine is as good as the components that go into it. That's why, we recommend the use of Voltas Genuine Spare Parts that come safely packed and sealed, ensuring zero tampering. So, if you want your air conditioner to deliver top performance and savings, always go in for Voltas Recommended Genuine Spare Parts. AMC Voltas Annual Maintenance Contracts",
+        "documentMetadata": {
+          "uri": "gs://ustaad101-media/manuals/voltas-inverter-series.pdf",
+          "title": "voltas-inverter-series"
+        },
+        "pageSpan": {
+          "pageStart": 51,
+          "pageEnd": 52
+        },
+        "relevanceScore": 0.7192842960357666,
+        "dataUrls": [],
+        "annotationContents": [],
+        "annotationMetadata": []
+      },
+      "id": ""
+    },
+    {
+      "modelScores": {
+        "relevance_score": {
+          "values": [
+            0.0
+          ]
+        }
+      },
+      "rankSignals": {
+        "keywordSimilarityScore": 0.81625366,
+        "relevanceScore": 0.0066532344,
+        "semanticSimilarityScore": 0.7147842,
+        "topicalityRank": 10.0,
+        "documentAge": 497863.7,
+        "boostingFactor": 0.0,
+        "defaultRank": 5.0,
+        "customSignals": [],
+        "precomputedExpressionValues": []
+      },
+      "retrievalSignals": {
+        "retrievalSources": [
+          2
+        ],
+        "semanticRelevanceScore": 0.40344313
+      },
+      "chunk": {
+        "name": "projects/945574998233/locations/global/collections/default_collection/dataStores/ustaad-manuals-layout/branches/0/documents/70822b6246c8116d34a49c7f4599ccad/chunks/c30",
+        "id": "c30",
+        "content": "# Instructions for Installation\n\n## VOLTAS\n\n### Installation Guide\n\n(ii) Consumer electrical and electronics - Television sets (including sets based on (Liquid Crystal Display and Light Emitting Diode technology), Refrigerator, Washing Machine, Air-Conditioners excluding centralized air conditioning plants. E-waste (Management & Handling) Rules, 2011 : The rules have been notified with primary objective to channelize the E-waste generated in the country for environmentally sound recycling which is largely controlled by the un-organized sector who are adopting crude practices that results into higher pollution and less recovery, thereby causing wastages of precious resources and damage to environment. The E-waste Rules place main responsibility of e-waste management on the producers of the electrical and electronic equipment by introducing the concept of \"Extended Producer Responsibility\" (EPR). The E-waste (Management & Handling) Rules, 2011 have been notified in May 2011 and are effective from 01-05-2012. Recycling of old electronic product is beneficial in following ways: 1. There is need to encourage recycling of all useful and valuable material from e-waste so as to conserve the ever depleting natural resources. Recycling end-of-life products is vital if we are to save resources and minimize waste. 2. Also scientific disposal of e-waste reduces the environment pollution. The correct disposal of old product will help prevent potential negative consequences for the environment and human health. 42 Voltas Recycling Program for E-Waste VOLTAS Followings are negative consequences of disposal of product if not done in scientific way: 1. Toxic material present in e-waste get mixed with earth, air, water etc and causes health issues. 2. Oil & Gases which is present is some of e-waste like compressor and refrigeration systems causes environment pollution. 3. Batteries contains highly hazardous element. 4. Burning of rubber & Plastic in open area causes air pollution. Channel partners/Customers are urged to strictly follow the guidelines as per e-Waste rules as any failure on their part would invite penal action, which may attract imprisonment upto 5 years or with fine upto Rs. 1 Lac or both Guidance on disposal: In India, E-Waste (Management and Handling) Rules 2011 have been notified by the Central Government. Voltas stands committed to implement E-Waste Rules. Voltas has done tie-up with the government authorized e-waste recycler for facilitating our Channel partners/customers to enable them to dispose of e-waste products after its end-of-life products (when a product is non-operational or non-repairable) and also defective spare parts. In this process, the channel partners/customers need to get in touch with our Customer Care 9650694555/1860 599 4555. Voltas works closely with all consumer durable supply chains including authorized service providers, distributors, merchandiser's customers, and the recycling industry. Channel partners/Consumers should contribute to resource conservation and prevent potential environmental problems by a simple action - the proper depositing of their old consumer durable products, its accessories or defective spares. E-waste is will be disposed off separately from the general waste stream via designated collection facilities identified by Voltas. Recycling of Products:",
+        "documentMetadata": {
+          "uri": "gs://ustaad101-media/manuals/voltas-inverter-series.pdf",
+          "title": "voltas-inverter-series"
+        },
+        "pageSpan": {
+          "pageStart": 45,
+          "pageEnd": 46
+        },
+        "relevanceScore": 0.7179588675498962,
+        "dataUrls": [],
+        "annotationContents": [],
+        "annotationMetadata": []
+      },
+      "id": ""
+    }
+  ],
+  "totalSize": 31,
+  "attributionToken": "7QP07AEKDAjT8NHWBhCDnoKKAxIkNmFkOGQ4ZjctMDAwMC0yMzFmLThiNjQtMzRjN2U5MTllM2NiIgdHRU5FUklDKpwCq5q-OZzB9DjYs4I5lZLFMPra-Dje_Kw5qoX5OIao2jnLh6U5mcH0OJfkrjm9vbo5g6jaOa_G8jfT2N841tjfOLjM7DigoJY5_-TpOoLdkzLOh6U5ibbcOdrQwzmB3OM5wYOMOZzWty2a5K453srFOYWnzjmgzdQ5hOOAOf3a-DiH3OM5naCWOamv5jnZ_v04p4X5ONngpDmlueY6-OL0OeTC7ziQ97IwwvCeFb6DjDn-4vQ5wPD4OOLKnTnD8Pg41v79ONuS8jm7zOw4roCTN4KnzjmGttw54fysObq9ujmOvp0Vn9a3Ld3QwzmI36k4w7DzOMaw8zjUsp0V4crFOa_Tlzmy05c558LvOIfjgDnL2qk51bOCOYLB7zkwAVKMAXByb2plY3RzLzk0NTU3NDk5ODIzMy9sb2NhdGlvbnMvZ2xvYmFsL2NvbGxlY3Rpb25zL2RlZmF1bHRfY29sbGVjdGlvbi9kYXRhU3RvcmVzL3VzdGFhZC1tYW51YWxzLWxheW91dC9zZXJ2aW5nQ29uZmlncy9kZWZhdWx0X3NlcnZpbmdfY29uZmln",
+  "nextPageToken": "gYjNTZ5ETOldzY0MTL0YjY40iZxMjMtADMwATL2YGOkhDZhZDJaMwicau7QYg1hn90IwgE1EgC",
+  "summary": {
+    "summaryText": "",
+    "summarySkippedReasons": []
+  },
+  "queryExpansionInfo": {
+    "expandedQuery": false,
+    "pinnedResultCount": "0"
+  },
+  "semanticState": 2,
+  "facets": [],
+  "redirectUri": "",
+  "correctedQuery": "",
+  "appliedControls": [],
+  "searchLinkPromotions": []
+}

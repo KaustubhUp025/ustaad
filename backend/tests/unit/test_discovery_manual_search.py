@@ -1,8 +1,11 @@
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from google.cloud import discoveryengine_v1 as discoveryengine
 
 from clients.manual_search import (
+    SEARCH_TIMEOUT_S,
     DiscoveryEngineManualSearch,
     ManualSearchResult,
     ManualSearchUnavailable,
@@ -16,88 +19,100 @@ class FakeSearchService:
         self.results = results or []
         self.error = error
         self.requests: list[object] = []
+        self.timeouts: list[float] = []
 
-    def search(self, request: object) -> list[object]:
+    def search(self, request: object, timeout: float) -> object:
         self.requests.append(request)
+        self.timeouts.append(timeout)
         if self.error:
             raise self.error
-        return self.results
+        # A pager: iterating `pages` would fetch more over RPC; the adapter must read only the first.
+        return SimpleNamespace(pages=iter([SimpleNamespace(results=self.results), None]))
 
 
-def result(title: str, source: str, answers: list[dict[str, str]]) -> object:
+def result(uri: str, content: str, page_start: int | None) -> object:
     return SimpleNamespace(
-        document=SimpleNamespace(
-            derived_struct_data={"title": title, "link": source, "extractive_answers": answers}
+        chunk=SimpleNamespace(
+            content=content,
+            document_metadata=SimpleNamespace(uri=uri, title="untitled"),
+            page_span=SimpleNamespace(page_start=page_start or 0, page_end=page_start or 0),
         )
     )
 
 
-def test_search_uses_global_datastore_and_returns_only_valid_cited_answers():
-    service = FakeSearchService(
-        [
-            result(
-                "Voltas Inverter Series",
-                "gs://ustaad101-media/manuals/voltas-inverter-series.pdf",
-                [{"content": "Cited E6 answer", "pageNumber": "12"}],
-            )
-        ]
-    )
+VOLTAS = "gs://ustaad101-media/manuals/voltas-inverter-series.pdf"
+# Recorded Oct 18 from ustaad-manuals-layout (layout parser, chunks) for the query "Voltas E6".
+RECORDED = Path(__file__).parents[3] / "seed/fixtures/agent_search/voltas_e6.json"
+
+
+def test_search_asks_the_global_datastore_for_chunks_with_a_timeout():
+    service = FakeSearchService([result(VOLTAS, "Cited E6 answer", 12)])
     client = DiscoveryEngineManualSearch("ustaad101", "ustaad-manuals_123", service)
 
     assert client.search("E6", "Voltas", None) == [
-        ManualSearchResult(brand="Voltas", text="Cited E6 answer", doc="Voltas Inverter Series", page=12)
+        ManualSearchResult(brand="Voltas", text="Cited E6 answer", doc="voltas-inverter-series.pdf", page=12)
     ]
     request = service.requests[0]
     assert request.serving_config == (
         "projects/ustaad101/locations/global/collections/default_collection/"
         "dataStores/ustaad-manuals_123/servingConfigs/default_serving_config"
     )
+    assert (
+        request.content_search_spec.search_result_mode == request.content_search_spec.SearchResultMode.CHUNKS
+    )
+    assert service.timeouts == [SEARCH_TIMEOUT_S]
 
 
-def test_search_filters_results_from_another_brand():
+def test_the_brand_leads_the_query_so_its_own_manual_ranks_first():
+    service = FakeSearchService()
+    DiscoveryEngineManualSearch("ustaad101", "store", service).search("E6", "Voltas", "183V CZX")
+
+    assert service.requests[0].query == "Voltas E6 183V CZX"
+
+
+def test_a_recorded_response_gives_the_voltas_error_table_page():
+    page = discoveryengine.SearchResponse.from_json(RECORDED.read_text(), ignore_unknown_fields=True)
+    service = FakeSearchService(list(page.results))
+
+    first = DiscoveryEngineManualSearch("ustaad101", "store", service).search("E6", "Voltas", None)[0]
+
+    assert (first.doc, first.page) == ("voltas-inverter-series.pdf", 32)
+    assert "E6 Indoor and outdoor machine communication fault" in first.text
+
+
+def test_search_keeps_only_the_brands_own_manual():
     service = FakeSearchService(
         [
-            result(
-                "LG Service Manual",
-                "gs://ustaad101-media/manuals/lg-MFL41161601.pdf",
-                [{"content": "Other brand", "pageNumber": "4"}],
-            ),
-            result(
-                "Voltas Inverter Series",
-                "gs://ustaad101-media/manuals/voltas-inverter-series.pdf",
-                [{"content": "Voltas citation", "pageNumber": "5"}],
-            ),
+            result("gs://ustaad101-media/manuals/lg-MFL41161601.pdf", "Other brand", 4),
+            result("gs://ustaad101-media/manuals/daikin-SiUS091133.pdf", "E6 Compressor lock", 116),
+            result(VOLTAS, "Voltas citation", 5),
         ]
     )
 
     assert DiscoveryEngineManualSearch("ustaad101", "store", service).search("E6", "Voltas", None) == [
-        ManualSearchResult(brand="Voltas", text="Voltas citation", doc="Voltas Inverter Series", page=5)
+        ManualSearchResult(brand="Voltas", text="Voltas citation", doc="voltas-inverter-series.pdf", page=5)
     ]
 
 
-def test_search_drops_answers_without_a_positive_page_number():
-    service = FakeSearchService(
-        [
-            result(
-                "Voltas Inverter Series",
-                "gs://ustaad101-media/manuals/voltas-inverter-series.pdf",
-                [
-                    {"content": "No page"},
-                    {"content": "Bad page", "pageNumber": "zero"},
-                    {"content": "Zero page", "pageNumber": "0"},
-                    {"content": "Good page", "pageNumber": "9"},
-                ],
-            )
-        ]
-    )
+def test_a_brand_inside_another_filename_does_not_match():
+    service = FakeSearchService([result("gs://ustaad101-media/manuals/daikin-glgx.pdf", "Not LG", 3)])
+
+    assert DiscoveryEngineManualSearch("ustaad101", "store", service).search("CH05", "LG", None) == []
+
+
+def test_search_drops_chunks_without_a_page():
+    service = FakeSearchService([result(VOLTAS, "No page", None), result(VOLTAS, "Good page", 9)])
 
     assert DiscoveryEngineManualSearch("ustaad101", "store", service).search("E6", "Voltas", None) == [
-        ManualSearchResult(brand="Voltas", text="Good page", doc="Voltas Inverter Series", page=9)
+        ManualSearchResult(brand="Voltas", text="Good page", doc="voltas-inverter-series.pdf", page=9)
     ]
 
 
 def test_search_returns_empty_results_unchanged():
-    assert DiscoveryEngineManualSearch("ustaad101", "store", FakeSearchService()).search("E6", "Voltas", None) == []
+    assert (
+        DiscoveryEngineManualSearch("ustaad101", "store", FakeSearchService()).search("E6", "Voltas", None)
+        == []
+    )
 
 
 def test_missing_configuration_preserves_the_offline_unavailable_client(monkeypatch):

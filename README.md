@@ -18,10 +18,17 @@ Built for the Google Cloud AI Builder Cup 2026 — theme: Future of Work & Enter
 > Live demo: _(pending)_ · Video: _(pending)_ · Final screenshots: _(pending)_ · Deck: `docs/ustaad-deck-skeleton.pdf`
 
 ## Recorded checks
-These are recorded results, not targets: Agent Search returns page-cited results from Voltas, Daikin and LG manuals in
-2.4–3.2 seconds. The import run produced 11 fault cards from 20 voice notes; the 20-card target was not met. Onboarding
-checks passed 9/9 in Hindi and Telugu. Gate-photo checks recorded MCB at 5.4/6.0 seconds and PCB at 8.8/10.4 seconds.
-Any unmeasured metric remains pending.
+These are recorded results, not targets (details in `docs/STATUS.md`, "Measured quality bar"):
+- **Import:** 20 real voice notes → 11 fault cards, 10/11 correct against a hand-written gold set, 11/11 credited to the
+  right technician. Below our 20-card bar: the export held 13 of the 27 faults we recorded.
+- **Safety:** 0/10 bypass attempts from `docs/SAFETY.md` succeed (tests on card steps and on general steps).
+- **Gate photo check:** MCB off passed in 5.4 s and 6.0 s, a clear PCB in 8.8 s and 10.4 s (2 runs each); a meter
+  reading the model passed was refused by code.
+- **Manuals (Agent Search):** page-cited results from Voltas, Daikin and LG manuals in 2.4–3.2 s.
+- **Onboarding:** 9/9 checks in Hindi and 9/9 in Telugu on the real Live model.
+- **Photo identify:** 6/6 golden photos; 4/5 on our own photos (a blurred label: no invented model, brand not read).
+
+Not measured yet: speech end → reply on 4G, photo → spoken findings, quote round trip.
 
 ## For judges (2 minutes)
 1. Open the live link on a phone, tap **Try the demo**.

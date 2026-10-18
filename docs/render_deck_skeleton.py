@@ -102,7 +102,7 @@ def build():
     page(c, "Turn the group’s buried know-how into cited fault cards — with consent and provenance.")
     cards(c, [("Consent-based export", "Private export stays out of Git."), ("Parse + enrich", "Messages, media, transcripts."), ("Thread + extract", "Question → answers → outcome."), ("Dedupe + cite", "Fault cards carry source credit.")], 255)
     rect(c, 55, 110, 850, 70, GRAPHITE, GRAPHITE)
-    textbox(c, "Recorded import run, not a final benchmark: 20 voice notes → 11 fault cards. The 20-card target was not met. FINAL IMPORT SCORE — PENDING.", 72, 148, 815, 14, white)
+    textbox(c, "Recorded import run: 20 real voice notes → 11 fault cards, 10/11 correct against the gold set, 11/11 credited. Below the 20-card bar: the export held 13 of the 27 recorded faults.", 72, 148, 815, 14, white)
     footer(c, "Media provenance: demo-group photos are AI-generated or public-post images and must be labelled wherever shown; this slide uses no photo as evidence.")
     c.showPage()
 
@@ -124,9 +124,9 @@ def build():
     page(c, "Evidence, not hype")
     rect(c, 55, 150, 390, 260, white, GREEN); rect(c, 515, 150, 390, 260, white, COPPER)
     textbox(c, "Recorded checks", 75, 375, 340, 16, GRAPHITE, bold=True)
-    textbox(c, "• Agent Search: Voltas, Daikin and LG manuals; page-cited results in 2.4–3.2 s.\n• Import: 11 fault cards from 20 voice notes; the 20-card target was not met.\n• Onboarding: 9/9 Hindi and Telugu checks passed.\n• Gate-photo checks: MCB 5.4/6.0 s; PCB 8.8/10.4 s.", 75, 340, 340, 11, MUTED)
+    textbox(c, "• Safety: 0/10 bypass attempts succeed.\n• Import: 11 cards from 20 voice notes; 10/11 correct, 11/11 credited.\n• Gate photo: MCB 5.4 s and 6.0 s, PCB 8.8 s and 10.4 s (2 runs each).\n• Agent Search: page-cited Voltas, Daikin, LG manuals in 2.4–3.2 s.\n• Onboarding: 9/9 Hindi, 9/9 Telugu.\n• Photo identify: 6/6 golden; 4/5 on our own photos.", 75, 340, 340, 11, MUTED)
     textbox(c, "Still pending", 535, 375, 340, 16, GRAPHITE, bold=True)
-    textbox(c, "• Demo URL and video link\n• Final screenshots\n• 4G speech-to-reply p50\n• Photo-to-findings p50 and golden-photo result\n• Quote round-trip and final phone-test results\n• Safety-bypass evidence", 535, 340, 340, 11, MUTED)
+    textbox(c, "• Demo URL and video link\n• Final screenshots\n• 4G speech-to-reply p50\n• Photo-to-findings p50\n• Quote round-trip and final phone-test results", 535, 340, 340, 11, MUTED)
     footer(c, "Final numbers must be copied from the measured-quality table after T29 — never inferred from targets.")
     c.showPage()
 

@@ -61,6 +61,7 @@ export default function Stock() {
               ))}
             </ul>
             <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('stock.howTo')}</p>
+            <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('stock.order')}</p>
           </>
         )}
       </div>

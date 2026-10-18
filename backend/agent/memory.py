@@ -34,19 +34,30 @@ async def recall(memory: BaseMemoryService, user_id: str) -> str | None:
 
 
 async def remember(memory: BaseMemoryService, user_id: str, events: list[Event]) -> None:
-    """Saves what both speakers said in the session, from its final transcriptions."""
+    """Saves what was said in the session: both speakers' final transcriptions and anything he typed."""
     said = [
-        Event(author=author, content=types.Content(role=role, parts=[types.Part(text=line.text)]))
+        Event(author=author, content=types.Content(role=role, parts=[types.Part(text=text)]))
         for event in events
-        for author, role, line in (
-            ("user", "user", event.input_transcription),
-            ("ustaad", "model", event.output_transcription),
+        for author, role, text in (
+            ("user", "user", event.input_transcription and event.input_transcription.text),
+            ("ustaad", "model", event.output_transcription and event.output_transcription.text),
+            ("user", "user", _typed(event)),
         )
-        if line and line.text
+        if text
     ]
     if not said:
         return
     try:
-        await memory.add_events_to_memory(app_name=APP, user_id=user_id, events=said)
+        # wait_for_completion takes ADK's generate path: its default ingest path sends the request from a background
+        # task after the client is closed, so nothing was saved (ADK 2.11, Oct 18).
+        await memory.add_events_to_memory(
+            app_name=APP, user_id=user_id, events=said, custom_metadata={"wait_for_completion": True}
+        )
     except Exception:
         logger.warning("memory save failed", exc_info=True)
+
+
+def _typed(event: Event) -> str | None:
+    if event.author != "user" or not event.content:
+        return None
+    return " ".join(part.text for part in event.content.parts or [] if part.text) or None

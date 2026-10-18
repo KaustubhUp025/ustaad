@@ -15,8 +15,10 @@ class FakeMemoryBank:
 
     def __init__(self):
         self.saved: dict[str, list[str]] = {}
+        self.metadata = None
 
-    async def add_events_to_memory(self, *, app_name, user_id, events, **_):
+    async def add_events_to_memory(self, *, app_name, user_id, events, custom_metadata=None):
+        self.metadata = custom_metadata
         self.saved.setdefault(user_id, []).extend(
             f"{e.author}: {e.content.parts[0].text}" for e in events
         )
@@ -75,3 +77,17 @@ def test_the_same_visit_keeps_its_memory_across_sessions():
     token = issue("w_hi_demo", datetime.now(UTC))
     assert memory_user("demo", "w_hi_demo", token) == memory_user("demo", "w_hi_demo", token)
     assert memory_user("dev", "w_hi_demo", token) != memory_user("demo", "w_hi_demo", token)
+
+
+def test_what_he_typed_is_saved_too():
+    bank = FakeMemoryBank()
+    typed = Event(author="user", content=types.Content(role="user", parts=[types.Part(text="Hindi mein baat karo")]))
+    asyncio.run(remember(bank, "dev:w_hi_demo:v1", [typed]))
+    assert bank.saved == {"dev:w_hi_demo:v1": ["user: Hindi mein baat karo"]}
+
+
+def test_the_save_waits_for_memory_bank_to_finish():
+    # ADK's default ingest path sends the request from a task whose client is already closed, so nothing is saved.
+    bank = FakeMemoryBank()
+    asyncio.run(remember(bank, "dev:w_hi_demo:v1", [spoken("user", "Inverter PCB weak hai")]))
+    assert bank.metadata == {"wait_for_completion": True}

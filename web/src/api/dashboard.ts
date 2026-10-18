@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { demoSession } from './session'
+import { demoSession, startDemo } from './session'
 import type { components } from './types'
 
 export type ImportStatus = components['schemas']['Import']['status']
@@ -18,7 +18,12 @@ function headers(): HeadersInit {
 }
 
 async function read<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, { headers: headers() })
+  let response = await fetch(`${API_URL}${path}`, { headers: headers() })
+  // The session lives in one tab; /d opened in a new tab or on a laptop starts the seeded demo worker's session.
+  if (response.status === 401 && !demoSession()) {
+    await startDemo()
+    response = await fetch(`${API_URL}${path}`, { headers: headers() })
+  }
   if (!response.ok) throw new Error('dashboard request failed')
   return response.json()
 }

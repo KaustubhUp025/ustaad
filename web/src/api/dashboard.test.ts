@@ -55,3 +55,22 @@ test('the retained fixture is explicit demo/test data only and covers every life
     'failed',
   ])
 })
+
+test('a dashboard opened without a session starts the demo one and reads again with its token', async () => {
+  const calls: string[] = []
+  const original = globalThis.fetch
+  globalThis.fetch = async (input, init) => {
+    const auth = new Headers(init?.headers).get('Authorization')
+    calls.push(`${init?.method ?? 'GET'} ${String(input)} ${auth ?? '-'}`)
+    if (String(input) === '/api/demo/session') return Response.json({ token: 't_demo' })
+    return auth ? Response.json({ items: [] }) : new Response(null, { status: 401 })
+  }
+
+  try {
+    await expect(readImports()).resolves.toEqual({ items: [] })
+  } finally {
+    globalThis.fetch = original
+  }
+
+  expect(calls).toEqual(['GET /api/imports -', 'POST /api/demo/session -', 'GET /api/imports Bearer t_demo'])
+})

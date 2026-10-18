@@ -116,11 +116,11 @@ with "Start a new job" and "Home".
 
 Safety gate: Graphite, a Meter Yellow shield and "Safety check first", the fixed instruction, the
 photo it needs, one line on why Ustaad waits, then "Send photo" (primary) and "Hear it again".
-The server mutes Ustaad while a gate is open (SAFETY.md, Enforcement 6), so the phone reads the
-same fixed text aloud with the browser's speech voice for his language when the gate opens; with
-no voice for his language it stays silent rather than read Hindi in an English voice. Safety stop:
-the whole screen turns Fault Red with one sentence in the worker's language and nothing else, and
-no audio. Camera sheet: slides up from the bottom (20px top radius) with Ustaad's request as the
+The server mutes Ustaad while a gate is open (SAFETY.md, Enforcement 6), so the phone plays a
+recorded clip of the same fixed text when the gate opens (`make gate-clips`); the browser's speech
+voice is the fallback, and with no voice for his language it stays silent rather than read Hindi in
+an English voice. Safety stop: the whole screen turns Fault Red with one sentence in the worker's
+language, no audio, and only the way out: "Start a new job" and "Home" (the stopped job ends there). Camera sheet: slides up from the bottom (20px top radius) with Ustaad's request as the
 title and a framing outline drawn over the viewfinder hint.
 
 **Stock**: title, a "Demo data" label in Copper text (a label, never a bordered box that looks

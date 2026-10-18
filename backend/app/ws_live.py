@@ -217,13 +217,17 @@ async def _downstream(
                     job, cut, heard_s, muted, dropped = None, False, 0.0, False, False
                 elif cut and ustaads:
                     continue
-                elif desk.load_job and ustaads:
+                elif ustaads:
                     if not muted:
+                        # Fail closed: with no loader, or a job that cannot be read, the gate state is unknown and
+                        # nothing of the turn is played.
                         try:
+                            if desk.load_job is None:
+                                raise LookupError("no job loader")
                             job = job or await to_thread(desk.load_job)
                             muted = open_gate(job) is not None
                             noted = noted and muted
-                        except Exception as exc:  # noqa: BLE001 — fail closed: unknown gate state plays nothing
+                        except Exception as exc:  # noqa: BLE001 — unknown gate state plays nothing
                             logger.warning("gate mute: job unreadable (%s)", type(exc).__name__)
                             muted = True
                     if muted:

@@ -26,6 +26,8 @@ def fake_live(monkeypatch):
         opened.append((lang, resume))
         if lang == "xx":
             raise RuntimeError("model not found")
+        # As building the agent does (repair_tools): the speech guards read the job, here one with no repair yet.
+        desk.load_job = lambda: RepairJob(job_id=job_id)
         while True:
             req = await queue.get()
             if req.close:
@@ -354,4 +356,14 @@ def test_ustaad_is_told_about_the_mute_once_per_gate(monkeypatch):
     with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_gate") as ws:
         ws.receive_json()
         assert _frames(ws, "turn_complete", 3) == ["turn_complete"] * 3
+    assert told == [ws_live.GATE_NOTE]
+
+
+def test_with_no_job_loader_ustaad_is_muted(monkeypatch):
+    """Fail closed (Samyak, #76): a desk that cannot read its job is treated like an unreadable job."""
+    told = _session(monkeypatch, "j_noloader", GATED, _turn(DOOR_SWITCHES))
+    ws_live.DESKS["j_noloader"].load_job = None
+    with TestClient(app).websocket_connect(f"/ws/live?token={TOKEN}&lang=hi&job_id=j_noloader") as ws:
+        ws.receive_json()
+        assert _frames(ws, "turn_complete") == ["turn_complete"]
     assert told == [ws_live.GATE_NOTE]

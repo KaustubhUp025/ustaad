@@ -4,7 +4,7 @@ from typing import Any
 
 from google.adk.events import Event
 
-from models.repair import GateId, RepairJob, RepairStep
+from models.repair import RepairJob, RepairStep
 from models.tools import StepOut
 from models.ws import (
     Caption,
@@ -17,7 +17,7 @@ from models.ws import (
     TurnComplete,
 )
 from tools import spoken
-from tools.hazard_tagger import hands_on, repair_talk, speech_power_on, speech_stop, without_gate_words
+from tools.hazard_tagger import hands_on, speech_power_on, speech_stop
 from tools.repair import step_card
 
 # Sent to Ustaad when the server cut him off for saying a step next_step had not handed out.
@@ -28,10 +28,11 @@ AHEAD_NOTE = (
 )
 
 
-# Sent to Ustaad when his turn was held back because a gate is open and he talked about the repair.
+# Sent to Ustaad when his turn was not played because a gate is open (SAFETY.md, gate mute).
 GATE_NOTE = (
-    "[The app did not play your last answer: a safety gate is open. Until its photo passes, talk only about the gate: "
-    "what to switch off and what to photograph. Answer his questions, but give no check, part or step.]"
+    "[The app did not play your last answer: a safety gate is open, and until its photo passes nothing you say is "
+    "played; his screen shows what to switch off and photograph. Wait for the note that it passed, then answer his "
+    "questions and go on.]"
 )
 
 
@@ -51,13 +52,6 @@ def ahead(said: str, job: RepairJob) -> RepairStep | None:
         if any(form and spoken.says(heard, spoken.words(form)) for form in forms):
             return step
     return None
-
-
-def releasable(said: str, job: RepairJob, gate: GateId) -> bool:
-    """Whether a turn Ustaad finished while `gate` was open may be played: gate talk and questions are; repair talk,
-    power-on talk, a stored step or a stop row are not. The server drops the turn on anything else, an error included."""
-    talk = without_gate_words(said, gate)
-    return not (speech_stop(said) or ahead(said, job) or repair_talk(talk) or speech_power_on(talk))
 
 
 def power_on_stop(said: str, job: RepairJob) -> bool:

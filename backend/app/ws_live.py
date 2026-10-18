@@ -23,7 +23,7 @@ from agent.media_tools import MediaDesk, ReadPhoto
 from agent.ustaad import build_ustaad
 from app import admission
 from app.demo_safe import demo_safe
-from app.live_events import AHEAD_NOTE, GATE_NOTE, ahead, power_on_stop, releasable, to_frames
+from app.live_events import AHEAD_NOTE, GATE_NOTE, ahead, power_on_stop, to_frames
 from app.session import verify
 from clients.firestore import CardStore, DemoCacheStore, InventoryStore, JobStore, QuoteStore, WorkerStore
 from clients.gemini import read_photo
@@ -163,12 +163,13 @@ async def _downstream(
 ) -> None:
     partials: dict[str, str] = {}
     # Speech guards: the job as last read (read again after a tool answer and at each turn), whether the rest of
-    # this turn is cut off, the seconds of audio the phone got this turn (how much he heard before a cut), and
-    # Ustaad's turn held back while a gate is open (None when not holding).
+    # this turn is cut off, the seconds of audio the phone got this turn (how much he heard before a cut), whether
+    # this turn is muted because a gate is open, and whether anything of it was dropped.
     job: RepairJob | None = None
     cut = False
     heard_s = 0.0
-    held: list[Frame | bytes] | None = None
+    muted = False
+    dropped = False
     try:
         async for event in live_events(queue, lang, resume, job_id, desk, worker_id):
             if event.content and any(part.function_response for part in event.content.parts or []):
@@ -176,17 +177,21 @@ async def _downstream(
             for item in to_frames(event, partials, lang):
                 ustaads = isinstance(item, bytes) or (isinstance(item, Caption) and item.who == "ustaad")
                 if isinstance(item, Interrupted | TurnComplete):
-                    if held is not None and isinstance(item, TurnComplete):
-                        await _release_or_drop(ws, desk, job, held)
-                    job, cut, heard_s, held = None, False, 0.0, None
+                    if dropped and isinstance(item, TurnComplete):
+                        desk.note(GATE_NOTE)
+                    job, cut, heard_s, muted, dropped = None, False, 0.0, False, False
                 elif cut and ustaads:
                     continue
                 elif desk.load_job and ustaads:
-                    job = job or await to_thread(desk.load_job)
-                    if held is None and open_gate(job):
-                        held = []
-                    if held is not None:
-                        held.append(item)
+                    if not muted:
+                        try:
+                            job = job or await to_thread(desk.load_job)
+                            muted = open_gate(job) is not None
+                        except Exception as exc:  # noqa: BLE001 — fail closed: unknown gate state plays nothing
+                            logger.warning("gate mute: job unreadable (%s)", type(exc).__name__)
+                            muted = True
+                    if muted:
+                        dropped = True
                         continue
                     if isinstance(item, Caption):
                         step = ahead(item.text, job)
@@ -212,28 +217,6 @@ async def _downstream(
         logger.exception("live session failed")
         await _send(ws, Error(code="live_unavailable", message="Live model unavailable"))
         await ws.close(code=1011)
-
-
-async def _release_or_drop(ws: WebSocket, desk: MediaDesk, job: RepairJob, held: list[Frame | bytes]) -> None:
-    """Ustaad finished a turn while a gate was open: it is played only if its caption is gate talk (releasable).
-    Fail closed (Samyak's review): no caption, an error while judging, or anything else drops it, and he is told to
-    talk only about the gate."""
-    said = next((item.text for item in reversed(held) if isinstance(item, Caption) and item.final), None)
-    gate = open_gate(job)
-    try:
-        ok = said is not None and gate is not None and releasable(said, job, gate)
-    except Exception as exc:  # noqa: BLE001 — anything that cannot be judged is not played
-        logger.warning("gate hold: judging failed (%s)", type(exc).__name__)
-        ok = False
-    if not ok:
-        logger.info("gate hold: turn dropped while %s open", gate)
-        desk.note(GATE_NOTE)
-        return
-    for item in held:
-        if isinstance(item, bytes):
-            await ws.send_bytes(item)
-        else:
-            await _send(ws, item)
 
 
 async def _stop_ahead(ws: WebSocket, desk: MediaDesk, n: int, heard_s: float) -> None:

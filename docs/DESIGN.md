@@ -55,7 +55,7 @@ Worker app, job screen (single column, left-aligned text, thumb zone at the bott
 ┌───────────────────────────────┐
 │ ▓▓  E6   Voltas 183V · 1.5T    │  ← code readout (Graphite strip, LED Cyan digits)
 ├───────────────────────────────┤
-│ Ustaad: Pehle outdoor unit ki  │  ← live captions, last 3 turns, 20px,
+│ Ustaad: Pehle outdoor unit ki  │  ← live captions, bounded history (up to 100), 20px,
 │ PCB dekhte hain…               │     worker's lines indented with a thin Solder Green rule
 │   Raju: haan, khol diya        │
 │ [▶ Ramesh · May 2025]          │  ← source chip (Solder Green outline)

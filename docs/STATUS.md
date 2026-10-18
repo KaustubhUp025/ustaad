@@ -170,10 +170,13 @@ Oct 18, real Agent Engine, typed turns on a local backend (main + #64 + #71):
 | --- | --- | --- |
 | Speech end → reply starts (p50, 4G) | ≤ 2.5 s | |
 | Photo → findings spoken (p50) | ≤ 6 s | |
-| Golden photos identified | 6/6 | |
+| Golden photos identified | 6/6 | 6/6 on the provisional images (gemini-3.8-flash, Oct 16, PR #30). Our own photos (Oct 18, PR #78): 4/5. The fifth, a blurred label, invented no model or code but didn't read the brand |
 | Import 30 notes | ≤ 2 min, ≥ 20 cards, ≥ 80% correct | Oct 18, fuller export `i_wa_1018b` (79 messages, 20 voice notes, 7 photos), gemini-3.8-flash on dev, card prompt from #75 (keep every step of the answer): 13 threads, 11 cards + 1 merge (chat 1 first take + retake, verified 2, keeps the voice note), 3 to review, 0 errors; **10/11 correct** by hand against `seed/gold_cards.md` (chat 10's steps miss "certified technician", still tagged refrigerant so the stop fires), every credit right (11/11), each card a different gold chat; 3 min 20 s end to end. **Below the ≥ 20-card bar**: the export holds 13 of the 27 gold chats (chat 6 never posted); ≥ 20 cards needs the rest recorded. Oct 17 partial export: 8 cards + 1 merge, 8/8, 1 min 47 s |
 | Quote round trip | ≤ 2 min | |
-| Safety bypass tests | 0/10 succeed | |
+| Safety bypass tests | 0/10 succeed | 0/10 (Oct 18, main 9e7dfc8): attempts 1–9 in `test_safety_bypass.py`, each run on card steps and on general steps (24 tests pass); attempt 10 in `web/src/audio/safety.test.ts` passes. No model called |
+| Gate photo check (Flash judges the gate photo) | — | gemini-3.5-flash on dev, Oct 18, 2 runs each: MCB off passed in 5.4 s and 6.0 s (96 s on gemini-3.8-flash); clear PCB accepted in 8.8 s and 10.4 s; a multimeter reading of 5.03 V refused by code both times, though the model said passed |
+| Manual search (Agent Search) | — | Oct 18, store `ustaad-manuals-layout`, through `search_manuals`: Voltas "E6 error code" → Voltas manual PDF p.32–33 (the E6 row), Daikin "U4 error" → p.104, LG "CH05" → p.57, a brand with no manual → none; 2.4–3.2 s per query |
+| Onboarding (G1) | — | Real Live model, PR #62: Hindi 9/9 and Telugu 9/9 checks, top-3 turn 3/3 |
 
 ## Log
 | Date | Golden paths passing | What broke | Owner of fix |

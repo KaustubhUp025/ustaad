@@ -28,23 +28,28 @@ export function QuotesCard({ quoteRequestId, initialItems }: Props) {
   const waiting = query.isPending || rows.length === 0 || rows.some((row) => row.available === null)
 
   return (
-    <section aria-labelledby="quotes-title" className="mx-4 mb-4 rounded-sm border border-border bg-card px-4 py-4">
-      <div className="flex items-baseline justify-between gap-3">
+    <section aria-labelledby="quotes-title" className="mx-4 mb-4 border border-border border-l-4 border-l-parts bg-card px-4 py-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <h2 id="quotes-title" className="font-heading text-[length:var(--text-lg)] font-bold">
           {t('quotes.title')}
         </h2>
-        {waiting && <p role="status" className="text-[length:var(--text-sm)] text-muted-foreground">{t('quotes.waiting')}</p>}
+        {waiting && <p role="status" className="rounded-sm bg-background px-2 py-1 text-[length:var(--text-sm)] text-muted-foreground">{t('quotes.waiting')}</p>}
       </div>
 
       {query.isError && (
-        <p role="alert" className="mt-3 text-[length:var(--text-body)] text-destructive">{t('quotes.loadFailed')}</p>
+        <div role="alert" className="mt-3 flex flex-col items-start gap-3 border-l-4 border-destructive bg-background p-3 text-[length:var(--text-body)]">
+          <p>{t('quotes.loadFailed')}</p>
+          <Button variant="outline" className="h-(--touch) px-6" onClick={() => void query.refetch()}>
+            {t('live.retry')}
+          </Button>
+        </div>
       )}
 
       <ul className="mt-3 space-y-3">
         {rows.map((row) => (
           <li key={row.id} className="border-l-4 border-parts bg-background px-3 py-3">
             <div className="flex items-start justify-between gap-3">
-              <p className="font-semibold">{row.vendor}</p>
+              <p className="min-w-0 font-semibold">{row.vendor}</p>
               {row.fromVoice && (
                 <span className="inline-flex items-center gap-1 rounded-sm bg-secondary px-2 py-1 text-[length:var(--text-sm)]">
                   <Mic aria-hidden className="size-4" /> {t('quotes.voiceReply')}
@@ -72,7 +77,7 @@ export function QuotesCard({ quoteRequestId, initialItems }: Props) {
         ))}
       </ul>
 
-      {approve.isError && <p role="alert" className="mt-3 text-[length:var(--text-body)] text-destructive">{t('quotes.approvalFailed')}</p>}
+      {approve.isError && <p role="alert" className="mt-3 border-l-4 border-destructive bg-background px-3 py-2 text-[length:var(--text-body)] text-destructive">{t('quotes.approvalFailed')}</p>}
     </section>
   )
 }

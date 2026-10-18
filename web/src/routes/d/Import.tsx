@@ -11,7 +11,7 @@ export default function ImportDashboard() {
   const currentIndex = STEPS.indexOf(current.status)
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto min-w-0 max-w-5xl">
       <header className="border-b border-border pb-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-heading text-[length:var(--text-xl)] font-bold">{t('dashboard.import')}</h1>
@@ -22,7 +22,7 @@ export default function ImportDashboard() {
         <p className="mt-2 max-w-3xl text-muted-foreground">{t('dashboard.importDisclosure')}</p>
       </header>
 
-      <section className="mt-6 border-l-4 border-l-primary bg-card p-5" aria-labelledby="progress-title">
+      <section className="mt-6 border border-border border-l-4 border-l-primary bg-card p-5" aria-labelledby="progress-title">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 id="progress-title" className="font-heading text-[length:var(--text-lg)] font-bold">
@@ -30,7 +30,7 @@ export default function ImportDashboard() {
             </h2>
             <p role="status" className="mt-1">{t(`dashboard.status.${current.status}`)}</p>
           </div>
-          <span className="font-heading text-[length:var(--text-xl)] font-bold tabular-nums">
+          <span className="rounded-sm bg-background px-3 py-2 font-heading text-[length:var(--text-xl)] font-bold tabular-nums">
             {current.cardsCreated}
           </span>
         </div>
@@ -39,7 +39,7 @@ export default function ImportDashboard() {
           {STEPS.map((step, index) => (
             <li
               key={step}
-              className={`border-t-4 px-1 pt-2 text-[length:var(--text-sm)] ${index <= currentIndex ? 'border-t-ok' : 'border-t-border text-muted-foreground'}`}
+              className={`border-t-4 bg-background px-2 pt-2 text-[length:var(--text-sm)] ${index <= currentIndex ? 'border-t-ok' : 'border-t-border text-muted-foreground'}`}
             >
               {index < currentIndex ? (
                 <Check className="mb-1" size={18} />
@@ -67,9 +67,9 @@ export default function ImportDashboard() {
           {dashboardFixture.importHistory.map((item, index) => (
             <li
               key={item.id}
-              className="grid grid-cols-[32px_1fr_auto] items-center gap-3 border-b border-border px-2 py-4 last:border-b-0"
+              className="grid grid-cols-[32px_minmax(0,1fr)] items-center gap-3 border-b border-border px-2 py-4 last:border-b-0 sm:grid-cols-[32px_minmax(0,1fr)_auto]"
             >
-              <FileArchive className="text-parts" size={22} />
+              <FileArchive className="shrink-0 text-parts" size={22} />
               <div>
                 <p className="font-semibold">{t('dashboard.importItem', { number: index + 1 })}</p>
                 <p className="text-[length:var(--text-sm)] text-muted-foreground">
@@ -87,7 +87,7 @@ export default function ImportDashboard() {
                 ))}
               </div>
               {item.cardsCreated > 0 && (
-                <span className="rounded-sm border border-ok px-2 py-1 text-[length:var(--text-sm)] text-ok">
+                <span className="col-start-2 justify-self-start rounded-sm border border-ok px-2 py-1 text-[length:var(--text-sm)] text-ok sm:col-start-auto">
                   {t('dashboard.cardsCreatedBadge', { count: item.cardsCreated })}
                 </span>
               )}

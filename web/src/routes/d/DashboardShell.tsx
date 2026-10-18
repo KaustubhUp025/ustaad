@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 
+import { UstaadLogo } from '@/components/brand/UstaadLogo'
+
 export default function DashboardShell({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -12,7 +14,7 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
     <div className="min-h-dvh bg-background text-foreground lg:grid lg:grid-cols-[240px_1fr]">
       <aside className="border-b border-border bg-graphite text-housing lg:min-h-dvh lg:border-r lg:border-b-0 lg:border-r-border">
         <div className="px-5 py-5">
-          <div className="font-heading text-[length:var(--text-xl)] font-bold">Ustaad</div>
+          <UstaadLogo variant="lockup" on="dark" height={36} />
           <p className="mt-1 text-[length:var(--text-sm)] text-housing/80">{t('dashboard.subtitle')}</p>
         </div>
         <nav aria-label={t('dashboard.navigation')} className="grid grid-cols-2 lg:grid-cols-1">

@@ -3,6 +3,7 @@ one appliance type, cards with the exact error code first, then by similarity. E
 code match of the asked brand outranks a closer symptom and is kept even below the relevance floor; a code means
 nothing across brands, so a general card's code earns nothing."""
 
+import re
 from collections.abc import Callable
 
 from models.fault_card import FaultCard
@@ -24,8 +25,9 @@ ACRONYM_MAX = 3
 
 
 def canonical_brand(brand: str) -> str:
-    """One spelling per brand, so Firestore's exact brand filter ignores case and spacing."""
-    words = brand.split()
+    """One spelling per brand, so Firestore's exact brand filter ignores case, spacing and punctuation ("VOLTAS.beko"
+    as read from a label is "Voltas Beko")."""
+    words = re.findall(r"[^\W_]+", brand)
     return " ".join(w.upper() if len(w) <= ACRONYM_MAX else w.capitalize() for w in words)
 
 

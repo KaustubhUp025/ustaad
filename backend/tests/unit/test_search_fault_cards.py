@@ -87,6 +87,13 @@ def test_brands_are_compared_in_one_spelling(given, stored):
     assert canonical_brand(given) == stored
 
 
+@pytest.mark.parametrize(("given", "stored"), [("VOLTAS.beko", "Voltas Beko"), ("Blue-Star", "Blue Star"), ("LG,", "LG")])
+def test_punctuation_between_brand_words_is_a_word_break(given, stored):
+    # Our own washing-machine label (Oct 18): Flash read the brand as "VOLTAS.beko"; split only on spaces it became
+    # "Voltas.beko", which never equals a card's "Voltas Beko", so search would quietly find nothing.
+    assert canonical_brand(given) == stored
+
+
 def test_the_brand_search_ignores_case():
     out = search_fault_cards(SearchFaultCardsIn(brand="VOLTAS", error_code="E6"), embed, seeded().nearest)
     assert out.cards[0].card_id == "fc_e6"

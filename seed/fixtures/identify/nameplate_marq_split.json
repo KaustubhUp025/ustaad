@@ -1,0 +1,50 @@
+{
+  "brand": "Flipkart MarQ",
+  "model": "155IPG25WQ/2025",
+  "series": null,
+  "type": "split_ac",
+  "error_code": null,
+  "confidence": 0.9,
+  "observations": [
+    {
+      "label": "Appliance/Type",
+      "value": "RAC/Split",
+      "confidence": 0.95
+    },
+    {
+      "label": "ISEER",
+      "value": "5.10",
+      "confidence": 0.95
+    },
+    {
+      "label": "Cooling Capacity (100%)",
+      "value": "5150 W",
+      "confidence": 0.95
+    },
+    {
+      "label": "Cooling Capacity (50%)",
+      "value": "2575 W",
+      "confidence": 0.95
+    },
+    {
+      "label": "Electricity Consumption",
+      "value": "781.88 Units Per year",
+      "confidence": 0.95
+    },
+    {
+      "label": "Compressor Type",
+      "value": "Variable Speed",
+      "confidence": 0.95
+    },
+    {
+      "label": "Heat Pump",
+      "value": "No",
+      "confidence": 0.95
+    },
+    {
+      "label": "Star Rating",
+      "value": "5 Star",
+      "confidence": 0.95
+    }
+  ]
+}

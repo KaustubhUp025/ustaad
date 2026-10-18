@@ -1,0 +1,25 @@
+{
+  "brand": "VOLTAS",
+  "model": null,
+  "series": null,
+  "type": "window_ac",
+  "error_code": null,
+  "confidence": 0.85,
+  "observations": [
+    {
+      "label": "Appliance Type on BEE Label",
+      "value": "RAC / Window",
+      "confidence": 0.85
+    },
+    {
+      "label": "Star Rating",
+      "value": "2 Star",
+      "confidence": 0.8
+    },
+    {
+      "label": "Display Status",
+      "value": "Off / Blank",
+      "confidence": 0.95
+    }
+  ]
+}

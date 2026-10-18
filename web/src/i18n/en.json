@@ -204,7 +204,9 @@
     "setup": "Set up a profile",
     "pickLanguage": "Which language do you want to talk in?",
     "starting": "Starting…",
-    "failed": "Couldn't start. Check your network, then try again."
+    "failed": "Couldn't start. Check your network, then try again.",
+    "jobTitle": "Hold the yellow mic and say namaste to set up your profile",
+    "jobText": "Ustaad will ask 6 short questions: what you repair, which brands, your pincode, years of work, the parts you keep and your parts shop. Answer each one in your own words."
   },
   "profile": {
     "title": "Your profile",

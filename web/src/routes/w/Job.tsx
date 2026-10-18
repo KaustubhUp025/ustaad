@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { demoSession } from '@/api/session'
+import gateClips from '@/audio/gateClips.json'
 import { hasProfile } from '@/audio/profile'
 import { stepLines } from '@/audio/safety'
 import { speak } from '@/audio/speak'
@@ -29,7 +30,10 @@ export default function Job() {
 function JobScreen() {
   const { t, i18n } = useTranslation()
   // ?lang= picks the language until onboarding (T21) saves it on the profile.
-  const lang = useSearchParams()[0].get('lang') ?? i18n.language
+  const [params] = useSearchParams()
+  const lang = params.get('lang') ?? i18n.language
+  // Home's "Set up a profile": the empty screen explains the interview instead of offering repair questions.
+  const onboarding = params.get('onboarding') === '1'
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const live = useLive(lang, id)
@@ -52,10 +56,17 @@ function JobScreen() {
     document.documentElement.lang = lang
   }, [i18n, lang])
 
-  // The gate's fixed text, read aloud once when it opens (see audio/speak.ts); "Hear it again" repeats it.
+  // The gate's fixed text, played once when it opens and again on "Hear it again": the recorded clip through Ustaad's
+  // speaker (`make gate-clips`), or the browser voice where there is no clip (see audio/speak.ts).
   const gateText = gate ? `${t(`repair.gate.${gate.gate_id}`)} ${t(`repair.evidence.${gate.gate_id}`)}` : ''
+  const sayGate = async () => {
+    if (!gate) return
+    const hasClip = lang in gateClips
+    if (!(hasClip && (await live.playClip(`/audio/gates/${lang}/${gate.gate_id}.pcm`)))) speak(gateText, lang)
+  }
   useEffect(() => {
-    if (gateText) speak(gateText, lang)
+    if (gateText) void sayGate()
+    // Only a new gate (or language) plays it again; sayGate changes every render.
   }, [gateText, lang])
 
   // Connecting shows in the header's pill; the strip below is for states he has to act on.
@@ -140,7 +151,7 @@ function JobScreen() {
             <Button
               variant="outline"
               className="h-14 gap-2 border-housing/40 bg-transparent px-6 text-[length:var(--text-body)] text-housing hover:bg-housing/10 hover:text-housing"
-              onClick={() => speak(gateText, lang)}
+              onClick={() => void sayGate()}
             >
               <Volume2 aria-hidden className="size-6" />
               {t('repair.hearAgain')}
@@ -178,33 +189,41 @@ function JobScreen() {
           )}
           <section aria-live="polite" className="flex flex-1 flex-col gap-3 px-4 py-5 text-[length:var(--text-caption)]">
             {live.captions.length === 0 && !step && !closed && (
-              // The empty job explains itself: what to do, questions to tap, and the photo buttons below.
+              // The empty job explains itself: what to do, questions to tap (not while onboarding), and the photo buttons below.
               <div className="flex flex-1 flex-col justify-center gap-5">
                 <div className="flex items-start gap-3">
                   <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                     <Mic className="size-6" />
                   </span>
                   <div>
-                    <h2 className="font-heading text-[length:var(--text-lg)] leading-tight font-bold">{t('live.emptyTitle')}</h2>
-                    <p className="mt-1 text-[length:var(--text-body)] text-muted-foreground">{t('live.emptyText')}</p>
+                    <h2 className="font-heading text-[length:var(--text-lg)] leading-tight font-bold">
+                      {t(onboarding ? 'onboard.jobTitle' : 'live.emptyTitle')}
+                    </h2>
+                    <p className="mt-1 text-[length:var(--text-body)] text-muted-foreground">
+                      {t(onboarding ? 'onboard.jobText' : 'live.emptyText')}
+                    </p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('live.tapToAsk')}</p>
-                  {(['ex1', 'ex2', 'ex3'] as const).map((key) => (
-                    <button
-                      key={key}
-                      type="button"
-                      lang="hi"
-                      disabled={live.status !== 'ready'}
-                      onClick={() => live.sendText(t(`live.${key}`))}
-                      className="min-h-(--touch) rounded-lg border border-border bg-card px-4 py-3 text-left text-[length:var(--text-body)] outline-none hover:border-primary focus-visible:ring-4 focus-visible:ring-ring disabled:opacity-50"
-                    >
-                      “{t(`live.${key}`)}”
-                    </button>
-                  ))}
-                </div>
-                <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('live.orShow')}</p>
+                {!onboarding && (
+                  <>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('live.tapToAsk')}</p>
+                      {(['ex1', 'ex2', 'ex3'] as const).map((key) => (
+                        <button
+                          key={key}
+                          type="button"
+                          lang="hi"
+                          disabled={live.status !== 'ready'}
+                          onClick={() => live.sendText(t(`live.${key}`))}
+                          className="min-h-(--touch) rounded-lg border border-border bg-card px-4 py-3 text-left text-[length:var(--text-body)] outline-none hover:border-primary focus-visible:ring-4 focus-visible:ring-ring disabled:opacity-50"
+                        >
+                          “{t(`live.${key}`)}”
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('live.orShow')}</p>
+                  </>
+                )}
               </div>
             )}
             {live.captions.map((line, i) => (

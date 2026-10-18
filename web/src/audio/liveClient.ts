@@ -65,6 +65,7 @@ export interface LiveConnection {
   mediaCancel(requestId: string): void
   stepDone(n: number): void
   sendText(text: string): void
+  playClip(url: string): Promise<boolean>
   close(): void
 }
 
@@ -93,27 +94,30 @@ function storedHandle(jobId: string): string | null {
   }
 }
 
-interface Audio {
-  capture: MessagePort
-  playback: MessagePort
+// Contexts can only start on a user gesture. The speaker opens on his first tap (a question or the mic), so a tapped
+// question is heard (phone test, Oct 18: it was captions only); the mic opens on the first mic press.
+function openSpeaker(): Promise<MessagePort> {
+  const ctx = new AudioContext({ sampleRate: 24000 })
+  // resume() is called inside the gesture; after the await below the gesture may count as over.
+  const resumed = ctx.resume()
+  return ctx.audioWorklet.addModule(playbackUrl).then(async () => {
+    const node = new AudioWorkletNode(ctx, 'playback')
+    node.connect(ctx.destination)
+    await resumed
+    return node.port
+  })
 }
 
-// Contexts can only start on a user gesture, so this runs on the first mic press.
-async function openAudio(): Promise<Audio> {
+async function openMic(): Promise<MessagePort> {
   const mic = await navigator.mediaDevices.getUserMedia({
     audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
   })
-  const inCtx = new AudioContext()
-  await inCtx.audioWorklet.addModule(captureUrl)
-  const capture = new AudioWorkletNode(inCtx, 'capture', { numberOfOutputs: 0 })
-  inCtx.createMediaStreamSource(mic).connect(capture)
-
-  const outCtx = new AudioContext({ sampleRate: 24000 })
-  await outCtx.audioWorklet.addModule(playbackUrl)
-  const playback = new AudioWorkletNode(outCtx, 'playback')
-  playback.connect(outCtx.destination)
-  await Promise.all([inCtx.resume(), outCtx.resume()])
-  return { capture: capture.port, playback: playback.port }
+  const ctx = new AudioContext()
+  await ctx.audioWorklet.addModule(captureUrl)
+  const capture = new AudioWorkletNode(ctx, 'capture', { numberOfOutputs: 0 })
+  ctx.createMediaStreamSource(mic).connect(capture)
+  await ctx.resume()
+  return capture.port
 }
 
 export function openLive(
@@ -123,8 +127,8 @@ export function openLive(
   onStatus: (status: LiveStatus) => void,
 ): LiveConnection {
   let ws: WebSocket | null = null
-  let audio: Promise<Audio> | null = null
-  let playback: MessagePort | null = null
+  let mic: Promise<MessagePort> | null = null
+  let speaker: Promise<MessagePort | null> | null = null
   let resume = storedHandle(jobId)
   let lastError: string | null = null
   let failures = 0
@@ -134,6 +138,14 @@ export function openLive(
   let sessionReady = false
   const turn = new TurnBuffer()
   const timers: number[] = []
+
+  // Chained on the promise, so audio that arrives while the speaker opens plays in order instead of being dropped.
+  const toSpeaker = (data: ArrayBuffer | 'clear') =>
+    void speaker?.then((port) => port?.postMessage(data, typeof data === 'string' ? [] : [data]))
+  // A speaker that failed to open is tried again on his next tap.
+  const openSpeakerOnce = () => {
+    speaker ??= openSpeaker().catch(() => (speaker = null))
+  }
 
   const send = (data: string | ArrayBuffer) => {
     if (ws?.readyState === WebSocket.OPEN) ws.send(data)
@@ -154,7 +166,7 @@ export function openLive(
       resume = frame.handle
       storeHandle(jobId, resume)
     }
-    if (frame.type === 'interrupted') playback?.postMessage('clear')
+    if (frame.type === 'interrupted') toSpeaker('clear')
     if (frame.type === 'error') lastError = frame.code
     // An expired handle would fail every reconnect; the next one starts a new session instead.
     if (frame.type === 'error' && frame.code === 'live_unavailable') {
@@ -171,7 +183,7 @@ export function openLive(
     ws.binaryType = 'arraybuffer'
     ws.onmessage = (e: MessageEvent<string | ArrayBuffer>) => {
       if (typeof e.data === 'string') handle(JSON.parse(e.data))
-      else playback?.postMessage(e.data, [e.data])
+      else toSpeaker(e.data)
     }
     ws.onclose = () => {
       sessionReady = false
@@ -211,13 +223,13 @@ export function openLive(
     async startTalking() {
       held = true
       // Barge-in: the worker pressing the mic silences Ustaad at once, without waiting for the server.
-      playback?.postMessage('clear')
-      audio ??= openAudio()
-      const { capture, playback: out } = await audio.catch((err: unknown) => {
-        audio = null
+      toSpeaker('clear')
+      openSpeakerOnce()
+      mic ??= openMic()
+      const capture = await mic.catch((err: unknown) => {
+        mic = null
         throw err
       })
-      playback = out
       capture.onmessage = (e: MessageEvent<ArrayBuffer>) => {
         if (talking) sendTurn(e.data)
       }
@@ -246,7 +258,17 @@ export function openLive(
       sendFrame({ type: 'step_done', n })
     },
     sendText(text) {
+      openSpeakerOnce()
       sendFrame({ type: 'text', text })
+    },
+    // A fixed recorded clip (the gate's text) through the same speaker; false when it cannot be fetched.
+    async playClip(url) {
+      openSpeakerOnce()
+      const res = await fetch(url)
+      if (!res.ok) return false
+      toSpeaker('clear')
+      toSpeaker(await res.arrayBuffer())
+      return true
     },
     close() {
       closed = true

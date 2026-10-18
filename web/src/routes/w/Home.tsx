@@ -28,7 +28,7 @@ export default function Home() {
     setDemo('starting')
     try {
       await startDemo(onboarding ? { onboarding, lang } : undefined)
-      navigate(`/w/job/j_${crypto.randomUUID().slice(0, 8)}?lang=${lang}`)
+      navigate(`/w/job/j_${crypto.randomUUID().slice(0, 8)}?lang=${lang}${onboarding ? '&onboarding=1' : ''}`)
     } catch {
       setDemo('failed')
     }

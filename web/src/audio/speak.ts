@@ -1,6 +1,6 @@
 // SAFETY.md Enforcement 6: while a gate is open the server plays none of Ustaad's speech, and the gate screen's fixed
-// text is the only instruction. The phone reads that same fixed text aloud, so he hears what to do with his hands
-// busy (phone test, Oct 18: the gate was silent).
+// text is the only instruction. The phone plays a recorded clip of that text (audio/gateClips.json); this browser voice
+// is the fallback for a language with no clip.
 const VOICE_LANG: Record<string, string> = { hi: 'hi-IN', te: 'te-IN', ta: 'ta-IN', bn: 'bn-IN', en: 'en-IN' }
 
 export function pickVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null {
@@ -19,7 +19,8 @@ export function speak(text: string, lang: string): boolean {
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = voice?.lang ?? VOICE_LANG[lang] ?? lang
   if (voice) utterance.voice = voice
-  speechSynthesis.cancel()
+  // Chrome drops an utterance spoken straight after cancel(), so cancel only when something is playing.
+  if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel()
   speechSynthesis.speak(utterance)
   return true
 }

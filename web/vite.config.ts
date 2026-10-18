@@ -10,17 +10,20 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Ustaad',
         short_name: 'Ustaad',
         start_url: '/w',
         display: 'standalone',
         // manifest values can't read CSS variables: Graphite and Housing White from tokens.css
-        theme_color: '#1d2327',
-        background_color: '#eef1ef',
+        theme_color: '#1D2327',
+        background_color: '#EEF1EF',
         icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
         // docs/SPEC.md §8
         share_target: {

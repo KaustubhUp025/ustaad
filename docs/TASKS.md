@@ -72,7 +72,7 @@ Lane A's code is folded into T12, T16 and T21 above. These rows are the rest. Fi
 | ID | P | Owner | Task | Read | Done when | Needs | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T31 | P0 | both | Shoot video (real AC, two phones, screen capture) | PRODUCT.md | raw takes for every beat | T30 | todo |
-| T32 | P0 | B | Deck (10 slides), README final, architecture image | PRODUCT.md, STATUS.md | PDF in docs/ | T29 | doing: evidence-labelled 10-slide deck skeleton |
+| T32 | P0 | B | Deck (10 slides), README final, architecture image | PRODUCT.md, STATUS.md | PDF in docs/ | T29 | doing: evidence-labelled 10-slide deck skeleton; Oct 18 (A): README revamped for judges: try-it steps, every feature with a screenshot and how to check it, what is real vs demo, architecture diagram; screenshots in docs/readme/ |
 | T33 | P0 | A | Edit video, subtitles, narration, < 2:58 | — | uploaded unlisted + Drive copy | T31 | todo |
 | T34 | P0 | A | Final demo deploy; check all links in incognito on phone and laptop | WORKFLOW checklist | checklist ticked | T33 | doing: Oct 18 demo deployed from tag v1-demo (ad0ed1f): ustaad-api on DB demo with 1 GiB (512 MiB died on the first Live session), 11 cards + import + 2 vendors copied, Hosting rebuilt, Telegram webhook on demo, bucket CORS back to the repo file; phone check in incognito left |
 | T35 | P0 | both | **Submit by 21:00 IST** | WORKFLOW checklist | confirmation screenshot | T32, T34 | todo |

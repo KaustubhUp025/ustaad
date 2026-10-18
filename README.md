@@ -8,8 +8,8 @@
 <h3 align="center">The senior technician in every repair worker's pocket</h3>
 
 <p align="center">
-  <b><a href="https://ustaad101.web.app">Live demo: ustaad101.web.app</a></b> · Video: <i>(link at submission)</i> ·
-  Deck: <a href="docs/ustaad-deck-skeleton.pdf">docs/ustaad-deck-skeleton.pdf</a>
+  <b><a href="https://ustaad101.web.app">Live demo: ustaad101.web.app</a></b> · <b><a href="https://youtu.be/UyKmPl6wMFU">Video (YouTube)</a></b> ·
+  <b><a href="docs/ustaad-deck.pdf">Deck (PDF)</a></b>
 </p>
 
 India's AC and appliance repair workers learn from seniors in WhatsApp groups, in voice notes that nobody can

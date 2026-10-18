@@ -130,7 +130,7 @@ Not measured yet: speech end → reply time on 4G, and the quote round trip.
 
 ```mermaid
 flowchart LR
-  P["Phone PWA<br/>(React, push-to-talk)"] <-- "WebSocket: audio, frames" --> A["Cloud Run: FastAPI + ADK agent"]
+  P["Phone PWA<br/>(React, push-to-talk)"] <-->|"WebSocket: audio, frames"| A["Cloud Run: FastAPI + ADK agent"]
   A <--> L["Gemini Live"]
   A --> T["Tools: fault cards, manuals,<br/>photo check, gates, stock, quotes"]
   T --> F[("Firestore")]
@@ -138,8 +138,9 @@ flowchart LR
   T --> V["Gemini Flash<br/>(vision, translation)"]
   T --> G["Telegram bot<br/>(parts shops)"]
   A --> M["Memory Bank"]
-  W["WhatsApp export"] --> J["Cloud Run Job:<br/>transcribe, thread, extract"] --> F
-  D["Laptop dashboard"] -- REST --> A
+  W["WhatsApp export"] --> J["Cloud Run Job:<br/>transcribe, thread, extract"]
+  J --> F
+  D["Laptop dashboard"] -->|REST| A
 ```
 
 One ADK agent runs on Gemini Live. Its tools are plain Python functions with Pydantic inputs and outputs. The safety

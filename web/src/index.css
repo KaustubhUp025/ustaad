@@ -10,6 +10,11 @@
     from { top: 0; }
     to { top: calc(100% - 4px); }
   }
+  /* The code readout blinks twice like the AC's own display, then holds (DESIGN.md: the one orchestrated motion). */
+  --animate-readout: readout 0.45s steps(1, end) 4;
+  @keyframes readout {
+    50% { opacity: 0.15; }
+  }
   --font-sans: var(--font-body);
   --font-heading: var(--font-display);
   --font-code: var(--font-code);
@@ -35,6 +40,7 @@
   --color-parts: var(--parts);
   --color-graphite: var(--graphite);
   --color-housing: var(--housing-white);
+  --color-led: var(--led-cyan);
   --radius-sm: var(--radius-tag);
   --radius-md: var(--radius-tag);
   --radius-lg: var(--radius-sheet);

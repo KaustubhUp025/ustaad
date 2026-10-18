@@ -1,19 +1,22 @@
-import { BookOpen, Camera, Check, Mic } from 'lucide-react'
+import { BookOpen, Camera, Check, CircleCheck, Mic, ShieldAlert, Volume2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { demoSession } from '@/api/session'
 import { hasProfile } from '@/audio/profile'
 import { stepLines } from '@/audio/safety'
+import { speak } from '@/audio/speak'
 import { useLive } from '@/audio/useLive'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 import { CameraSheet } from './CameraSheet'
+import { CodeReadout } from './CodeReadout'
 import { ProfileCard } from './ProfileCard'
 import { SourceChip } from './SourceChip'
 import { QuotesCard } from './QuotesCard'
+import { StatusPill, WorkerHeader } from './WorkerHeader'
 
 // The job screen: live captions, the current step card, the safety gate and stop screens, the camera sheet, and the
 // push-to-talk mic.
@@ -28,6 +31,7 @@ function JobScreen() {
   // ?lang= picks the language until onboarding (T21) saves it on the profile.
   const lang = useSearchParams()[0].get('lang') ?? i18n.language
   const { id = '' } = useParams()
+  const navigate = useNavigate()
   const live = useLive(lang, id)
   const { step, gate, failReason, stop, closed } = live.repair
   const lines = step && stepLines(step)
@@ -48,8 +52,15 @@ function JobScreen() {
     document.documentElement.lang = lang
   }, [i18n, lang])
 
+  // The gate's fixed text, read aloud once when it opens (see audio/speak.ts); "Hear it again" repeats it.
+  const gateText = gate ? `${t(`repair.gate.${gate.gate_id}`)} ${t(`repair.evidence.${gate.gate_id}`)}` : ''
+  useEffect(() => {
+    if (gateText) speak(gateText, lang)
+  }, [gateText, lang])
+
+  // Connecting shows in the header's pill; the strip below is for states he has to act on.
   const notice = {
-    connecting: 'live.connecting',
+    connecting: null,
     reconnecting: 'live.reconnecting',
     failed: 'live.failed',
     busy: 'live.busy',
@@ -57,11 +68,17 @@ function JobScreen() {
   }[live.status]
 
   return (
-    <main className={cn('mx-auto flex min-h-dvh max-w-md flex-col', stop && 'bg-destructive text-housing')}>
+    <main className={cn('mx-auto flex min-h-dvh max-w-2xl flex-col', stop && 'bg-destructive text-housing')}>
       {!stop && (
-        <header className="bg-graphite px-4 py-4 text-housing">
-          <h1 className="font-heading text-[length:var(--text-xl)] font-bold">Ustaad</h1>
-        </header>
+        <>
+          <WorkerHeader back>
+            <StatusPill
+              state={live.status === 'ready' ? 'ok' : live.status === 'connecting' || live.status === 'reconnecting' ? 'pending' : 'error'}
+              label={t(live.status === 'ready' ? 'health.live' : live.status === 'connecting' ? 'health.checking' : 'health.offline')}
+            />
+          </WorkerHeader>
+          {live.identified && <CodeReadout identified={live.identified} />}
+        </>
       )}
 
       {notice && (
@@ -92,55 +109,49 @@ function JobScreen() {
           onCancel={gate ? () => setGatePhoto(false) : live.cancelMedia}
         />
       ) : gate ? (
-        <section role="alert" className="flex flex-1 flex-col justify-center gap-4 bg-graphite px-6 py-10 text-housing">
-          <h2 className="font-heading text-[length:var(--text-xl)] font-bold text-primary">{t('repair.gateTitle')}</h2>
-          <p className="text-[length:var(--text-lg)]">{t(`repair.gate.${gate.gate_id}`)}</p>
+        <section role="alert" className="flex flex-1 flex-col justify-center gap-5 bg-graphite px-6 py-8 text-housing">
+          <div className="flex items-center gap-3">
+            <ShieldAlert aria-hidden className="size-10 shrink-0 text-primary" />
+            <h2 className="font-heading text-[length:var(--text-xl)] leading-tight font-bold text-primary">{t('repair.gateTitle')}</h2>
+          </div>
+          <p className="text-[length:var(--text-lg)] font-semibold">{t(`repair.gate.${gate.gate_id}`)}</p>
           <p className="text-[length:var(--text-body)]">{t(`repair.evidence.${gate.gate_id}`)}</p>
+          <p className="border-l-2 border-housing/40 pl-3 text-[length:var(--text-sm)] text-housing/80">
+            {t('repair.gateWhy')} {t('repair.gateNext')}
+          </p>
           {failReason && (
             <p className="border-l-4 border-primary pl-3 text-[length:var(--text-body)]">
               {t('repair.gateFailed', { reason: failReason })}
             </p>
           )}
           {/* The server opens the gate's photo request with the gate; if it has not arrived, the offer fetches it. */}
-          <Button
-            className="h-(--touch) gap-2 self-start px-6 text-[length:var(--text-body)]"
-            disabled={live.status !== 'ready'}
-            onClick={() => {
-              setGatePhoto(true)
-              if (!request) live.offerPhoto()
-            }}
-          >
-            <Camera aria-hidden className="size-6" />
-            {t('camera.sendGatePhoto')}
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              className="h-14 gap-2 px-6 text-[length:var(--text-body)] font-semibold sm:flex-1"
+              disabled={live.status !== 'ready'}
+              onClick={() => {
+                setGatePhoto(true)
+                if (!request) live.offerPhoto()
+              }}
+            >
+              <Camera aria-hidden className="size-6" />
+              {t('camera.sendGatePhoto')}
+            </Button>
+            <Button
+              variant="outline"
+              className="h-14 gap-2 border-housing/40 bg-transparent px-6 text-[length:var(--text-body)] text-housing hover:bg-housing/10 hover:text-housing"
+              onClick={() => speak(gateText, lang)}
+            >
+              <Volume2 aria-hidden className="size-6" />
+              {t('repair.hearAgain')}
+            </Button>
+          </div>
         </section>
       ) : (
         <>
-          <section aria-live="polite" className="flex flex-1 flex-col justify-end gap-3 px-4 py-6 text-[length:var(--text-caption)]">
-            {live.captions.length === 0 && <p className="text-muted-foreground">{t('live.empty')}</p>}
-            {live.captions.map((line, i) => (
-              <p
-                key={i}
-                className={cn(
-                  line.who === 'user' && 'ml-6 border-l-2 border-ok pl-3',
-                  !line.final && 'text-muted-foreground',
-                )}
-              >
-                <span className="sr-only">{t(line.who === 'user' ? 'live.you' : 'live.ustaad')}: </span>
-                {line.text}
-              </p>
-            ))}
-          </section>
-
-          {closed && (
-            <p role="status" className="mx-4 rounded-sm border-l-4 border-l-ok bg-card px-4 py-3 text-[length:var(--text-body)]">
-              {t('repair.closed')}
-            </p>
-          )}
-
           {step && (
             // A service tag: 4px radius and one punched-hole notch at the left (DESIGN.md).
-            <article className="relative mx-4 rounded-sm border border-border bg-card px-5 py-3">
+            <article className="relative mx-4 mt-4 rounded-sm border border-border bg-card px-5 py-3">
               <span aria-hidden className="absolute top-1/2 -left-1.5 size-3 -translate-y-1/2 rounded-full border border-border bg-background" />
               <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('repair.step', { n: step.n, of: step.of })}</p>
               <div className="text-[length:var(--text-sm)] text-muted-foreground">
@@ -165,6 +176,74 @@ function JobScreen() {
               </Button>
             </article>
           )}
+          <section aria-live="polite" className="flex flex-1 flex-col gap-3 px-4 py-5 text-[length:var(--text-caption)]">
+            {live.captions.length === 0 && !step && !closed && (
+              // The empty job explains itself: what to do, questions to tap, and the photo buttons below.
+              <div className="flex flex-1 flex-col justify-center gap-5">
+                <div className="flex items-start gap-3">
+                  <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Mic className="size-6" />
+                  </span>
+                  <div>
+                    <h2 className="font-heading text-[length:var(--text-lg)] leading-tight font-bold">{t('live.emptyTitle')}</h2>
+                    <p className="mt-1 text-[length:var(--text-body)] text-muted-foreground">{t('live.emptyText')}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('live.tapToAsk')}</p>
+                  {(['ex1', 'ex2', 'ex3'] as const).map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      lang="hi"
+                      disabled={live.status !== 'ready'}
+                      onClick={() => live.sendText(t(`live.${key}`))}
+                      className="min-h-(--touch) rounded-lg border border-border bg-card px-4 py-3 text-left text-[length:var(--text-body)] outline-none hover:border-primary focus-visible:ring-4 focus-visible:ring-ring disabled:opacity-50"
+                    >
+                      “{t(`live.${key}`)}”
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[length:var(--text-sm)] text-muted-foreground">{t('live.orShow')}</p>
+              </div>
+            )}
+            {live.captions.map((line, i) => (
+              <p
+                key={i}
+                className={cn(
+                  line.who === 'user' && 'ml-6 border-l-2 border-ok pl-3',
+                  !line.final && 'text-muted-foreground',
+                )}
+              >
+                <span className="sr-only">{t(line.who === 'user' ? 'live.you' : 'live.ustaad')}: </span>
+                {line.text}
+              </p>
+            ))}
+          </section>
+
+          {closed && (
+            <section role="status" className="mx-4 flex flex-col gap-3 rounded-lg border border-ok bg-card px-4 py-4">
+              <div className="flex items-center gap-3">
+                <CircleCheck aria-hidden className="size-8 shrink-0 text-ok" />
+                <div>
+                  <h2 className="font-heading text-[length:var(--text-lg)] font-bold">{t('repair.closedTitle')}</h2>
+                  <p className="text-[length:var(--text-body)] text-muted-foreground">{t('repair.closed')}</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  className="h-(--touch) flex-1 text-[length:var(--text-body)]"
+                  onClick={() => navigate(`/w/job/j_${crypto.randomUUID().slice(0, 8)}?lang=${lang}`)}
+                >
+                  {t('repair.newJob')}
+                </Button>
+                <Button asChild variant="outline" className="h-(--touch) px-6 text-[length:var(--text-body)]">
+                  <Link to="/w">{t('repair.home')}</Link>
+                </Button>
+              </div>
+            </section>
+          )}
+
           {hasProfile(live.profile) && <ProfileCard profile={live.profile} />}
           <QuotesCard quoteRequestId={live.quotes.quoteRequestId} initialItems={live.quotes.items} />
         </>

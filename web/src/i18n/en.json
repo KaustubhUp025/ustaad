@@ -9,7 +9,9 @@
     "checking": "Checking the server…",
     "ok": "Server connected",
     "error": "Server not reachable. Check your network, then try again.",
-    "retry": "Check again"
+    "retry": "Check again",
+    "live": "Live",
+    "offline": "Offline"
   },
   "live": {
     "hold": "Hold to talk",
@@ -22,7 +24,16 @@
     "retry": "Try again",
     "micBlocked": "Ustaad can't hear you. Allow the microphone in your browser settings.",
     "you": "You",
-    "ustaad": "Ustaad"
+    "ustaad": "Ustaad",
+    "emptyTitle": "Hold the yellow mic and say what's wrong",
+    "emptyText": "Speak in your own words. Ustaad answers out loud and writes it here.",
+    "tapToAsk": "Or tap a question to ask it:",
+    "ex1": "Voltas AC, E6 aa raha hai, kya karun?",
+    "ex2": "Outdoor unit ka fan nahi chal raha",
+    "ex3": "Capacitor ka reading kaise check karun?",
+    "orShow": "You can also show Ustaad a photo or your manual with the buttons below.",
+    "back": "Back to home",
+    "seen": "Read from your photo"
   },
   "repair": {
     "closed": "Job closed and saved as a card for review.",
@@ -52,7 +63,13 @@
       "play": "Play the voice note: {{label}}",
       "stop": "Stop the voice note: {{label}}",
       "failed": "The voice note didn't play. Check the network, then tap it again."
-    }
+    },
+    "gateWhy": "Ustaad waits for this photo before the next step, so you never touch live current.",
+    "gateNext": "After the photo passes, Ustaad gives the next step.",
+    "hearAgain": "Hear it again",
+    "closedTitle": "Job closed",
+    "newJob": "Start a new job",
+    "home": "Home"
   },
   "camera": {
     "take": "Take photo",
@@ -75,7 +92,7 @@
     "zoom": "Zoom {{n}} times"
   },
   "stock": {
-    "title": "Stock",
+    "title": "Your stock",
     "open": "See stock",
     "demo": "Demo data",
     "loading": "Loading your stock…",
@@ -87,7 +104,10 @@
     "less": "One less {{name}}",
     "more": "One more {{name}}",
     "inStock": "{{qty}} in stock",
-    "saveFailed": "The count didn't change. Check your network, then try again."
+    "saveFailed": "The count didn't change. Check your network, then try again.",
+    "intro": "Parts in your toolbag. Ustaad checks this list before asking shops for a part.",
+    "howTo": "Change a count with − and +, or tell Ustaad: \"bought two capacitors\".",
+    "back": "Back to home"
   },
   "demo": {
     "tryEn": "Try in English",
@@ -116,7 +136,12 @@
     "knowledgeIntro": "Fault cards captured from technician conversations.",
     "synthetic": "Synthetic demo data",
     "filterLabel": "Filter by appliance type",
-    "filters": { "all": "All appliances", "split_ac": "Split AC", "washing_machine": "Washing machine", "unknown": "Appliance unclear" },
+    "filters": {
+      "all": "All appliances",
+      "split_ac": "Split AC",
+      "washing_machine": "Washing machine",
+      "unknown": "Appliance unclear"
+    },
     "faultCards": "Fault cards",
     "appliance": "Appliance",
     "code": "Code",
@@ -128,10 +153,20 @@
     "reviewIntro": "Check low-confidence cards before technicians use them.",
     "approve": "Approve card",
     "reject": "Reject card",
-    "image": { "ai_generated": "AI-generated image", "public_post": "Image from a public post" },
+    "image": {
+      "ai_generated": "AI-generated image",
+      "public_post": "Image from a public post"
+    },
     "importDisclosure": "The demo voice notes are real recordings. The photos are AI-generated or from public posts.",
     "importProgress": "Import progress",
-    "status": { "queued": "Queued", "parsing": "Reading chat", "transcribing": "Transcribing voice notes", "extracting": "Creating fault cards", "done": "Done", "failed": "Failed" },
+    "status": {
+      "queued": "Queued",
+      "parsing": "Reading chat",
+      "transcribing": "Transcribing voice notes",
+      "extracting": "Creating fault cards",
+      "done": "Done",
+      "failed": "Failed"
+    },
     "voiceNotes": "Voice notes",
     "threads": "Threads",
     "cardsCreated": "Cards created",
@@ -139,7 +174,12 @@
     "importActivity": "Import activity",
     "importItem": "Import {{number}}",
     "cardsCreatedBadge": "{{count}} cards created",
-    "errors": { "pipeline_failed": "Import failed. Try the export again.", "date_order_ambiguous": "The chat dates could not be understood. Export the chat again.", "attachment_failed": "One attachment could not be read and was kept without enrichment.", "thread_failed": "One chat thread could not be read and was skipped." }
+    "errors": {
+      "pipeline_failed": "Import failed. Try the export again.",
+      "date_order_ambiguous": "The chat dates could not be understood. Export the chat again.",
+      "attachment_failed": "One attachment could not be read and was kept without enrichment.",
+      "thread_failed": "One chat thread could not be read and was skipped."
+    }
   },
   "quotes": {
     "title": "Parts quotes",
@@ -195,5 +235,24 @@
     "ta": "தமிழ்",
     "bn": "বাংলা",
     "en": "English"
+  },
+  "home": {
+    "intro": "Say the fault out loud. Ustaad answers with steps from senior technicians' voice notes, asks for a safety photo before anything risky, and finds the part.",
+    "trySaying": "Try saying",
+    "howTitle": "How a job goes",
+    "how1Title": "Ask by voice",
+    "how1": "Hold the yellow mic and describe the fault in your language.",
+    "how2Title": "Show a photo",
+    "how2": "Ustaad asks to see the nameplate, the display or the part.",
+    "how3Title": "Fix it safely",
+    "how3": "Steps come from a senior's recorded fix. Risky ones wait for a safety photo.",
+    "moreTitle": "More in Ustaad",
+    "importTitle": "Import a WhatsApp group",
+    "importText": "Turn your group's voice notes into cited fault cards.",
+    "stockText": "Parts in your bag. Ustaad checks them before asking shops.",
+    "cardsTitle": "Knowledge cards",
+    "cardsText": "Every fix the team recorded, with who said it.",
+    "profileText": "Ustaad asks a few questions and remembers your work.",
+    "honest": "No login needed. Demo data and photos from public posts are labelled wherever they appear."
   }
 }

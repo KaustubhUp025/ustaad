@@ -23,8 +23,37 @@ import { StatusPill, WorkerHeader } from './WorkerHeader'
 // push-to-talk mic.
 // Without a demo session there is no token for the voice line, so he starts one from Home (mock replays need none).
 export default function Job() {
+  const { id = '' } = useParams()
   if (import.meta.env.VITE_MOCK_LIVE !== '1' && !demoSession()) return <Navigate to="/w" replace />
-  return <JobScreen />
+  // One screen per job: "Start a new job" stays on this route, and without the key the last job's captions and cards
+  // stayed on screen (phone test, Oct 18).
+  return <JobScreen key={id} />
+}
+
+// The way out of a finished job: closed and saved, or stopped for safety (the stopped job is not picked up again).
+function JobExits({ lang, onRed }: { lang: string; onRed?: boolean }) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  return (
+    <div className="flex gap-3">
+      <Button
+        className={cn('h-(--touch) flex-1 text-[length:var(--text-body)]', onRed && 'bg-housing text-destructive hover:bg-housing/90')}
+        onClick={() => navigate(`/w/job/j_${crypto.randomUUID().slice(0, 8)}?lang=${lang}`)}
+      >
+        {t('repair.newJob')}
+      </Button>
+      <Button
+        asChild
+        variant="outline"
+        className={cn(
+          'h-(--touch) px-6 text-[length:var(--text-body)]',
+          onRed && 'border-housing/60 bg-transparent text-housing hover:bg-housing/10 hover:text-housing',
+        )}
+      >
+        <Link to="/w">{t('repair.home')}</Link>
+      </Button>
+    </div>
+  )
 }
 
 function JobScreen() {
@@ -35,7 +64,6 @@ function JobScreen() {
   // Home's "Set up a profile": the empty screen explains the interview instead of offering repair questions.
   const onboarding = params.get('onboarding') === '1'
   const { id = '' } = useParams()
-  const navigate = useNavigate()
   const live = useLive(lang, id)
   const { step, gate, failReason, stop, closed } = live.repair
   const lines = step && stepLines(step)
@@ -104,9 +132,11 @@ function JobScreen() {
       )}
 
       {stop ? (
-        // SAFETY.md: the whole screen turns Fault Red with one fixed sentence for the reason; no audio.
-        <section role="alert" className="flex flex-1 items-center px-6 py-10">
+        // SAFETY.md: the whole screen turns Fault Red with one fixed sentence for the reason; no audio. The job ends
+        // here, so the way out is a new job or Home (phone test, Oct 18: the red screen stayed until a refresh).
+        <section role="alert" className="flex flex-1 flex-col justify-center gap-8 px-6 py-10">
           <p className="text-[length:var(--text-lg)] font-semibold">{t([`repair.stop.${stop.reason}`, 'repair.stop.other'])}</p>
+          <JobExits lang={lang} onRed />
         </section>
       ) : sheet ? (
         <CameraSheet
@@ -249,17 +279,7 @@ function JobScreen() {
                   <p className="text-[length:var(--text-body)] text-muted-foreground">{t('repair.closed')}</p>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <Button
-                  className="h-(--touch) flex-1 text-[length:var(--text-body)]"
-                  onClick={() => navigate(`/w/job/j_${crypto.randomUUID().slice(0, 8)}?lang=${lang}`)}
-                >
-                  {t('repair.newJob')}
-                </Button>
-                <Button asChild variant="outline" className="h-(--touch) px-6 text-[length:var(--text-body)]">
-                  <Link to="/w">{t('repair.home')}</Link>
-                </Button>
-              </div>
+              <JobExits lang={lang} />
             </section>
           )}
 

@@ -28,9 +28,9 @@
     "emptyTitle": "Hold the yellow mic and say what's wrong",
     "emptyText": "Speak in your own words. Ustaad answers out loud and writes it here.",
     "tapToAsk": "Or tap a question to ask it:",
-    "ex1": "Voltas AC, E6 aa raha hai, kya karun?",
-    "ex2": "Outdoor unit ka fan nahi chal raha",
-    "ex3": "Capacitor ka reading kaise check karun?",
+    "ex1": "My Voltas AC is showing E6. What should I do?",
+    "ex2": "The outdoor unit fan is not running.",
+    "ex3": "How do I check the capacitor reading?",
     "orShow": "You can also show Ustaad a photo or your manual with the buttons below.",
     "back": "Back to home",
     "seen": "Read from your photo"
@@ -112,6 +112,7 @@
   "demo": {
     "tryEn": "Try in English",
     "tryHi": "हिंदी में आज़माएँ",
+    "tryTe": "తెలుగులో ప్రయత్నించండి",
     "starting": "Starting the demo…",
     "failed": "The demo didn't start. Check your network, then try again."
   },

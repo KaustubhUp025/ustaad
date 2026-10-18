@@ -63,6 +63,16 @@ export default function Home() {
             >
               {t('demo.tryHi')}
             </Button>
+            {/* G6: the same repair demo in Telugu. */}
+            <Button
+              variant="outline"
+              lang="te"
+              className="h-14 w-full border-housing/40 bg-transparent text-[length:var(--text-body)] text-housing hover:bg-housing/10 hover:text-housing"
+              disabled={starting}
+              onClick={() => void tryDemo('te')}
+            >
+              {t('demo.tryTe')}
+            </Button>
           </div>
           {demo === 'failed' && (
             <p role="alert" className="rounded-sm bg-destructive px-3 py-2 text-housing">

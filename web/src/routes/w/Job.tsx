@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 import { CameraSheet } from './CameraSheet'
+import { CaptionHistory } from './CaptionHistory'
 import { SourceChip } from './SourceChip'
 import { QuotesCard } from './QuotesCard'
 
@@ -114,21 +115,7 @@ function JobScreen() {
         </section>
       ) : (
         <>
-          <section aria-live="polite" className="flex flex-1 flex-col justify-end gap-3 px-4 py-6 text-[length:var(--text-caption)]">
-            {live.captions.length === 0 && <p className="text-muted-foreground">{t('live.empty')}</p>}
-            {live.captions.map((line, i) => (
-              <p
-                key={i}
-                className={cn(
-                  line.who === 'user' && 'ml-6 border-l-2 border-ok pl-3',
-                  !line.final && 'text-muted-foreground',
-                )}
-              >
-                <span className="sr-only">{t(line.who === 'user' ? 'live.you' : 'live.ustaad')}: </span>
-                {line.text}
-              </p>
-            ))}
-          </section>
+          <CaptionHistory captions={live.captions} />
 
           {closed && (
             <p role="status" className="mx-4 rounded-sm border-l-4 border-l-ok bg-card px-4 py-3 text-[length:var(--text-body)]">

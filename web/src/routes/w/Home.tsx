@@ -127,9 +127,7 @@ export default function Home() {
               {t('home.moreTitle')}
             </h2>
             <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
-              <Row to="/d/import" icon={<MessageCircle className="size-6" />} tone="ok" title={t('home.importTitle')} text={t('home.importText')} />
-              <Row to="/w/stock" icon={<Package className="size-6" />} tone="parts" title={t('stock.title')} text={t('home.stockText')} />
-              <Row to="/d/knowledge" icon={<BookOpen className="size-6" />} tone="ink" title={t('home.cardsTitle')} text={t('home.cardsText')} />
+              {/* First: setting up a profile makes him a worker of his own, in the language he picks. */}
               <li>
                 <button
                   type="button"
@@ -167,6 +165,9 @@ export default function Home() {
                   </fieldset>
                 )}
               </li>
+              <Row to="/d/import" icon={<MessageCircle className="size-6" />} tone="ok" title={t('home.importTitle')} text={t('home.importText')} />
+              <Row to="/w/stock" icon={<Package className="size-6" />} tone="parts" title={t('stock.title')} text={t('home.stockText')} />
+              <Row to="/d/knowledge" icon={<BookOpen className="size-6" />} tone="ink" title={t('home.cardsTitle')} text={t('home.cardsText')} />
             </ul>
           </section>
 

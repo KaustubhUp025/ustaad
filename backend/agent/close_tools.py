@@ -35,7 +35,8 @@ def close_tools(jobs: JobStore, cards: CardStore, stock: InventoryStore, desk: M
         appliance type you know from the job. His stock goes down by the parts used; `stock_not_updated` says why it
         did not. ALREADY_CLOSED: the job was closed before; say so briefly. If a side issue was found on this job, ask
         him once before closing whether he fixed it; if he did, pass `side_fix`: {"symptom", "outcome",
-        "fix_summary"} in his words, and it becomes a second card."""
+        "fix_summary"} in his words, and it becomes a second card. A job with no repair is not closed: when he only
+        ordered a part or asked a question, do not call this."""
         inp = CloseJobIn(
             symptom=symptom,
             outcome=outcome,

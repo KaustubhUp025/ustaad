@@ -177,6 +177,24 @@ class WorkerStore:
         doc = self._db.collection("workers").document(worker_id).get()
         return Worker.model_validate(doc.to_dict() | {"id": worker_id}) if doc.exists else None
 
+    def create(self, worker: Worker) -> None:
+        self._db.collection("workers").document(worker.id).create(worker.model_dump(mode="json", exclude={"id"}))
+
+    def update[T](self, worker_id: str, change: Callable[[Worker], tuple[T, Worker]]) -> T:
+        """Runs `change` on his profile in a transaction, so two answers saved at once both stay."""
+        ref = self._db.collection("workers").document(worker_id)
+
+        @firestore.transactional
+        def run(tx: firestore.Transaction) -> T:
+            out, worker = change(Worker.model_validate(ref.get(transaction=tx).to_dict() | {"id": worker_id}))
+            tx.set(ref, worker.model_dump(mode="json", exclude={"id"}))
+            return out
+
+        return run(self._db.transaction())
+
+    def add_vendor(self, worker_id: str, name: str) -> None:
+        self._db.collection("workers").document(worker_id).collection("vendors").add({"name": name})
+
 
 class QuoteStore:
     """`quote_requests/{qrid}` with their `quotes`, the worker's `vendors`, and `tg_updates` for webhook dedupe.
@@ -190,7 +208,9 @@ class QuoteStore:
 
     def vendors(self, worker_id: str) -> list[Vendor]:
         docs = self._db.collection("workers").document(worker_id).collection("vendors").stream()
-        return [Vendor(id=doc.id, name=doc.get("name"), tg_chat_id=doc.get("tg_chat_id")) for doc in docs]
+        # A shop named in onboarding has no Telegram chat until it is linked, so it gets no quote request.
+        rows = [(doc.id, doc.to_dict() or {}) for doc in docs]
+        return [Vendor(id=vid, name=d["name"], tg_chat_id=d["tg_chat_id"]) for vid, d in rows if d.get("tg_chat_id")]
 
     def create(self, request: QuoteRequest, docs: list[QuoteDoc]) -> None:
         batch = self._db.batch()

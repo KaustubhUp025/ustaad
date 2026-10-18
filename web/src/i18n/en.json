@@ -159,5 +159,41 @@
     "approved": "Quote approved",
     "loadFailed": "Quotes didn't load. Check the network, then try again.",
     "approvalFailed": "Quote could not be approved. Check the replies, then try again."
+  },
+  "onboard": {
+    "setup": "Set up a profile",
+    "pickLanguage": "Which language do you want to talk in?",
+    "starting": "Starting…",
+    "failed": "Couldn't start. Check your network, then try again."
+  },
+  "profile": {
+    "title": "Your profile",
+    "trades": "Appliances",
+    "brands": "Brands",
+    "pincode": "Area pincode",
+    "experience": "Experience",
+    "years": "{{count}} years",
+    "stock": "Parts in stock",
+    "notKept": "not kept",
+    "pieces": "{{count}} pcs",
+    "shop": "Parts shop",
+    "ready": "Profile ready"
+  },
+  "trade": {
+    "ac": "AC",
+    "fridge": "Fridge",
+    "washing_machine": "Washing machine",
+    "led_tv": "LED TV",
+    "microwave": "Microwave",
+    "geyser": "Geyser",
+    "fan_cooler": "Fan / cooler",
+    "other": "Other"
+  },
+  "languages": {
+    "hi": "हिंदी",
+    "te": "తెలుగు",
+    "ta": "தமிழ்",
+    "bn": "বাংলা",
+    "en": "English"
   }
 }

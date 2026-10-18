@@ -61,3 +61,43 @@ async def test_another_demo_worker_can_be_asked_for(workers):
 async def test_a_worker_that_is_not_a_demo_worker_gets_not_found(workers, worker_id):
     response = await post({"worker_id": worker_id})
     assert (response.status_code, response.json()["error"]["code"]) == (404, "not_found")
+
+
+# Onboarding (T21, G1): each visitor gets a new, empty demo worker, so two judges never share one interview.
+
+
+class CreatingWorkers(Workers):
+    def create(self, worker):
+        self.docs[worker.id] = worker.model_dump(mode="json", exclude={"id"})
+
+
+async def test_onboarding_gives_each_visitor_a_new_empty_demo_worker_in_his_language():
+    fake = CreatingWorkers({})
+    app.dependency_overrides[worker_store] = lambda: fake
+    try:
+        first, second = (await post({"onboarding": True, "lang": "te"})).json(), (await post({"onboarding": True})).json()
+    finally:
+        app.dependency_overrides.clear()
+    assert first["worker"]["id"].startswith("w_onb_") and first["worker"]["id"] != second["worker"]["id"]
+    assert (first["worker"]["lang"], second["worker"]["lang"]) == ("te", "hi")
+    assert (first["worker"]["trades"], first["worker"]["onboarding_done"], first["worker"]["demo"]) == ([], False, True)
+    assert verify(first["token"], datetime.now(UTC)) == first["worker"]["id"]
+    assert set(fake.docs) == {first["worker"]["id"], second["worker"]["id"]}
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"onboarding": True, "lang": "mr"},  # only hi, te, ta, bn, en
+        {"onboarding": True, "worker_id": "w_hi_demo"},  # a fresh worker, never an existing one
+    ],
+)
+async def test_onboarding_takes_only_a_supported_language_and_never_a_worker_id(body):
+    fake = CreatingWorkers({"w_hi_demo": DEMO})
+    app.dependency_overrides[worker_store] = lambda: fake
+    try:
+        response = await post(body)
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 422
+    assert set(fake.docs) == {"w_hi_demo"}

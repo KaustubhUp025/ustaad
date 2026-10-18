@@ -1,0 +1,33 @@
+{"t_ms": 9, "frame": {"v": 1, "type": "caption", "who": "user", "text": "నమస్కారం", "final": true}}
+{"t_ms": 11123, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "నమస్కారం! మీరు ఎక్కువగా ఏయే ఉపకరణాలను రిపేర్ చేస్తారో చెప్పగలరా? గరిష్టంగా మూడు చెప్పండి.", "final": true}}
+{"t_ms": 11127, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 14142, "frame": {"v": 1, "type": "caption", "who": "user", "text": "AC మరియు ఫ్రిజ్", "final": true}}
+{"t_ms": 14870, "frame": {"v": 1, "type": "profile_update", "fields": {"trades": ["ac", "fridge"]}}}
+{"t_ms": 14871, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 18743, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "సరే. మీరు ఎక్కువగా ఏ బ్రాండ్స్ చూస్తారు?", "final": true}}
+{"t_ms": 18744, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 21759, "frame": {"v": 1, "type": "caption", "who": "user", "text": "Voltas, LG, Daikin", "final": true}}
+{"t_ms": 22344, "frame": {"v": 1, "type": "profile_update", "fields": {"brands": ["Voltas", "LG", "Daikin"]}}}
+{"t_ms": 22344, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 27617, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "ధన్యవాదాలు. మీ ప్రాంతం యొక్క 6 అంకెల పిన్‌కోడ్ చెప్పగలరా?", "final": true}}
+{"t_ms": 27618, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 30632, "frame": {"v": 1, "type": "caption", "who": "user", "text": "201301", "final": true}}
+{"t_ms": 31222, "frame": {"v": 1, "type": "profile_update", "fields": {"pincode": "201301"}}}
+{"t_ms": 31222, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 36231, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "చాలా మంచిది. మీరు ఈ పనిని ఎన్ని సంవత్సరాలుగా చేస్తున్నారు?", "final": true}}
+{"t_ms": 36232, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 39246, "frame": {"v": 1, "type": "caption", "who": "user", "text": "8 సంవత్సరాలు", "final": true}}
+{"t_ms": 39823, "frame": {"v": 1, "type": "profile_update", "fields": {"experience_yrs": 8}}}
+{"t_ms": 39824, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 45178, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "మీరు స్టాక్ లో ఉంచే సాధారణ భాగాలు మరియు వాటి సంఖ్యను చెప్పగలరా?", "final": true}}
+{"t_ms": 45179, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 48182, "frame": {"v": 1, "type": "caption", "who": "user", "text": "కెపాసిటర్ నాలుగు ఉంచుతాను, PCB లేదు", "final": true}}
+{"t_ms": 48866, "frame": {"v": 1, "type": "profile_update", "fields": {"stock": [{"part": "capacitor", "qty": 4}, {"part": "PCB", "qty": 0}]}}}
+{"t_ms": 48867, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 53158, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "మీరు విడిభాగాలు కొనుగోలు చేసే షాప్ పేరు ఏమిటి?", "final": true}}
+{"t_ms": 53158, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 56168, "frame": {"v": 1, "type": "caption", "who": "user", "text": "Sharma Electricals", "final": true}}
+{"t_ms": 56848, "frame": {"v": 1, "type": "profile_update", "fields": {"shop": "Sharma Electricals", "onboarding_done": true}}}
+{"t_ms": 56848, "frame": {"v": 1, "type": "turn_complete"}}
+{"t_ms": 61647, "frame": {"v": 1, "type": "caption", "who": "ustaad", "text": "మీ ప్రొఫైల్ సిద్ధమైంది! ఈరోజు మీరు దేనిపై పని చేస్తున్నారు?", "final": true}}
+{"t_ms": 61647, "frame": {"v": 1, "type": "turn_complete"}}

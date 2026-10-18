@@ -91,3 +91,26 @@ def test_the_save_waits_for_memory_bank_to_finish():
     bank = FakeMemoryBank()
     asyncio.run(remember(bank, "dev:w_hi_demo:v1", [spoken("user", "Inverter PCB weak hai")]))
     assert bank.metadata == {"wait_for_completion": True}
+
+
+class FailingMemoryBank:
+    """Fails the way a client error does: its text carries what was said and the scope."""
+
+    async def search_memory(self, **_):
+        raise RuntimeError("scope demo:w_hi_demo:abc PRIVATE_FACT Mera naam Raju, 98xxxxxx")
+
+    async def add_events_to_memory(self, **_):
+        raise RuntimeError("scope demo:w_hi_demo:abc PRIVATE_FACT Mera naam Raju, 98xxxxxx")
+
+
+def test_a_failed_recall_or_save_logs_only_a_fixed_message(caplog):
+    caplog.set_level("DEBUG")
+    assert asyncio.run(recall(FailingMemoryBank(), "demo:w_hi_demo:abc")) is None
+    asyncio.run(remember(FailingMemoryBank(), "demo:w_hi_demo:abc", [spoken("user", "Mera naam Raju hai")]))
+    mine = [r for r in caplog.records if r.name == "agent.memory"]
+    assert [r.getMessage() for r in mine] == [
+        "memory recall failed (RuntimeError)",
+        "memory save failed (RuntimeError)",
+    ]
+    assert all(r.exc_info is None and r.exc_text is None for r in mine)
+    assert "PRIVATE_FACT" not in caplog.text and "Raju" not in caplog.text and "w_hi_demo" not in caplog.text

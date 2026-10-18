@@ -26,8 +26,9 @@ async def recall(memory: BaseMemoryService, user_id: str) -> str | None:
     # Memory is a soft extra: a Memory Bank failure must not cost him the voice session.
     try:
         found = await memory.search_memory(app_name=APP, user_id=user_id, query=QUERY)
-    except Exception:
-        logger.warning("memory recall failed", exc_info=True)
+    except Exception as exc:  # noqa: BLE001 — memory is optional; the session goes on without it
+        # Only the class: the error text can carry the scope and what he said.
+        logger.warning("memory recall failed (%s)", type(exc).__name__)
         return None
     facts = [part.text for entry in found.memories for part in entry.content.parts or [] if part.text]
     return "\n".join(facts) or None
@@ -53,8 +54,8 @@ async def remember(memory: BaseMemoryService, user_id: str, events: list[Event])
         await memory.add_events_to_memory(
             app_name=APP, user_id=user_id, events=said, custom_metadata={"wait_for_completion": True}
         )
-    except Exception:
-        logger.warning("memory save failed", exc_info=True)
+    except Exception as exc:  # noqa: BLE001 — memory is optional; the session goes on without it
+        logger.warning("memory save failed (%s)", type(exc).__name__)
 
 
 def _typed(event: Event) -> str | None:

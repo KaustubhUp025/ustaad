@@ -176,6 +176,6 @@ Seed: WhatsApp group export (~30 real Hinglish voice notes, ~40 texts, ~10 photo
 labelled) · 3 brands' manuals · 200 jobs in 15 Noida/Ghaziabad pincodes with one planted cluster · 3 workers ·
 6 golden photos. Error-code meanings must come from the real manuals, not from memory.
 Golden paths (exact inputs and expected frames): `docs/GOLDEN_PATHS.md`.
-Demo-safe: cache golden-path responses by input hash; fall back after 6 s; min-instances 1; vendor "hi" first.
+Demo-safe: cache golden-path responses by input hash; fall back after 6 s; min-instances 0 since Nov 16 (scale to zero after the contest; 1 for a live demo); vendor "hi" first.
 Targets (measure, report actuals): speech end → reply ≤ 2.5 s p50 · photo → findings ≤ 6 s p50 · 6/6 golden
 photos · import 30 notes ≤ 2 min, ≥ 20 cards, ≥ 80% correct · quotes ≤ 2 min · 0/10 gate bypasses.

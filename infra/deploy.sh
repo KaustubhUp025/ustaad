@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # Deploy the API to Cloud Run. Prefer: make deploy-dev / make deploy-demo.
 #   ENV=dev  → service ustaad-api-dev, min 0, Firestore (default)
-#   ENV=demo → service ustaad-api,     min 1, Firestore demo   (A only, from a git tag)
+#   ENV=demo → service ustaad-api,     min 0, Firestore demo   (A only, from a git tag)
+# Both scale to zero when idle so the project only bills while someone uses it; the first request after idle
+# waits for a cold start. Set MIN_INSTANCES=1 for a live demo where that wait would hurt.
 # Required env: PROJECT_ID, LIVE_MODEL, MEDIA_BUCKET, ALLOWED_ORIGINS (comma-separated is fine)
 set -euo pipefail
 ENV="${ENV:-dev}"
 : "${PROJECT_ID:?}" "${LIVE_MODEL:?set after the T05 smoke test}" "${MEDIA_BUCKET:?}" "${ALLOWED_ORIGINS:?}"
 REGION="${REGION:-asia-south1}"
 SERVICE="ustaad-api-dev"; MIN=0; DB="(default)"; DEMO_SAFE=0
-if [[ "$ENV" == "demo" ]]; then SERVICE="ustaad-api"; MIN="${MIN_INSTANCES:-1}"; DB="demo"; DEMO_SAFE=1; fi
+if [[ "$ENV" == "demo" ]]; then SERVICE="ustaad-api"; MIN="${MIN_INSTANCES:-0}"; DB="demo"; DEMO_SAFE=1; fi
 
 # '^@^' makes '@' the separator, so commas inside ALLOWED_ORIGINS survive
 ENVVARS="^@^GOOGLE_CLOUD_PROJECT=${PROJECT_ID}@GOOGLE_CLOUD_LOCATION=global@GOOGLE_GENAI_USE_ENTERPRISE=TRUE@GOOGLE_GENAI_USE_VERTEXAI=TRUE"
@@ -32,3 +34,7 @@ gcloud run deploy "$SERVICE" \
   --allow-unauthenticated \
   --set-env-vars "$ENVVARS" \
   --set-secrets "TG_BOT_TOKEN=tg-bot-token:latest,TG_WEBHOOK_SECRET=tg-webhook-secret:latest,PLACES_API_KEY=places-api-key:latest,SESSION_SECRET=session-secret:latest"
+
+# Source deploys add an image per deploy; keep the two newest per service so storage stays small.
+gcloud artifacts repositories set-cleanup-policies cloud-run-source-deploy \
+  --project "$PROJECT_ID" --location "$REGION" --policy infra/ar-cleanup.json --no-dry-run
